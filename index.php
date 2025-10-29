@@ -1,7 +1,7 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
-
+session_start();
 require_once __DIR__ . '/conf/functions.php';
 
 // 1. Si ya está en sesión, calcula el tiempo y muestra dashboard
@@ -173,7 +173,7 @@ if (isset($_SESSION['cedula'])) {
             <div class="card bg-info text-dark">
                 <div class="card-body">
                     <h5 class="card-title">Tiempo Restante (Global)</h5>
-                    <p class="card-text fs-3" id="global-timer">00:45:00</p>
+                    <p class="card-text fs-3" id="global-timer">01:15:00</p>
                 </div>
             </div>
         </div>
@@ -189,7 +189,7 @@ if (isset($_SESSION['cedula'])) {
                     <h6 class="card-subtitle mb-2 text-muted">Web Hacking (200 Pts)</h6>
                     <p class="card-text">Encuentra una vulnerabilidad en este formulario de inicio de sesión. La bandera está oculta en la base de datos.</p>
                     <p class="fw-bold">Tiempo restante: <span class="text-danger" id="timer-ctf">15:00</span></p>
-                    <a href="challenge_ctf.php" class="btn btn-primary" >Acceder al Desafío</a>
+                    <a href="challenge_ctf.php" class="btn btn-primary">Acceder al Desafío</a>
                     <div class="mt-3">
                         <input type="text" class="form-control" id="flag-ctf" placeholder="Ingresa la bandera">
                         <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="ctf">Verificar</button>
@@ -204,7 +204,7 @@ if (isset($_SESSION['cedula'])) {
                     <h5 class="card-title text-primary">2. Ingeniería Inversa</h5>
                     <h6 class="card-subtitle mb-2 text-muted">Análisis de Binarios (300 Pts)</h6>
                     <p class="card-text">Descarga el archivo binario y realiza ingeniería inversa para obtener la contraseña oculta.</p>
-                    <p class="fw-bold">Archivo: <a href="reverse_challenge.zip">`reverse_challenge.zip`</a></p>
+                    <p class="fw-bold">Archivo: <a href="reverse_challenge.zip">reverse_challenge.zip</a></p>
                     <p class="fw-bold">Tiempo restante: <span class="text-danger" id="timer-re">15:00</span></p>
                     <div class="mt-3">
                         <input type="text" class="form-control" id="flag-re" placeholder="Ingresa la bandera">
@@ -220,7 +220,7 @@ if (isset($_SESSION['cedula'])) {
                     <h5 class="card-title text-primary">3. Criptografía</h5>
                     <h6 class="card-subtitle mb-2 text-muted">Descifrado de Mensajes (250 Pts)</h6>
                     <p class="card-text">Descifra el mensaje oculto. La clave es el nombre del famoso inventor de la máquina enigma.</p>
-                    <p class="fw-bold">Cifrado: `Vqj wpgs qd yjg jcems`</p>
+                    <p class="fw-bold">Cifrado: Vqj wpgs qd yjg jcems</p>
                     <p class="fw-bold">Tiempo restante: <span class="text-danger" id="timer-crypto">15:00</span></p>
                     <div class="mt-3">
                         <input type="text" class="form-control" id="flag-crypto" placeholder="Ingresa la bandera">
@@ -229,19 +229,48 @@ if (isset($_SESSION['cedula'])) {
                 </div>
             </div>
         </div>
-    </div>
 
-    <?php if (isset($_SESSION['nombre'])): ?>
-        <div class="alert alert-success text-center fs-4 mb-4">
-            BIENVENIDO <?php echo htmlspecialchars($_SESSION['nombre']); ?>
+        <!-- NUEVO NIVEL 4: Fuerza Bruta ZIP -->
+        <div class="col-md-4 mb-4">
+            <div class="card card-challenge shadow">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">4. Fuerza Bruta ZIP</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">Ataque de Diccionario (275 Pts)</h6>
+                    <p class="card-text">Descarga el archivo ZIP protegido con contraseña y utiliza fuerza bruta para encontrar la clave.</p>
+                    <p class="fw-bold">Archivo: <a href="secret_files.zip">secret_files.zip</a></p>
+                    <p class="fw-bold">Tiempo restante: <span class="text-danger" id="timer-zip">15:00</span></p>
+                    <div class="mt-3">
+                        <input type="text" class="form-control" id="flag-zip" placeholder="Ingresa la bandera">
+                        <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="zip">Verificar</button>
+                    </div>
+                </div>
+            </div>
         </div>
-    <?php endif; ?>
+
+        <!-- NUEVO NIVEL 5: Metadatos de Imagen -->
+        <div class="col-md-4 mb-4">
+            <div class="card card-challenge shadow">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">5. Análisis Forense</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">Metadatos EXIF (225 Pts)</h6>
+                    <p class="card-text">Descarga la imagen y analiza sus metadatos EXIF para encontrar la bandera oculta.</p>
+                    <p class="fw-bold">Imagen: <a href="mystery_image.jpg">mystery_image.jpg</a></p>
+                    <p class="fw-bold">Tiempo restante: <span class="text-danger" id="timer-meta">15:00</span></p>
+                    <div class="mt-3">
+                        <input type="text" class="form-control" id="flag-meta" placeholder="Ingresa la bandera">
+                        <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="meta">Verificar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
 </div>
 
 <script>
 // ===== CONFIGURACIÓN INICIAL =====
 const segundosTranscurridos = <?php echo $segundos_transcurridos; ?>;
-let globalTimeLeft = Math.max(0, (15 * 60) * 3 - segundosTranscurridos);
+let globalTimeLeft = Math.max(0, (15 * 60) * 5 - segundosTranscurridos);
 let currentScore = 0;
 let timers = {};
 let completedChallenges = {};
@@ -249,19 +278,25 @@ let completedChallenges = {};
 const challengeDurations = {
     'ctf': Math.max(0, 15 * 60 - segundosTranscurridos),
     're': Math.max(0, 15 * 60 - segundosTranscurridos),
-    'crypto': Math.max(0, 15 * 60 - segundosTranscurridos)
+    'crypto': Math.max(0, 15 * 60 - segundosTranscurridos),
+    'zip': Math.max(0, 15 * 60 - segundosTranscurridos),
+    'meta': Math.max(0, 15 * 60 - segundosTranscurridos)
 };
 
 const flags = {
     'ctf': 'FLAG{SQL_INYECCION_EXITOSA}',
     're': 'FLAG{REVERSE_IS_FUN}',
-    'crypto': 'FLAG{EL_GENIO_ALAN}'
+    'crypto': 'FLAG{EL_GENIO_ALAN}',
+    'zip': 'FLAG{Z1P_CR4CK3R_W1N}',
+    'meta': 'FLAG{M3T4D4T4_3XP3RT}'
 };
 
 const scores = {
     'ctf': 200,
     're': 300,
-    'crypto': 250
+    'crypto': 250,
+    'zip': 275,
+    'meta': 225
 };
 
 // ===== FUNCIONES DE TEMPORIZADORES =====
@@ -293,6 +328,8 @@ function updateChallengeTimer(challenge, timeLeft) {
 function clearChallengeTimer(challenge) {
     clearInterval(timers[challenge]);
     document.getElementById(`timer-${challenge}`).textContent = 'Tiempo agotado';
+    document.getElementById(`flag-${challenge}`).disabled = true;
+    document.querySelector(`button[data-challenge="${challenge}"]`).disabled = true;
 }
 
 function startGlobalTimer() {
@@ -320,6 +357,8 @@ function endHackathon(timer) {
     // Detener todos los temporizadores individuales
     for (const challenge in timers) {
         clearInterval(timers[challenge]);
+        document.getElementById(`flag-${challenge}`).disabled = true;
+        document.querySelector(`button[data-challenge="${challenge}"]`).disabled = true;
     }
 }
 
@@ -370,6 +409,8 @@ function handleCorrectFlag(challenge) {
     completedChallenges[challenge] = true;
     clearInterval(timers[challenge]);
     document.getElementById(`timer-${challenge}`).textContent = 'COMPLETADO';
+    document.getElementById(`flag-${challenge}`).disabled = true;
+    document.querySelector(`button[data-challenge="${challenge}"]`).disabled = true;
 }
 
 // ===== VALIDACIÓN DE CÉDULA =====
@@ -378,19 +419,24 @@ function setupCedulaValidation() {
     const alertContainer = document.getElementById('alert-container');
     const validationTip = document.getElementById('validation-tip');
 
-    // Prevenir entrada de caracteres no numéricos
-    cedulaInput.addEventListener('keydown', (e) => handleKeyDown(e, validationTip));
-    
-    // Prevenir pegado de contenido no numérico
-    cedulaInput.addEventListener('paste', (e) => handlePaste(e, alertContainer));
-    
-    // Limpiar caracteres no numéricos en tiempo real
-    cedulaInput.addEventListener('input', () => cleanCedulaInput(cedulaInput));
-    
-    // Validación final del formulario
-    document.getElementById('registration-form').addEventListener('submit', (e) => 
-        validateForm(e, cedulaInput, alertContainer)
-    );
+    if (cedulaInput) {
+        // Prevenir entrada de caracteres no numéricos
+        cedulaInput.addEventListener('keydown', (e) => handleKeyDown(e, validationTip));
+        
+        // Prevenir pegado de contenido no numérico
+        cedulaInput.addEventListener('paste', (e) => handlePaste(e, alertContainer));
+        
+        // Limpiar caracteres no numéricos en tiempo real
+        cedulaInput.addEventListener('input', () => cleanCedulaInput(cedulaInput));
+        
+        // Validación final del formulario
+        const registrationForm = document.getElementById('registration-form');
+        if (registrationForm) {
+            registrationForm.addEventListener('submit', (e) => 
+                validateForm(e, cedulaInput, alertContainer)
+            );
+        }
+    }
 }
 
 function handleKeyDown(e, validationTip) {
@@ -405,8 +451,10 @@ function handleKeyDown(e, validationTip) {
     
     if (e.key.length === 1 && !/\d/.test(e.key)) {
         e.preventDefault();
-        validationTip.classList.remove('hidden');
-        setTimeout(() => validationTip.classList.add('hidden'), 1000);
+        if (validationTip) {
+            validationTip.classList.remove('hidden');
+            setTimeout(() => validationTip.classList.add('hidden'), 1000);
+        }
     }
 }
 
@@ -431,6 +479,8 @@ function validateForm(e, cedulaInput, alertContainer) {
 }
 
 function alertMessage(container, message, type) {
+    if (!container) return;
+    
     const baseClasses = "p-3 rounded-lg font-medium text-sm shadow-md mt-2";
     const classes = type === 'success'
         ? "bg-success bg-opacity-10 text-success border border-success"

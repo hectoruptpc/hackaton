@@ -1,5 +1,5 @@
 <?php
-session_start();
+// filepath: conf/functions.php
 
 // Incluir la configuración de la base de datos
 require_once __DIR__ . '/db.php';
@@ -107,6 +107,16 @@ function obtenerConfiguracionDesafios() {
         'crypto' => [
             'flag' => 'FLAG{EL_GENIO_ALAN}',
             'puntos' => 250,
+            'tiempo' => 15 * 60
+        ],
+        'zip' => [
+            'flag' => 'FLAG{Z1P_CR4CK3R_W1N}',
+            'puntos' => 275,
+            'tiempo' => 15 * 60
+        ],
+        'meta' => [
+            'flag' => 'FLAG{M3T4D4T4_3XP3RT}',
+            'puntos' => 225,
             'tiempo' => 15 * 60
         ]
     ];
