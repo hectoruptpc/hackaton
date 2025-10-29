@@ -189,7 +189,7 @@ if (isset($_SESSION['cedula'])) {
                 <div class="card-body">
                     <h5 class="card-title text-primary">1. Aplicación Web CTF</h5>
                     <h6 class="card-subtitle mb-2 text-muted">Web Hacking (200 Pts)</h6>
-                    <p class="card-text">Encuentra una vulnerabilidad en este formulario de inicio de sesión. La bandera está oculta en la base de datos.</p>
+                    <p class="card-text">Encuentra una vulnerabilidad en este formulario de inicio de sesión.</p>
                     <p class="fw-bold">Tiempo restante: <span class="text-danger" id="timer-ctf">15:00</span></p>
                     <a href="challenge_ctf.php" class="btn btn-primary">Acceder al Desafío</a>
                     <div class="mt-3">
