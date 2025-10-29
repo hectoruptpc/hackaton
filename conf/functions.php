@@ -105,7 +105,7 @@ function obtenerConfiguracionDesafios() {
             'tiempo' => 15 * 60
         ],
         'crypto' => [
-            'flag' => 'FLAG{EL_GENIO_ALAN}',
+            'flag' => 'FLAG{EL_DESENCRIPTADOR_MASTER}',
             'puntos' => 250,
             'tiempo' => 15 * 60
         ],

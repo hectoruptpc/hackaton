@@ -225,8 +225,8 @@ if (isset($_SESSION['cedula'])) {
                 <div class="card-body">
                     <h5 class="card-title text-primary">3. Criptografía</h5>
                     <h6 class="card-subtitle mb-2 text-muted">Descifrado de Mensajes (250 Pts)</h6>
-                    <p class="card-text">Descifra el mensaje oculto. La clave es el nombre del famoso inventor de la máquina enigma.</p>
-                    <p class="fw-bold">Cifrado: Vqj wpgs qd yjg jcems</p>
+                    <p class="card-text">Descifra el mensaje oculto. haz lo posible para identificar que cifrado es y desencriptarlo.</p>
+                    <p class="fw-bold">Cifrado: RkxBR3tFTF9ERVNFTkNSSVBUQURPUl9NQVNURVJ9</p>
                     <p class="fw-bold">Tiempo restante: <span class="text-danger" id="timer-crypto">15:00</span></p>
                     <div class="mt-3">
                         <input type="text" class="form-control" id="flag-crypto" placeholder="Ingresa la bandera">
@@ -292,7 +292,7 @@ const challengeDurations = {
 const flags = {
     'ctf': 'FLAG{SQL_INYECCION_EXITOSA}',
     're': 'FLAG{REVERSE_IS_FUN}',
-    'crypto': 'FLAG{EL_GENIO_ALAN}',
+    'crypto': 'FLAG{EL_DESENCRIPTADOR_MASTER}',
     'zip': 'FLAG{Z1P_CR4CK3R_W1N}',
     'meta': 'FLAGM3T4D4T4_3XP3RT'
 };
