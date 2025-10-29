@@ -182,6 +182,8 @@ if (isset($_SESSION['cedula'])) {
     <h2 class="mb-4">Desafíos Disponibles</h2>
     <div class="row">
 
+    <!-- NUEVO NIVEL 4: vulnerabilidad de inicio de sesion -->
+
         <div class="col-md-4 mb-4">
             <div class="card card-challenge shadow">
                 <div class="card-body">
@@ -198,6 +200,8 @@ if (isset($_SESSION['cedula'])) {
             </div>
         </div>
 
+        <!-- NUEVO NIVEL 2: ingenieria inversa -->
+
         <div class="col-md-4 mb-4">
             <div class="card card-challenge shadow">
                 <div class="card-body">
@@ -213,6 +217,8 @@ if (isset($_SESSION['cedula'])) {
                 </div>
             </div>
         </div>
+
+<!-- NUEVO NIVEL 3: Desencriptamiento -->
 
         <div class="col-md-4 mb-4">
             <div class="card card-challenge shadow">
