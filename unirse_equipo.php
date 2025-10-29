@@ -30,11 +30,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['codigo_equipo'], $_PO
     
     // Registrar participante en el equipo
     if (registrarParticipante($nombre, $cedula, $equipo['id'])) {
-        // Si el hackathon está activo, iniciar tiempo para el equipo
-        $config_hackathon = obtenerConfiguracionHackathon();
-        if ($config_hackathon['hackathon_iniciado']) {
-            iniciarTiempoEquipoTardio($equipo['id']);
-        }
+        // IMPORTANTE: NO iniciar tiempo automáticamente al unirse
+        // El tiempo solo se iniciará cuando el administrador active el hackathon
+        // y los equipos accedan después de eso
         
         // Iniciar sesión del usuario
         $participante = usuarioExiste($cedula);

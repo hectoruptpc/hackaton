@@ -152,10 +152,17 @@ function iniciarSesion($participante) {
 }
 
 /**
- * Iniciar tiempo del equipo
+ * Iniciar tiempo del equipo (SOLO cuando el hackathon esté activo)
  */
 function iniciarTiempoEquipo($equipo_id) {
     global $db;
+    
+    // Verificar si el hackathon está activo
+    $config = obtenerConfiguracionHackathon();
+    if (!$config || !$config['hackathon_iniciado']) {
+        return false; // No iniciar tiempo si el hackathon no ha comenzado
+    }
+    
     $tiempo_inicio = date('Y-m-d H:i:s');
     $stmt = $db->prepare("UPDATE equipos SET tiempo_inicio = ? WHERE id = ?");
     return $stmt->execute([$tiempo_inicio, $equipo_id]);
@@ -243,20 +250,6 @@ function obtenerConfiguracionDesafios() {
         ]
     ];
 }
-
-/**
- * Obtener el último equipo creado
- */
-function obtenerUltimoEquipo() {
-    global $db;
-    $stmt = $db->prepare("SELECT * FROM equipos ORDER BY id DESC LIMIT 1");
-    $stmt->execute();
-    return $stmt->fetch(PDO::FETCH_ASSOC);
-}
-
-
-
-
 
 /**
  * Obtener configuración del hackathon
@@ -350,12 +343,52 @@ function obtenerTiempoInicioEquipo($equipo_id) {
 }
 
 /**
- * Iniciar tiempo para equipo que se une tarde
+ * Iniciar tiempo para equipo que se une tarde (SOLO cuando el hackathon esté activo)
  */
 function iniciarTiempoEquipoTardio($equipo_id) {
     global $db;
-    $tiempo_inicio = date('Y-m-d H:i:s');
     
+    // Verificar si el hackathon está activo
+    $config = obtenerConfiguracionHackathon();
+    if (!$config || !$config['hackathon_iniciado']) {
+        return false; // No iniciar tiempo si el hackathon no ha comenzado
+    }
+    
+    $tiempo_inicio = date('Y-m-d H:i:s');
     $stmt = $db->prepare("UPDATE equipos SET tiempo_inicio = ?, inicio_tardio = TRUE WHERE id = ?");
     return $stmt->execute([$tiempo_inicio, $equipo_id]);
 }
+
+/**
+ * Forzar inicio de tiempo para equipo cuando accede después del inicio del hackathon
+ */
+function forzarInicioTiempoEquipo($equipo_id) {
+    global $db;
+    
+    $config = obtenerConfiguracionHackathon();
+    if (!$config || !$config['hackathon_iniciado']) {
+        return false;
+    }
+    
+    // Verificar si el equipo ya tiene tiempo iniciado
+    $info_equipo = obtenerTiempoInicioEquipo($equipo_id);
+    if ($info_equipo['tiempo_inicio']) {
+        return true; // Ya tiene tiempo iniciado
+    }
+    
+    // Iniciar tiempo marcando como tardío
+    $tiempo_inicio = date('Y-m-d H:i:s');
+    $stmt = $db->prepare("UPDATE equipos SET tiempo_inicio = ?, inicio_tardio = TRUE WHERE id = ?");
+    return $stmt->execute([$tiempo_inicio, $equipo_id]);
+}
+
+/**
+ * Obtener el último equipo creado
+ */
+function obtenerUltimoEquipo() {
+    global $db;
+    $stmt = $db->prepare("SELECT * FROM equipos ORDER BY id DESC LIMIT 1");
+    $stmt->execute();
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+?>

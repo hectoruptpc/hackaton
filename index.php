@@ -12,18 +12,19 @@ if (isset($_SESSION['cedula'])) {
         exit;
     }
     
-    // Verificar si el hackathon está activo y si el equipo necesita iniciar tiempo
+    // Verificar si el hackathon está activo
     $config_hackathon = obtenerConfiguracionHackathon();
+    $hackathon_activo = hackathonEstaActivo();
     $info_equipo = obtenerTiempoInicioEquipo($_SESSION['equipo_id']);
     
-    // Si el hackathon está activo pero el equipo no ha iniciado tiempo, iniciarlo
-    if ($config_hackathon && $config_hackathon['hackathon_iniciado'] && !$info_equipo['tiempo_inicio']) {
-        iniciarTiempoEquipoTardio($_SESSION['equipo_id']);
-        $info_equipo = obtenerTiempoInicioEquipo($_SESSION['equipo_id']); // Actualizar info
-    }
+    // ELIMINADO: No forzar inicio automático del tiempo
     
-    // Calcular tiempo transcurrido específico del equipo
-    $segundos_transcurridos = calcularTiempoTranscurrido($info_equipo['tiempo_inicio']);
+    // Calcular tiempo transcurrido específico del equipo (solo si el hackathon está activo y el equipo tiene tiempo iniciado)
+    if ($hackathon_activo && $info_equipo['tiempo_inicio']) {
+        $segundos_transcurridos = calcularTiempoTranscurrido($info_equipo['tiempo_inicio']);
+    } else {
+        $segundos_transcurridos = 0;
+    }
     
     // Calcular tiempo restante global
     $tiempo_restante_global = calcularTiempoRestanteGlobal();
@@ -70,11 +71,9 @@ if (isset($_SESSION['cedula'])) {
     
     // Registrar participante
     if (registrarParticipante($nombre, $cedula, $_SESSION['equipo_temporal'])) {
-        // Si es el primer miembro, iniciar el tiempo del equipo si el hackathon está activo
-        $config_hackathon = obtenerConfiguracionHackathon();
-        if (contarMiembrosEquipo($_SESSION['equipo_temporal']) === 1 && $config_hackathon['hackathon_iniciado']) {
-            iniciarTiempoEquipoTardio($_SESSION['equipo_temporal']);
-        }
+        // IMPORTANTE: NO iniciar tiempo automáticamente al registrar el primer miembro
+        // El tiempo solo se iniciará cuando el administrador active el hackathon
+        // y los equipos accedan después de eso
         
         // Iniciar sesión del usuario
         $participante = usuarioExiste($cedula);
@@ -393,32 +392,41 @@ if (isset($_SESSION['cedula'])) {
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card bg-info text-dark">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Tiempo Restante</h5>
-                    <p class="card-text display-6" id="global-timer">
-                        <?php 
-                        $config_hackathon = obtenerConfiguracionHackathon();
-                        $hackathon_activo = hackathonEstaActivo();
-                        if ($hackathon_activo) {
-                            $minutos = floor($tiempo_restante_global / 60);
-                            $segundos = $tiempo_restante_global % 60;
-                            echo sprintf("%02d:%02d", $minutos, $segundos);
-                        } else {
-                            echo "No iniciado";
-                        }
-                        ?>
-                    </p>
-                    <?php 
-                    $info_equipo = obtenerTiempoInicioEquipo($_SESSION['equipo_id']);
-                    if (!$info_equipo['tiempo_inicio'] && $hackathon_activo): 
-                    ?>
-                        <p class="text-warning small">Tu equipo empezará cuando ingresen</p>
-                    <?php endif; ?>
-                </div>
-            </div>
+    <div class="card bg-info text-dark">
+        <div class="card-body text-center">
+            <h5 class="card-title">Tiempo Restante</h5>
+            <p class="card-text display-6" id="global-timer">
+                <?php 
+                $config_hackathon = obtenerConfiguracionHackathon();
+                $hackathon_activo = hackathonEstaActivo();
+                
+                if ($hackathon_activo) {
+                    $minutos = floor($tiempo_restante_global / 60);
+                    $segundos = $tiempo_restante_global % 60;
+                    echo sprintf("%02d:%02d", $minutos, $segundos);
+                } else {
+                    echo "Esperando inicio";
+                }
+                ?>
+            </p>
+            <?php 
+            $info_equipo = obtenerTiempoInicioEquipo($_SESSION['equipo_id']);
+            if (!$hackathon_activo): 
+            ?>
+                <p class="text-warning small">El hackathon no ha iniciado</p>
+            <?php elseif (!$info_equipo['tiempo_inicio']): ?>
+                <!-- MOSTRAR MENSAJE DE ESPERA - NO BOTÓN MANUAL -->
+                <p class="text-warning small">Esperando inicio del hackathon</p>
+                <p class="text-muted small">El administrador iniciará el tiempo para todos los equipos</p>
+            <?php else: ?>
+                <p class="text-success small">Tiempo iniciado: <?php echo date('H:i:s', strtotime($info_equipo['tiempo_inicio'])); ?></p>
+                <?php if ($info_equipo['inicio_tardio']): ?>
+                    <p class="text-info small">Equipo se unió después del inicio</p>
+                <?php endif; ?>
+            <?php endif; ?>
         </div>
     </div>
+</div>
 
     <h2 class="mb-4 text-center">Desafíos Disponibles</h2>
     <div class="row">
@@ -599,6 +607,30 @@ function endHackathon(timer) {
     }
 }
 
+
+
+function iniciarTiempoManual() {
+    fetch('iniciar_tiempo.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('¡Tiempo iniciado! Ahora compiten contra el reloj.');
+            location.reload(); // Recargar para actualizar el estado
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al iniciar el tiempo.');
+    });
+}
+
 // Deshabilita inputs si el tiempo está agotado
 for (const challenge in challengeDurations) {
     if (challengeDurations[challenge] <= 0) {
@@ -664,11 +696,8 @@ function handleCorrectFlag(challenge, puntos) {
     document.querySelector(`button[data-challenge="${challenge}"]`).disabled = true;
 }
 
-// ===== INICIALIZACIÓN =====
-document.addEventListener('DOMContentLoaded', function() {
-    startTimers();
-    setupFlagVerification();
-});
+
+
 </script>
 </body>
 </html>

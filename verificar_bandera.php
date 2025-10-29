@@ -14,14 +14,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['desafio'], $_POST['b
 
 // Verificar si el hackathon está activo
 if (!hackathonEstaActivo()) {
-    echo json_encode(['success' => false, 'message' => 'El hackathon no ha iniciado']);
+    echo json_encode(['success' => false, 'message' => 'El hackathon no ha iniciado. Espera a que el administrador lo active.']);
     exit;
 }
 
 // Verificar si el equipo ha iniciado tiempo
 $info_equipo = obtenerTiempoInicioEquipo($_SESSION['equipo_id']);
 if (!$info_equipo['tiempo_inicio']) {
-    echo json_encode(['success' => false, 'message' => 'Tu equipo no ha iniciado el hackathon']);
+    echo json_encode(['success' => false, 'message' => 'Tu equipo no ha iniciado el hackathon. Vuelve a acceder al dashboard.']);
     exit;
 }
 

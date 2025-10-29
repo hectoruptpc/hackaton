@@ -9,6 +9,18 @@ $es_admin = true;
 if ($es_admin && isset($_POST['iniciar_hackathon'])) {
     if (iniciarHackathonGlobal()) {
         $mensaje_exito = "¡Hackathon iniciado! Tiempo: 1 hora 30 minutos";
+        
+        // Iniciar tiempo para todos los equipos existentes que ya tienen miembros
+        $equipos = obtenerRankingEquipos();
+        foreach ($equipos as $equipo) {
+            $miembros = contarMiembrosEquipo($equipo['id']);
+            if ($miembros > 0) {
+                // Marcar que estos equipos empezaron desde el inicio
+                global $db;
+                $stmt = $db->prepare("UPDATE equipos SET tiempo_inicio = ?, inicio_tardio = FALSE WHERE id = ?");
+                $stmt->execute([date('Y-m-d H:i:s'), $equipo['id']]);
+            }
+        }
     } else {
         $mensaje_error = "Error al iniciar el hackathon";
     }
