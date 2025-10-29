@@ -294,7 +294,7 @@ const flags = {
     're': 'FLAG{REVERSE_IS_FUN}',
     'crypto': 'FLAG{EL_DESENCRIPTADOR_MASTER}',
     'zip': 'FLAG{Z1P_CR4CK3R_W1N}',
-    'meta': 'FLAGM3T4D4T4_3XP3RT'
+    'meta': 'FLAG{SOY_EINSTEIN_SIUUU}'
 };
 
 const scores = {
