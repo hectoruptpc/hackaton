@@ -115,7 +115,7 @@ function obtenerConfiguracionDesafios() {
             'tiempo' => 15 * 60
         ],
         'meta' => [
-            'flag' => 'FLAGM3T4D4T4_3XP3RT',
+            'flag' => 'FLAG{SOY_EINSTEIN_SIUUU}',
             'puntos' => 225,
             'tiempo' => 15 * 60
         ]
