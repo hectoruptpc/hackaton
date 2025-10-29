@@ -236,7 +236,7 @@ if (isset($_SESSION['cedula'])) {
                 <div class="card-body">
                     <h5 class="card-title text-primary">4. Fuerza Bruta ZIP</h5>
                     <h6 class="card-subtitle mb-2 text-muted">Ataque de Diccionario (275 Pts)</h6>
-                    <p class="card-text">Descarga el archivo ZIP protegido con contraseña y utiliza fuerza bruta para encontrar la clave.</p>
+                    <p class="card-text">Descarga el archivo ZIP protegido con contraseña y utiliza fuerza bruta para encontrar la clave u otro metodo con tal de sacar la bandera del Zip.</p>
                     <p class="fw-bold">Archivo: <a href="secret_files.zip">secret_files.zip</a></p>
                     <p class="fw-bold">Tiempo restante: <span class="text-danger" id="timer-zip">15:00</span></p>
                     <div class="mt-3">
@@ -288,7 +288,7 @@ const flags = {
     're': 'FLAG{REVERSE_IS_FUN}',
     'crypto': 'FLAG{EL_GENIO_ALAN}',
     'zip': 'FLAG{Z1P_CR4CK3R_W1N}',
-    'meta': 'FLAG{M3T4D4T4_3XP3RT}'
+    'meta': 'FLAGM3T4D4T4_3XP3RT'
 };
 
 const scores = {
