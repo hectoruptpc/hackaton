@@ -1,42 +1,31 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
-session_start();
-require_once __DIR__ . '/conf/db.php';
+
+require_once __DIR__ . '/conf/functions.php';
 
 // 1. Si ya está en sesión, calcula el tiempo y muestra dashboard
 if (isset($_SESSION['cedula'])) {
-    // Validar que el usuario siga existiendo en la base de datos
-    $stmt = $pdo->prepare("SELECT * FROM participantes WHERE cedula = ?");
-    $stmt->execute([$_SESSION['cedula']]);
-    $participante = $stmt->fetch(PDO::FETCH_ASSOC);
+    $participante = validarSesion();
     if (!$participante) {
-        // Usuario ya no existe, destruir sesión y redirigir
-        session_unset();
-        session_destroy();
         header("Location: index.php");
         exit;
     }
-    $tiempo_inicio = strtotime($_SESSION['tiempo_inicio']);
-    $ahora = time();
-    $segundos_transcurridos = $ahora - $tiempo_inicio;
+    $segundos_transcurridos = calcularTiempoTranscurrido($_SESSION['tiempo_inicio']);
 
 // 2. Si viene del formulario de login (solo cédula)
 } else if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cedula']) && !isset($_POST['nombre'])) {
     $cedula = trim($_POST['cedula']);
-    if (!preg_match('/^\d+$/', $cedula)) {
-        echo "<script>alert('La cédula solo debe contener números.');window.location='index.php';</script>";
-        exit;
+    
+    if (!validarCedula($cedula)) {
+        mostrarAlerta('La cédula solo debe contener números.');
     }
-    $stmt = $pdo->prepare("SELECT * FROM participantes WHERE cedula = ?");
-    $stmt->execute([$cedula]);
-    $participante = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    $participante = usuarioExiste($cedula);
 
     if ($participante) {
         // Usuario existe, inicia sesión
-        $_SESSION['nombre'] = $participante['nombre'];
-        $_SESSION['cedula'] = $participante['cedula'];
-        $_SESSION['tiempo_inicio'] = $participante['tiempo_inicio'];
+        iniciarSesion($participante);
         header("Location: index.php");
         exit;
     } else {
@@ -84,26 +73,24 @@ if (isset($_SESSION['cedula'])) {
 } else if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nombre'], $_POST['cedula'])) {
     $nombre = trim($_POST['nombre']);
     $cedula = trim($_POST['cedula']);
-    if (!preg_match('/^\d+$/', $cedula)) {
-        echo "<script>alert('La cédula solo debe contener números.');window.location='index.php';</script>";
-        exit;
+    
+    if (!validarCedula($cedula)) {
+        mostrarAlerta('La cédula solo debe contener números.');
     }
+    
     // Verifica que no exista ya la cédula (por si acaso)
-    $stmt = $pdo->prepare("SELECT * FROM participantes WHERE cedula = ?");
-    $stmt->execute([$cedula]);
-    $participante = $stmt->fetch(PDO::FETCH_ASSOC);
-    if ($participante) {
-        echo "<script>alert('La cédula ya está registrada.');window.location='index.php';</script>";
-        exit;
+    if (usuarioExiste($cedula)) {
+        mostrarAlerta('La cédula ya está registrada.');
     }
-    $tiempo_inicio = date('Y-m-d H:i:s');
-    $stmt = $pdo->prepare("INSERT INTO participantes (nombre, cedula, tiempo_inicio) VALUES (?, ?, ?)");
-    $stmt->execute([$nombre, $cedula, $tiempo_inicio]);
-    $_SESSION['nombre'] = $nombre;
-    $_SESSION['cedula'] = $cedula;
-    $_SESSION['tiempo_inicio'] = $tiempo_inicio;
-    header("Location: index.php");
-    exit;
+    
+    if (registrarParticipante($nombre, $cedula)) {
+        $participante = usuarioExiste($cedula);
+        iniciarSesion($participante);
+        header("Location: index.php");
+        exit;
+    } else {
+        mostrarAlerta('Error al registrar participante.');
+    }
 
 // 4. Si no hay sesión ni POST, mostrar formulario de login (solo cédula)
 } else {
