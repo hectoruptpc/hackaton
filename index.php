@@ -271,9 +271,7 @@ if (isset($_SESSION['cedula'])) {
                                 <button type="submit" class="btn btn-warning btn-sm w-100">Acceder al Panel de Control</button>
                             </form>
                             
-                            <div class="mt-3">
-                                <a href="equipos.php" class="btn btn-outline-secondary btn-sm">Ver Ranking de Equipos</a>
-                            </div>
+                            
                         </div>
                     </div>
                 </div>
@@ -419,7 +417,7 @@ if (isset($_SESSION['cedula'])) {
                 | Código: <code><?php echo htmlspecialchars($_SESSION['codigo_equipo']); ?></code></p>
             </div>
             <div class="col-md-4 text-end">
-                <a href="equipos.php" class="btn btn-outline-primary btn-sm">Ver Ranking</a>
+                
                 <a href="logout.php" class="btn btn-outline-danger btn-sm">Cerrar Sesión</a>
             </div>
         </div>

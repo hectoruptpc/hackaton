@@ -282,14 +282,9 @@ try {
     
     <div class="text-center mt-4">
         <a href="index.php" class="btn btn-primary btn-lg">
-            <?php echo isset($_SESSION['cedula']) ? '🎮 Volver al Dashboard' : '➕ Crear Equipo'; ?>
+            <?php echo isset($_SESSION['cedula']) ? '🎮 Volver al Dashboard' : 'Volver al inicio de sesion'; ?>
         </a>
         
-        <?php if ($hackathon_activo): ?>
-            <a href="index.php" class="btn btn-success btn-lg ms-2">
-                <?php echo isset($_SESSION['cedula']) ? '⚡ Continuar Compitiendo' : '🎯 Unirse al Hackathon'; ?>
-            </a>
-        <?php endif; ?>
     </div>
     <?php endif; ?>
 </div>
