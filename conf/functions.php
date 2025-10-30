@@ -31,7 +31,7 @@ function generarCodigoEquipo() {
  */
 function usuarioExiste($cedula) {
     global $db;
-    $stmt = $db->prepare("SELECT p.*, e.nombre_equipo, e.codigo_equipo, e.puntuacion_total, e.tiempo_inicio 
+    $stmt = $db->prepare("SELECT p.*, e.nombre_equipo, e.codigo_equipo, e.puntuacion_total, e.tiempo_inicio, e.inicio_tardio 
                          FROM participantes p 
                          LEFT JOIN equipos e ON p.equipo_id = e.id 
                          WHERE p.cedula = ?");
@@ -177,7 +177,7 @@ function validarSesion() {
     }
     
     global $db;
-    $stmt = $db->prepare("SELECT p.*, e.nombre_equipo, e.codigo_equipo, e.puntuacion_total, e.tiempo_inicio 
+    $stmt = $db->prepare("SELECT p.*, e.nombre_equipo, e.codigo_equipo, e.puntuacion_total, e.tiempo_inicio, e.inicio_tardio 
                          FROM participantes p 
                          LEFT JOIN equipos e ON p.equipo_id = e.id 
                          WHERE p.cedula = ?");
@@ -281,8 +281,8 @@ function reiniciarHackathon() {
     $stmt = $db->prepare("UPDATE configuracion_hackathon SET hackathon_iniciado = FALSE, tiempo_inicio_global = NULL");
     $stmt->execute();
     
-    // Reiniciar puntuaciones y desafíos completados
-    $stmt = $db->prepare("UPDATE equipos SET puntuacion_total = 0, tiempo_inicio = NULL, inicio_tardio = FALSE");
+    // Reiniciar puntuaciones, desafíos completados y estado
+    $stmt = $db->prepare("UPDATE equipos SET puntuacion_total = 0, tiempo_inicio = NULL, inicio_tardio = FALSE, estado = 0");
     $stmt->execute();
     
     $stmt = $db->prepare("DELETE FROM desafios_completados");
@@ -361,6 +361,7 @@ function iniciarTiempoEquipoTardio($equipo_id) {
 
 /**
  * Forzar inicio de tiempo para equipo cuando accede después del inicio del hackathon
+ * (Esta función ya no se usa - el tiempo solo se inicia desde equipos.php)
  */
 function forzarInicioTiempoEquipo($equipo_id) {
     global $db;
@@ -390,5 +391,80 @@ function obtenerUltimoEquipo() {
     $stmt = $db->prepare("SELECT * FROM equipos ORDER BY id DESC LIMIT 1");
     $stmt->execute();
     return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+/**
+ * Obtener ranking de equipos
+ */
+function obtenerRankingEquipos() {
+    global $db;
+    $stmt = $db->prepare("SELECT id, nombre_equipo, codigo_equipo, puntuacion_total, tiempo_inicio, inicio_tardio, estado FROM equipos ORDER BY puntuacion_total DESC");
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+/**
+ * Unir usuario a equipo existente
+ */
+function unirAEquipo($cedula, $nombre, $codigo_equipo) {
+    global $db;
+    
+    // Verificar que el equipo exista
+    $equipo = equipoExiste($codigo_equipo);
+    if (!$equipo) {
+        return ['success' => false, 'message' => 'El código del equipo no existe'];
+    }
+    
+    // Verificar que la cédula no esté ya registrada
+    if (usuarioExiste($cedula)) {
+        return ['success' => false, 'message' => 'La cédula ya está registrada en otro equipo'];
+    }
+    
+    // Verificar que el equipo no tenga más de 4 miembros
+    $miembros_actuales = contarMiembrosEquipo($equipo['id']);
+    if ($miembros_actuales >= 4) {
+        return ['success' => false, 'message' => 'El equipo ya tiene 4 miembros'];
+    }
+    
+    // Registrar el participante
+    if (registrarParticipante($nombre, $cedula, $equipo['id'])) {
+        return ['success' => true, 'equipo_id' => $equipo['id']];
+    }
+    
+    return ['success' => false, 'message' => 'Error al registrar el participante'];
+}
+
+/**
+ * Verificar bandera y registrar puntos
+ */
+function verificarBanderaDesafio($equipo_id, $desafio_id, $bandera_usuario) {
+    $config_desafios = obtenerConfiguracionDesafios();
+    
+    if (!isset($config_desafios[$desafio_id])) {
+        return ['success' => false, 'message' => 'Desafío no encontrado'];
+    }
+    
+    $desafio = $config_desafios[$desafio_id];
+    
+    // Verificar si ya fue completado
+    if (desafioCompletado($equipo_id, $desafio_id)) {
+        return ['success' => false, 'message' => 'Este desafío ya fue completado por tu equipo'];
+    }
+    
+    // Verificar bandera
+    if (verificarBandera($bandera_usuario, $desafio['flag'])) {
+        // Registrar completado y sumar puntos
+        if (completarDesafio($equipo_id, $desafio_id, $desafio['puntos'])) {
+            return [
+                'success' => true, 
+                'message' => '¡Bandera correcta!', 
+                'puntos' => $desafio['puntos']
+            ];
+        } else {
+            return ['success' => false, 'message' => 'Error al registrar los puntos'];
+        }
+    } else {
+        return ['success' => false, 'message' => 'Bandera incorrecta'];
+    }
 }
 ?>
