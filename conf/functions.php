@@ -337,7 +337,7 @@ function hackathonEstaActivo() {
  */
 function obtenerTiempoInicioEquipo($equipo_id) {
     global $db;
-    $stmt = $db->prepare("SELECT tiempo_inicio, inicio_tardio FROM equipos WHERE id = ?");
+    $stmt = $db->prepare("SELECT tiempo_inicio, inicio_tardio, estado FROM equipos WHERE id = ?");
     $stmt->execute([$equipo_id]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
