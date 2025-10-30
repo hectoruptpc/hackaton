@@ -17,9 +17,7 @@ if (isset($_SESSION['cedula'])) {
     $hackathon_activo = hackathonEstaActivo();
     $info_equipo = obtenerTiempoInicioEquipo($_SESSION['equipo_id']);
     
-    // ELIMINADO: No forzar inicio automático del tiempo
-    
-    // Calcular tiempo transcurrido específico del equipo (solo si el hackathon está activo y el equipo tiene tiempo iniciado)
+    // Calcular tiempo transcurrido específico del equipo
     if ($hackathon_activo && $info_equipo['tiempo_inicio']) {
         $segundos_transcurridos = calcularTiempoTranscurrido($info_equipo['tiempo_inicio']);
     } else {
@@ -29,12 +27,24 @@ if (isset($_SESSION['cedula'])) {
     // Calcular tiempo restante global
     $tiempo_restante_global = calcularTiempoRestanteGlobal();
 
-// 2. Si viene del formulario de crear equipo (nombre del equipo)
+// 2. Si viene del formulario de crear equipo con todos los miembros
 } else if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nombre_equipo'])) {
     $nombre_equipo = trim($_POST['nombre_equipo']);
     
     if (empty($nombre_equipo)) {
         mostrarAlerta('El nombre del equipo es obligatorio.');
+    }
+    
+    // Validar que haya al menos 3 miembros
+    $miembros_minimos = 0;
+    for ($i = 1; $i <= 4; $i++) {
+        if (!empty(trim($_POST["nombre_$i"])) && !empty(trim($_POST["cedula_$i"]))) {
+            $miembros_minimos++;
+        }
+    }
+    
+    if ($miembros_minimos < 3) {
+        mostrarAlerta('Debes registrar al menos 3 miembros para el equipo.');
     }
     
     // Registrar el equipo
@@ -43,201 +53,59 @@ if (isset($_SESSION['cedula'])) {
         mostrarAlerta('Error al crear el equipo. El nombre puede estar en uso.');
     }
     
-    // Guardar el equipo_id en sesión temporal para el registro de miembros
-    $_SESSION['equipo_temporal'] = $equipo_id;
-    $_SESSION['nombre_equipo_temporal'] = $nombre_equipo;
+    // Registrar los miembros
+    $miembros_registrados = 0;
+    for ($i = 1; $i <= 4; $i++) {
+        $nombre = trim($_POST["nombre_$i"]);
+        $cedula = trim($_POST["cedula_$i"]);
+        
+        if (!empty($nombre) && !empty($cedula)) {
+            if (!validarCedula($cedula)) {
+                mostrarAlerta("La cédula del miembro $i solo debe contener números.");
+            }
+            
+            if (usuarioExiste($cedula)) {
+                mostrarAlerta("La cédula $cedula ya está registrada en otro equipo.");
+            }
+            
+            if (!registrarParticipante($nombre, $cedula, $equipo_id)) {
+                mostrarAlerta("Error al registrar el miembro $i.");
+            }
+            
+            $miembros_registrados++;
+        }
+    }
     
-    // Redirigir al formulario de registro del primer miembro
-    header("Location: index.php?accion=registrar_miembro");
-    exit;
+    // Iniciar sesión con el primer miembro registrado
+    $primer_miembro = usuarioExiste(trim($_POST["cedula_1"]));
+    if ($primer_miembro) {
+        iniciarSesion($primer_miembro);
+        header("Location: index.php");
+        exit;
+    } else {
+        mostrarAlerta('Error al iniciar sesión.');
+    }
 
-// 3. Si viene del formulario de registro de miembro
-} else if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nombre'], $_POST['cedula'])) {
-    $nombre = trim($_POST['nombre']);
-    $cedula = trim($_POST['cedula']);
+// 3. Si viene del formulario de acceso individual
+} else if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cedula_acceso'])) {
+    $cedula = trim($_POST['cedula_acceso']);
     
     if (!validarCedula($cedula)) {
         mostrarAlerta('La cédula solo debe contener números.');
     }
     
-    // Verificar que no exista ya la cédula
-    if (usuarioExiste($cedula)) {
-        mostrarAlerta('La cédula ya está registrada en otro equipo.');
+    // Verificar si el usuario existe
+    $participante = usuarioExiste($cedula);
+    if (!$participante) {
+        mostrarAlerta('No se encontró un equipo registrado con esta cédula.');
     }
     
-    if (!isset($_SESSION['equipo_temporal'])) {
-        mostrarAlerta('Error: No hay equipo seleccionado.');
-    }
-    
-    // Registrar participante
-    if (registrarParticipante($nombre, $cedula, $_SESSION['equipo_temporal'])) {
-        // IMPORTANTE: NO iniciar tiempo automáticamente al registrar el primer miembro
-        // El tiempo solo se iniciará cuando el administrador active el hackathon
-        // y los equipos accedan después de eso
-        
-        // Iniciar sesión del usuario
-        $participante = usuarioExiste($cedula);
-        iniciarSesion($participante);
-        
-        // Limpiar sesión temporal
-        unset($_SESSION['equipo_temporal']);
-        unset($_SESSION['nombre_equipo_temporal']);
-        
-        header("Location: index.php");
-        exit;
-    } else {
-        mostrarAlerta('Error al registrar participante.');
-    }
-
-// 4. Si se solicita registrar miembro
-} else if (isset($_GET['accion']) && $_GET['accion'] === 'registrar_miembro') {
-    if (!isset($_SESSION['equipo_temporal'])) {
-        header("Location: index.php");
-        exit;
-    }
-    
-    $equipo = obtenerInfoEquipo($_SESSION['equipo_temporal']);
-    if (!$equipo) {
-        mostrarAlerta('Equipo no encontrado.');
-    }
-    
-    $miembros = obtenerMiembrosEquipo($_SESSION['equipo_temporal']);
-    $cantidad_miembros = count($miembros);
-    
-    // Mostrar formulario de registro de miembro
-    ?>
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <title>Registro de Miembro - Hackathon</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <style>
-            .hidden{display:none!important;}
-            .member-badge { background-color: #e9ecef; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
-        </style>
-    </head>
-    <body>
-    <div class="container mt-5">
-        <div class="text-center mb-3">
-            <img src="img/img.jpg" alt="Logo Hackathon" style="max-width:800px;">
-            <h1>Hackathon UPTPC</h1>
-        </div>
-        
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h2 class="mb-0">Registro de Miembro del Equipo</h2>
-            </div>
-            <div class="card-body">
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <h5>Información del Equipo</h5>
-                        <p><strong>Nombre:</strong> <?php echo htmlspecialchars($equipo['nombre_equipo']); ?></p>
-                        <p><strong>Código:</strong> <code><?php echo htmlspecialchars($equipo['codigo_equipo']); ?></code></p>
-                        <p><strong>Miembros registrados:</strong> <?php echo $cantidad_miembros; ?>/4</p>
-                    </div>
-                    <div class="col-md-6">
-                        <h5>Miembros del Equipo</h5>
-                        <?php if ($cantidad_miembros > 0): ?>
-                            <?php foreach ($miembros as $miembro): ?>
-                                <div class="member-badge">
-                                    <strong><?php echo htmlspecialchars($miembro['nombre']); ?></strong><br>
-                                    <small>Cédula: <?php echo htmlspecialchars($miembro['cedula']); ?></small>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <p class="text-muted">Aún no hay miembros registrados</p>
-                        <?php endif; ?>
-                    </div>
-                </div>
-                
-                <hr>
-                
-                <h5 class="mb-3"><?php echo ($cantidad_miembros === 0) ? 'Registrar Primer Miembro' : 'Agregar Otro Miembro'; ?></h5>
-                
-                <form method="post" class="w-75 mx-auto" id="registration-form">
-                    <div class="mb-3">
-                        <label for="nombre" class="form-label">Nombre completo</label>
-                        <input type="text" class="form-control" id="nombre" name="nombre" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="cedula" class="form-label">Número de cédula</label>
-                        <input type="text" class="form-control" id="cedula" name="cedula" required pattern="\d+" maxlength="20" inputmode="numeric" title="Solo números">
-                        <div id="validation-tip" class="text-danger small hidden">Solo se permiten números</div>
-                    </div>
-                    <div id="alert-container" class="mb-2"></div>
-                    
-                    <div class="d-flex justify-content-between">
-                        <button type="submit" class="btn btn-success">Registrar Miembro</button>
-                        
-                        <?php if ($cantidad_miembros >= 1): ?>
-                            <a href="index.php?accion=finalizar_equipo" class="btn btn-primary">Finalizar Equipo</a>
-                        <?php endif; ?>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    <script>
-    // Validación solo números para cédula
-    document.getElementById('cedula').addEventListener('input', function() {
-        this.value = this.value.replace(/\D/g, '');
-    });
-    </script>
-    </body>
-    </html>
-    <?php
+    // Iniciar sesión
+    iniciarSesion($participante);
+    header("Location: index.php");
     exit;
 
-// 5. Si se solicita finalizar equipo
-} else if (isset($_GET['accion']) && $_GET['accion'] === 'finalizar_equipo') {
-    if (!isset($_SESSION['equipo_temporal'])) {
-        header("Location: index.php");
-        exit;
-    }
-    
-    // Obtener información del equipo
-    $equipo = obtenerInfoEquipo($_SESSION['equipo_temporal']);
-    $miembros = obtenerMiembrosEquipo($_SESSION['equipo_temporal']);
-    
-    // Limpiar sesión temporal
-    unset($_SESSION['equipo_temporal']);
-    unset($_SESSION['nombre_equipo_temporal']);
-    
-    // Mostrar mensaje de éxito
-    ?>
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <title>Equipo Finalizado - Hackathon</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    </head>
-    <body>
-    <div class="container mt-5">
-        <div class="text-center mb-3">
-            <img src="img/img.jpg" alt="Logo Hackathon" style="max-width:800px;">
-            <h1>Hackathon UPTPC</h1>
-        </div>
-        
-        <div class="alert alert-success text-center">
-            <h2>¡Equipo Registrado Exitosamente!</h2>
-            <p class="fs-5">El equipo <strong><?php echo htmlspecialchars($equipo['nombre_equipo']); ?></strong> ha sido registrado.</p>
-            <p class="fs-5">Código del equipo: <code class="fs-4"><?php echo htmlspecialchars($equipo['codigo_equipo']); ?></code></p>
-            <p>Guarda este código para que otros miembros se unan más tarde.</p>
-        </div>
-        
-        <div class="text-center mt-4">
-            <a href="index.php" class="btn btn-primary btn-lg">Crear Otro Equipo</a>
-            <a href="equipos.php" class="btn btn-secondary btn-lg">Ver Ranking de Equipos</a>
-        </div>
-    </div>
-    </body>
-    </html>
-    <?php
-    exit;
-
-// 6. Si no hay sesión ni acciones específicas, mostrar formulario de inicio
+// 4. Si no hay sesión, mostrar formulario de inicio
 } else {
     // Si hay sesión temporal, limpiarla
     if (isset($_SESSION['equipo_temporal'])) {
@@ -253,6 +121,8 @@ if (isset($_SESSION['cedula'])) {
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
         <style>
             .hero-section { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 60px 0; border-radius: 15px; }
+            .member-form { border: 1px solid #dee2e6; border-radius: 5px; padding: 15px; margin-bottom: 15px; }
+            .optional-member { background-color: #f8f9fa; }
         </style>
     </head>
     <body>
@@ -265,11 +135,12 @@ if (isset($_SESSION['cedula'])) {
         <div class="hero-section text-center mb-5">
             <h2 class="display-4 mb-3">Desafío de Seguridad Informática</h2>
             <p class="lead mb-4">¡Forma tu equipo y compite por el primer lugar!</p>
-            <p class="mb-4">Equipos de 1 a 4 personas - Tiempo limitado - Múltiples desafíos</p>
+            <p class="mb-4">Equipos de 3 a 4 personas - Tiempo limitado - Múltiples desafíos</p>
         </div>
 
         <div class="row justify-content-center">
-            <div class="col-md-8">
+            <!-- Formulario de Crear Nuevo Equipo -->
+            <div class="col-md-6 mb-4">
                 <div class="card">
                     <div class="card-header bg-success text-white text-center">
                         <h3 class="mb-0">Crear Nuevo Equipo</h3>
@@ -281,39 +152,173 @@ if (isset($_SESSION['cedula'])) {
                                 <input type="text" class="form-control form-control-lg" id="nombre_equipo" name="nombre_equipo" required placeholder="Ingresa el nombre de tu equipo">
                                 <div class="form-text">Este será el nombre oficial de tu equipo en la competencia.</div>
                             </div>
+                            
+                            <h5 class="mt-4 mb-3">Miembros del Equipo <small class="text-muted">(Mínimo 3, máximo 4)</small></h5>
+                            
+                            <!-- Miembro 1 (Obligatorio) -->
+                            <div class="member-form">
+                                <h6 class="text-primary">Miembro 1 <span class="text-danger">*</span></h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <input type="text" class="form-control" name="nombre_1" placeholder="Nombre completo" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" class="form-control" name="cedula_1" placeholder="Cédula" pattern="\d+" maxlength="20" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Miembro 2 (Obligatorio) -->
+                            <div class="member-form">
+                                <h6 class="text-primary">Miembro 2 <span class="text-danger">*</span></h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <input type="text" class="form-control" name="nombre_2" placeholder="Nombre completo" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" class="form-control" name="cedula_2" placeholder="Cédula" pattern="\d+" maxlength="20" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Miembro 3 (Obligatorio) -->
+                            <div class="member-form">
+                                <h6 class="text-primary">Miembro 3 <span class="text-danger">*</span></h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <input type="text" class="form-control" name="nombre_3" placeholder="Nombre completo" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" class="form-control" name="cedula_3" placeholder="Cédula" pattern="\d+" maxlength="20" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Miembro 4 (Opcional) -->
+                            <div class="member-form optional-member">
+                                <h6 class="text-muted">Miembro 4 <small>(Opcional)</small></h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <input type="text" class="form-control" name="nombre_4" placeholder="Nombre completo">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" class="form-control" name="cedula_4" placeholder="Cédula" pattern="\d+" maxlength="20">
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div id="alert-container" class="mb-3"></div>
-                            <button type="submit" class="btn btn-success btn-lg w-100">Crear Equipo y Registrar Primer Miembro</button>
+                            <button type="submit" class="btn btn-success btn-lg w-100">Crear Equipo y Registrar Miembros</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Formulario de Acceso para Miembros Existentes -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white text-center">
+                        <h3 class="mb-0">Acceder a Mi Equipo</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" id="access-form">
+                            <div class="mb-4">
+                                <p class="text-center">Si ya eres miembro de un equipo registrado, ingresa tu cédula para acceder.</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="cedula_acceso" class="form-label fs-5">Número de Cédula</label>
+                                <input type="text" class="form-control form-control-lg" id="cedula_acceso" name="cedula_acceso" 
+                                       required pattern="\d+" maxlength="20" placeholder="Ingresa tu cédula">
+                                <div class="form-text">Solo números, sin puntos ni espacios</div>
+                            </div>
+                            
+                            <div id="access-alert-container" class="mb-3"></div>
+                            <button type="submit" class="btn btn-primary btn-lg w-100">Acceder a Mi Equipo</button>
                         </form>
                         
                         <hr class="my-4">
                         
                         <div class="text-center">
-                            <p class="mb-3">¿Ya tienes un equipo?</p>
-                            <a href="unirse_equipo.php" class="btn btn-outline-primary btn-lg">Unirse a Equipo Existente</a>
-                            <a href="equipos.php" class="btn btn-outline-secondary btn-lg ms-2">Ver Ranking</a>
+                            <a href="equipos.php" class="btn btn-outline-secondary btn-lg">Ver Ranking de Equipos</a>
                         </div>
                     </div>
                 </div>
-                
-                <div class="mt-4">
-                    <div class="card">
-                        <div class="card-header bg-info text-dark">
-                            <h4 class="mb-0">Instrucciones</h4>
-                        </div>
-                        <div class="card-body">
-                            <ol>
-                                <li>Crea un equipo con un nombre único</li>
-                                <li>Registra al primer miembro del equipo</li>
-                                <li>Agrega hasta 3 miembros más (opcional)</li>
-                                <li>Finaliza el registro del equipo cuando estés listo</li>
-                                <li>¡Comienza a resolver los desafíos!</li>
-                            </ol>
+            </div>
+        </div>
+        
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-info text-dark">
+                        <h4 class="mb-0">Instrucciones</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Para Nuevos Equipos:</h5>
+                                <ol>
+                                    <li>Elige un nombre único para tu equipo</li>
+                                    <li>Registra los datos de al menos 3 miembros</li>
+                                    <li>Puedes agregar un 4to miembro (opcional)</li>
+                                    <li>¡Comienza a resolver los desafíos!</li>
+                                </ol>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Para Miembros Existentes:</h5>
+                                <ol>
+                                    <li>Ingresa tu número de cédula</li>
+                                    <li>Serás redirigido automáticamente a tu equipo</li>
+                                    <li>Continúa donde lo dejaste</li>
+                                </ol>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+    // Validación solo números para todas las cédulas
+    document.querySelectorAll('input[name^="cedula"]').forEach(input => {
+        input.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '');
+        });
+    });
+
+    // Validación para el formulario de acceso
+    document.getElementById('cedula_acceso').addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g, '');
+    });
+
+    // Validación del formulario de equipo
+    document.getElementById('team-form').addEventListener('submit', function(e) {
+        let miembrosCompletos = 0;
+        
+        for (let i = 1; i <= 4; i++) {
+            const nombre = document.querySelector(`input[name="nombre_${i}"]`).value.trim();
+            const cedula = document.querySelector(`input[name="cedula_${i}"]`).value.trim();
+            
+            if (nombre !== '' && cedula !== '') {
+                miembrosCompletos++;
+            } else if (nombre !== '' && cedula === '') {
+                alert(`El miembro ${i} tiene nombre pero falta la cédula.`);
+                e.preventDefault();
+                return;
+            } else if (nombre === '' && cedula !== '') {
+                alert(`El miembro ${i} tiene cédula pero falta el nombre.`);
+                e.preventDefault();
+                return;
+            }
+        }
+        
+        if (miembrosCompletos < 3) {
+            alert('Debes registrar al menos 3 miembros completos para el equipo.');
+            e.preventDefault();
+        }
+    });
+    </script>
     </body>
     </html>
     <?php
@@ -544,27 +549,22 @@ let timers = {};
 let completedChallenges = {};
 
 // Calcular tiempo por desafío basado en el tiempo global restante
-// Cada desafío tiene 15 minutos, pero no puede exceder el tiempo global
 const challengeDurations = {};
 const desafios = ['ctf', 're', 'crypto', 'zip', 'meta'];
 desafios.forEach(desafio => {
-    // El tiempo para cada desafío es el mínimo entre 15 minutos y el tiempo global restante
     const tiempoDesafio = Math.min(15 * 60, globalTimeLeft);
     challengeDurations[desafio] = tiempoDesafio;
 });
 
 // ===== FUNCIONES DE TEMPORIZADORES =====
 function startTimers() {
-    // Solo iniciar temporizadores si el hackathon está activo
     if (globalTimeLeft <= 0) {
         endHackathon();
         return;
     }
 
-    // Temporizador global (ACTUALIZADO - ahora sí funciona en tiempo real)
     startGlobalTimer();
 
-    // Temporizadores individuales por desafío
     for (const challenge in challengeDurations) {
         let timeLeft = challengeDurations[challenge];
         timers[challenge] = setInterval(() => {
@@ -598,7 +598,6 @@ function clearChallengeTimer(challenge) {
 }
 
 function startGlobalTimer() {
-    // Verificar si el hackathon está activo
     const hackathonActivo = <?php echo $hackathon_activo ? 'true' : 'false'; ?>;
     
     if (!hackathonActivo || globalTimeLeft <= 0) {
@@ -606,13 +605,11 @@ function startGlobalTimer() {
         return;
     }
 
-    // Actualizar el temporizador global cada segundo
     const globalTimer = setInterval(() => {
         if (globalTimeLeft > 0) {
             globalTimeLeft--;
             updateGlobalTimer();
             
-            // También actualizar los tiempos de los desafíos
             for (const challenge in challengeDurations) {
                 if (challengeDurations[challenge] > 0) {
                     challengeDurations[challenge]--;
@@ -636,12 +633,10 @@ function endHackathon(timer) {
     if (timer) clearInterval(timer);
     document.getElementById('global-timer').textContent = '¡HACKATHON FINALIZADO!';
     
-    // Detener todos los temporizadores individuales
     for (const challenge in timers) {
         clearChallengeTimer(challenge);
     }
     
-    // Deshabilitar todos los inputs de banderas
     const flagInputs = document.querySelectorAll('input[id^="flag-"]');
     flagInputs.forEach(input => {
         input.disabled = true;
@@ -653,29 +648,10 @@ function endHackathon(timer) {
     });
 }
 
-// Deshabilita inputs si el tiempo está agotado al cargar la página
-function disableExpiredChallenges() {
-    for (const challenge in challengeDurations) {
-        if (challengeDurations[challenge] <= 0) {
-            document.getElementById(`timer-${challenge}`).textContent = 'Tiempo agotado';
-            document.getElementById(`flag-${challenge}`).disabled = true;
-            const button = document.querySelector(`button[data-challenge="${challenge}"]`);
-            if (button) {
-                button.disabled = true;
-            }
-        }
-    }
-    
-    if (globalTimeLeft <= 0) {
-        document.getElementById('global-timer').textContent = '¡HACKATHON FINALIZADO!';
-    }
-}
-
 // ===== MONITOREO EN TIEMPO REAL DEL ESTADO DEL EQUIPO =====
 function setupEstadoMonitor() {
     let estadoAnterior = <?php echo $estado_actual; ?>;
     
-    // Función para verificar el estado del equipo
     function verificarEstadoEquipo() {
         fetch('obtener_estado_equipo.php')
             .then(response => response.json())
@@ -683,7 +659,6 @@ function setupEstadoMonitor() {
                 if (data.success) {
                     const estadoActual = data.estado;
                     
-                    // Solo recargar si el estado cambió
                     if (estadoActual !== estadoAnterior) {
                         console.log('Estado cambiado de', estadoAnterior, 'a', estadoActual, '- Recargando página...');
                         estadoAnterior = estadoActual;
@@ -696,7 +671,6 @@ function setupEstadoMonitor() {
             });
     }
     
-    // Verificar estado cada 3 segundos
     setInterval(verificarEstadoEquipo, 3000);
 }
 
@@ -723,7 +697,6 @@ function verifyFlag(challenge) {
         return;
     }
     
-    // Llamada AJAX para verificar bandera
     fetch('verificar_bandera.php', {
         method: 'POST',
         headers: {
@@ -766,20 +739,13 @@ function handleCorrectFlag(challenge, puntos) {
 document.addEventListener('DOMContentLoaded', function() {
     const estadoInicial = <?php echo $estado_actual; ?>;
     
-    // Solo iniciar temporizadores si el estado es 1 (compitiendo)
     if (estadoInicial === 1) {
         startTimers();
         window.timersIniciados = true;
     }
     
-    // Configurar monitoreo en tiempo real
     setupEstadoMonitor();
-    
-    // Configurar verificación de banderas
     setupFlagVerification();
-    
-    // Deshabilitar desafíos expirados
-    disableExpiredChallenges();
 });
 </script>
 </body>
