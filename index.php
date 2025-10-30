@@ -418,7 +418,7 @@ if (isset($_SESSION['cedula'])) {
                         <p class="text-warning small">Esperando inicio del hackathon</p>
                         <p class="text-muted small">El administrador iniciará el tiempo para todos los equipos</p>
                     <?php else: ?>
-                       
+                        <p class="text-success small">Tiempo iniciado: <?php echo date('H:i:s', strtotime($info_equipo['tiempo_inicio'])); ?></p>
                         <?php if ($info_equipo['inicio_tardio']): ?>
                             <p class="text-info small">Equipo se unió después del inicio</p>
                         <?php endif; ?>
@@ -428,105 +428,110 @@ if (isset($_SESSION['cedula'])) {
         </div>
     </div>
 
-    <!-- Mensaje de espera (visible cuando estado = 0) -->
-    <div id="mensaje-espera" class="alert alert-info text-center mb-4">
-        <h3>⏳ Esperando inicio del Hackathon</h3>
-        <p class="mb-0">Tu equipo está registrado y listo para competir. El administrador iniciará el hackathon pronto.</p>
-        <p class="mt-2"><small>Esta página se actualizará automáticamente cuando comience la competencia.</small></p>
-    </div>
-
-    <!-- Sección de niveles (visible cuando estado = 1) -->
-    <div id="niveles-section">
-        <h2 class="mb-4 text-center">🎯 Desafíos Disponibles</h2>
-        <div class="row">
-
-            <!-- Desafío 1: Aplicación Web CTF -->
-            <div class="col-md-4 mb-4">
-                <div class="card card-challenge shadow">
-                    <div class="card-body">
-                        <h5 class="card-title text-primary">1. Aplicación Web CTF</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">Web Hacking (200 Pts)</h6>
-                        <p class="card-text">Encuentra una vulnerabilidad en este formulario de inicio de sesión.</p>
-                        <p class="fw-bold">Tiempo restante: <span class="text-danger" id="timer-ctf">15:00</span></p>
-                        <a href="challenge_ctf.php" class="btn btn-primary">Acceder al Desafío</a>
-                        <div class="mt-3">
-                            <input type="text" class="form-control" id="flag-ctf" placeholder="Ingresa la bandera">
-                            <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="ctf">Verificar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Desafío 2: Ingeniería Inversa -->
-            <div class="col-md-4 mb-4">
-                <div class="card card-challenge shadow">
-                    <div class="card-body">
-                        <h5 class="card-title text-primary">2. Ingeniería Inversa</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">Análisis de Binarios (300 Pts)</h6>
-                        <p class="card-text">Descarga el archivo binario y realiza ingeniería inversa para obtener la contraseña oculta.</p>
-                        <p class="fw-bold">Archivo: <a href="reverse_challenge.zip">reverse_challenge.zip</a></p>
-                        <p class="fw-bold">Tiempo restante: <span class="text-danger" id="timer-re">15:00</span></p>
-                        <div class="mt-3">
-                            <input type="text" class="form-control" id="flag-re" placeholder="Ingresa la bandera">
-                            <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="re">Verificar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Desafío 3: Criptografía -->
-            <div class="col-md-4 mb-4">
-                <div class="card card-challenge shadow">
-                    <div class="card-body">
-                        <h5 class="card-title text-primary">3. Criptografía</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">Descifrado de Mensajes (250 Pts)</h6>
-                        <p class="card-text">Descifra el mensaje oculto. haz lo posible para identificar que cifrado es y desencriptarlo.</p>
-                        <p class="fw-bold">Cifrado: RkxBR3tFTF9ERVNFTkNSSVBUQURPUl9NQVNURVJ9</p>
-                        <p class="fw-bold">Tiempo restante: <span class="text-danger" id="timer-crypto">15:00</span></p>
-                        <div class="mt-3">
-                            <input type="text" class="form-control" id="flag-crypto" placeholder="Ingresa la bandera">
-                            <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="crypto">Verificar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Desafío 4: Fuerza Bruta ZIP -->
-            <div class="col-md-4 mb-4">
-                <div class="card card-challenge shadow">
-                    <div class="card-body">
-                        <h5 class="card-title text-primary">4. Fuerza Bruta ZIP</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">Ataque de Diccionario (275 Pts)</h6>
-                        <p class="card-text">Descarga el archivo ZIP protegido con contraseña y utiliza fuerza bruta para encontrar la clave u otro metodo con tal de sacar la bandera del Zip.</p>
-                        <p class="fw-bold">Archivo: <a href="secret_files.zip">secret_files.zip</a></p>
-                        <p class="fw-bold">Tiempo restante: <span class="text-danger" id="timer-zip">15:00</span></p>
-                        <div class="mt-3">
-                            <input type="text" class="form-control" id="flag-zip" placeholder="Ingresa la bandera">
-                            <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="zip">Verificar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Desafío 5: Metadatos de Imagen -->
-            <div class="col-md-4 mb-4">
-                <div class="card card-challenge shadow">
-                    <div class="card-body">
-                        <h5 class="card-title text-primary">5. Análisis Forense</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">Metadatos EXIF (225 Pts)</h6>
-                        <p class="card-text">Descarga la imagen y analiza sus metadatos EXIF para encontrar la bandera oculta.</p>
-                        <p class="fw-bold">Imagen: <a href="mystery_image.jpg">mystery_image.jpg</a></p>
-                        <p class="fw-bold">Tiempo restante: <span class="text-danger" id="timer-meta">15:00</span></p>
-                        <div class="mt-3">
-                            <input type="text" class="form-control" id="flag-meta" placeholder="Ingresa la bandera">
-                            <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="meta">Verificar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+    <?php 
+    $estado_actual = $info_equipo['estado'] ?? 0;
+    if ($estado_actual === 0): 
+    ?>
+        <!-- Mensaje de espera (visible cuando estado = 0) -->
+        <div id="mensaje-espera" class="alert alert-info text-center mb-4">
+            <h3>⏳ Esperando inicio del Hackathon</h3>
+            <p class="mb-0">Tu equipo está registrado y listo para competir. El administrador iniciará el hackathon pronto.</p>
+            <p class="mt-2"><small>Esta página se actualizará automáticamente cuando comience la competencia.</small></p>
         </div>
-    </div>
+    <?php else: ?>
+        <!-- Sección de niveles (visible cuando estado = 1) -->
+        <div id="niveles-section">
+            <h2 class="mb-4 text-center">🎯 Desafíos Disponibles</h2>
+            <div class="row">
+
+                <!-- Desafío 1: Aplicación Web CTF -->
+                <div class="col-md-4 mb-4">
+                    <div class="card card-challenge shadow">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">1. Aplicación Web CTF</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Web Hacking (200 Pts)</h6>
+                            <p class="card-text">Encuentra una vulnerabilidad en este formulario de inicio de sesión.</p>
+                            <p class="fw-bold">Tiempo restante: <span class="text-danger" id="timer-ctf">15:00</span></p>
+                            <a href="challenge_ctf.php" class="btn btn-primary">Acceder al Desafío</a>
+                            <div class="mt-3">
+                                <input type="text" class="form-control" id="flag-ctf" placeholder="Ingresa la bandera">
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="ctf">Verificar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Desafío 2: Ingeniería Inversa -->
+                <div class="col-md-4 mb-4">
+                    <div class="card card-challenge shadow">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">2. Ingeniería Inversa</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Análisis de Binarios (300 Pts)</h6>
+                            <p class="card-text">Descarga el archivo binario y realiza ingeniería inversa para obtener la contraseña oculta.</p>
+                            <p class="fw-bold">Archivo: <a href="reverse_challenge.zip">reverse_challenge.zip</a></p>
+                            <p class="fw-bold">Tiempo restante: <span class="text-danger" id="timer-re">15:00</span></p>
+                            <div class="mt-3">
+                                <input type="text" class="form-control" id="flag-re" placeholder="Ingresa la bandera">
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="re">Verificar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Desafío 3: Criptografía -->
+                <div class="col-md-4 mb-4">
+                    <div class="card card-challenge shadow">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">3. Criptografía</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Descifrado de Mensajes (250 Pts)</h6>
+                            <p class="card-text">Descifra el mensaje oculto. haz lo posible para identificar que cifrado es y desencriptarlo.</p>
+                            <p class="fw-bold">Cifrado: RkxBR3tFTF9ERVNFTkNSSVBUQURPUl9NQVNURVJ9</p>
+                            <p class="fw-bold">Tiempo restante: <span class="text-danger" id="timer-crypto">15:00</span></p>
+                            <div class="mt-3">
+                                <input type="text" class="form-control" id="flag-crypto" placeholder="Ingresa la bandera">
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="crypto">Verificar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Desafío 4: Fuerza Bruta ZIP -->
+                <div class="col-md-4 mb-4">
+                    <div class="card card-challenge shadow">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">4. Fuerza Bruta ZIP</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Ataque de Diccionario (275 Pts)</h6>
+                            <p class="card-text">Descarga el archivo ZIP protegido con contraseña y utiliza fuerza bruta para encontrar la clave u otro metodo con tal de sacar la bandera del Zip.</p>
+                            <p class="fw-bold">Archivo: <a href="secret_files.zip">secret_files.zip</a></p>
+                            <p class="fw-bold">Tiempo restante: <span class="text-danger" id="timer-zip">15:00</span></p>
+                            <div class="mt-3">
+                                <input type="text" class="form-control" id="flag-zip" placeholder="Ingresa la bandera">
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="zip">Verificar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Desafío 5: Metadatos de Imagen -->
+                <div class="col-md-4 mb-4">
+                    <div class="card card-challenge shadow">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">5. Análisis Forense</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Metadatos EXIF (225 Pts)</h6>
+                            <p class="card-text">Descarga la imagen y analiza sus metadatos EXIF para encontrar la bandera oculta.</p>
+                            <p class="fw-bold">Imagen: <a href="mystery_image.jpg">mystery_image.jpg</a></p>
+                            <p class="fw-bold">Tiempo restante: <span class="text-danger" id="timer-meta">15:00</span></p>
+                            <div class="mt-3">
+                                <input type="text" class="form-control" id="flag-meta" placeholder="Ingresa la bandera">
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="meta">Verificar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    <?php endif; ?>
 </div>
 
 <script>
@@ -668,37 +673,21 @@ function disableExpiredChallenges() {
 
 // ===== MONITOREO EN TIEMPO REAL DEL ESTADO DEL EQUIPO =====
 function setupEstadoMonitor() {
+    let estadoAnterior = <?php echo $estado_actual; ?>;
+    
     // Función para verificar el estado del equipo
     function verificarEstadoEquipo() {
         fetch('obtener_estado_equipo.php')
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    const estado = data.estado;
-                    const nivelesSection = document.getElementById('niveles-section');
-                    const mensajeEspera = document.getElementById('mensaje-espera');
+                    const estadoActual = data.estado;
                     
-                    if (estado === 1) {
-                        // Estado 1: Compitiendo - Mostrar niveles
-                        if (nivelesSection) {
-                            nivelesSection.classList.remove('d-none');
-                        }
-                        if (mensajeEspera) {
-                            mensajeEspera.classList.add('d-none');
-                        }
-                        // Reiniciar temporizadores si es necesario
-                        if (!window.timersIniciados) {
-                            startTimers();
-                            window.timersIniciados = true;
-                        }
-                    } else {
-                        // Estado 0: En espera - Ocultar niveles
-                        if (nivelesSection) {
-                            nivelesSection.classList.add('d-none');
-                        }
-                        if (mensajeEspera) {
-                            mensajeEspera.classList.remove('d-none');
-                        }
+                    // Solo recargar si el estado cambió
+                    if (estadoActual !== estadoAnterior) {
+                        console.log('Estado cambiado de', estadoAnterior, 'a', estadoActual, '- Recargando página...');
+                        estadoAnterior = estadoActual;
+                        location.reload();
                     }
                 }
             })
@@ -706,9 +695,6 @@ function setupEstadoMonitor() {
                 console.error('Error al verificar estado:', error);
             });
     }
-    
-    // Verificar estado inmediatamente al cargar
-    verificarEstadoEquipo();
     
     // Verificar estado cada 3 segundos
     setInterval(verificarEstadoEquipo, 3000);
@@ -778,19 +764,12 @@ function handleCorrectFlag(challenge, puntos) {
 
 // ===== INICIALIZACIÓN =====
 document.addEventListener('DOMContentLoaded', function() {
-    // Verificar estado inicial
-    const estadoInicial = <?php echo $info_equipo['estado'] ?? 0; ?>;
+    const estadoInicial = <?php echo $estado_actual; ?>;
     
+    // Solo iniciar temporizadores si el estado es 1 (compitiendo)
     if (estadoInicial === 1) {
-        // Si ya está compitiendo, mostrar niveles e iniciar temporizadores
-        document.getElementById('niveles-section').classList.remove('d-none');
-        document.getElementById('mensaje-espera').classList.add('d-none');
         startTimers();
         window.timersIniciados = true;
-    } else {
-        // Si está en espera, ocultar niveles
-        document.getElementById('niveles-section').classList.add('d-none');
-        document.getElementById('mensaje-espera').classList.remove('d-none');
     }
     
     // Configurar monitoreo en tiempo real
