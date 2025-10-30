@@ -467,4 +467,38 @@ function verificarBanderaDesafio($equipo_id, $desafio_id, $bandera_usuario) {
         return ['success' => false, 'message' => 'Bandera incorrecta'];
     }
 }
+
+/**
+ * Eliminar equipo y todos sus datos relacionados
+ */
+function eliminarEquipo($equipo_id) {
+    global $db;
+    
+    try {
+        $db->beginTransaction();
+        
+        // 1. Eliminar desafíos completados del equipo
+        $stmt = $db->prepare("DELETE FROM desafios_completados WHERE equipo_id = ?");
+        $stmt->execute([$equipo_id]);
+        
+        // 2. Eliminar participantes del equipo
+        $stmt = $db->prepare("DELETE FROM participantes WHERE equipo_id = ?");
+        $stmt->execute([$equipo_id]);
+        
+        // 3. Eliminar el equipo
+        $stmt = $db->prepare("DELETE FROM equipos WHERE id = ?");
+        $stmt->execute([$equipo_id]);
+        
+        $db->commit();
+        return true;
+        
+    } catch (Exception $e) {
+        $db->rollBack();
+        error_log("Error al eliminar equipo: " . $e->getMessage());
+        return false;
+    }
+}
+
+
+
 ?>

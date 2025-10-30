@@ -6,7 +6,13 @@ ini_set('display_errors', 1);
 session_start();
 require_once __DIR__ . '/conf/functions.php';
 
-// Verificar si es administrador (todos pueden iniciar por ahora)
+// Verificar autenticación administrativa
+if (!isset($_SESSION['admin_autenticado']) || $_SESSION['admin_autenticado'] !== true) {
+    header("Location: index.php");
+    exit;
+}
+
+// Verificar si es administrador
 $es_admin = true;
 
 // Inicializar variables
@@ -51,6 +57,20 @@ if ($es_admin && isset($_POST['reiniciar_hackathon'])) {
     }
 }
 
+// Procesar eliminación de equipo
+if ($es_admin && isset($_POST['eliminar_equipo'])) {
+    try {
+        $equipo_id = $_POST['equipo_id'];
+        if (eliminarEquipo($equipo_id)) {
+            $mensaje_exito = "Equipo eliminado exitosamente";
+        } else {
+            $mensaje_error = "Error al eliminar el equipo";
+        }
+    } catch (Exception $e) {
+        $mensaje_error = "Error: " . $e->getMessage();
+    }
+}
+
 // Obtener datos con manejo de errores
 try {
     $ranking = obtenerRankingEquipos();
@@ -83,8 +103,10 @@ try {
         .error-panel { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); color: white; }
         .btn-success { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); border: none; }
         .btn-warning { background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%); border: none; }
+        .btn-danger { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); border: none; }
         .badge-espera { background-color: #6c757d; }
         .badge-compitiendo { background-color: #198754; }
+        .actions-column { width: 120px; }
     </style>
 </head>
 <body>
@@ -133,7 +155,7 @@ try {
                         <p class="mb-0">🕐 Iniciado: <?php echo $config_hackathon ? date('H:i:s', strtotime($config_hackathon['tiempo_inicio_global'])) : 'N/A'; ?></p>
                     <?php else: ?>
                         <p class="mb-1">⏳ Duración: <strong>1 hora 30 minutos</strong></p>
-                        <p class="mb-0">👥 Equipos listos: <strong><?php echo count($ranking); ?></strong></p>
+                        <p class="mb-0">👥 Equipos registrados: <strong><?php echo count($ranking); ?></strong></p>
                     <?php endif; ?>
                 </div>
                 <div class="col-md-6">
@@ -216,10 +238,11 @@ try {
                     <thead class="table-dark">
                         <tr>
                             <th width="8%">Posición</th>
-                            <th width="32%">Nombre del Equipo</th>
+                            <th width="30%">Nombre del Equipo</th>
                             <th width="15%">Código</th>
-                            <th width="20%">Puntuación</th>
-                            <th width="25%">Estado</th>
+                            <th width="15%">Puntuación</th>
+                            <th width="20%">Estado</th>
+                            <th width="12%" class="text-center">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -261,15 +284,24 @@ try {
                                         <span class="badge badge-espera p-2">⏳ EN ESPERA</span>
                                     <?php endif; ?>
                                 </td>
+                                <td class="text-center actions-column">
+                                    <!-- Botón Eliminar -->
+                                    <form method="post" class="d-inline" onsubmit="return confirmarEliminacion('<?php echo htmlspecialchars($equipo['nombre_equipo']); ?>')">
+                                        <input type="hidden" name="equipo_id" value="<?php echo $equipo['id']; ?>">
+                                        <button type="submit" name="eliminar_equipo" class="btn btn-danger btn-sm" title="Eliminar equipo">
+                                            🗑️ Eliminar
+                                        </button>
+                                    </form>
+                                </td>
                             </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="5" class="text-center py-5">
+                                <td colspan="6" class="text-center py-5">
                                     <div class="alert alert-info">
                                         <h4>📋 No hay equipos registrados aún</h4>
                                         <p class="mb-3">¡Sé el primero en crear un equipo y participar en el hackathon!</p>
-                                        <a href="index.php" class="btn btn-primary btn-lg">➕ Crear Primer Equipo</a>
+                                       
                                     </div>
                                 </td>
                             </tr>
@@ -282,9 +314,8 @@ try {
     
     <div class="text-center mt-4">
         <a href="index.php" class="btn btn-primary btn-lg">
-            <?php echo isset($_SESSION['cedula']) ? '🎮 Volver al Dashboard' : 'Volver al inicio de sesion'; ?>
+            <?php echo isset($_SESSION['cedula']) ? '🎮 Volver al Dashboard' : 'Volver al inicio de sesión'; ?>
         </a>
-        
     </div>
     <?php endif; ?>
 </div>
@@ -319,6 +350,11 @@ function actualizarTiempoGlobal() {
 
 // Actualizar cada segundo
 setInterval(actualizarTiempoGlobal, 1000);
+
+// Función para confirmar eliminación de equipo
+function confirmarEliminacion(nombreEquipo) {
+    return confirm(`⚠️ ¿ESTÁS SEGURO DE ELIMINAR EL EQUIPO?\n\n🔴 Equipo: ${nombreEquipo}\n\n❌ Esta acción eliminará:\n   • Todos los miembros del equipo\n   • Puntuaciones y progreso\n   • Desafíos completados\n\n🚫 Esta acción NO se puede deshacer`);
+}
 </script>
 <?php endif; ?>
 
