@@ -105,7 +105,22 @@ if (isset($_SESSION['cedula'])) {
     header("Location: index.php");
     exit;
 
-// 4. Si no hay sesión, mostrar formulario de inicio
+// 4. Si viene del formulario de acceso administrativo
+} else if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['codigo_admin'])) {
+    $codigo_ingresado = trim($_POST['codigo_admin']);
+    $codigo_correcto = 'robotica';
+    
+    if ($codigo_ingresado === $codigo_correcto) {
+        // Crear sesión de administrador
+        $_SESSION['es_admin'] = true;
+        $_SESSION['admin_autenticado'] = true;
+        header("Location: equipos.php");
+        exit;
+    } else {
+        mostrarAlerta('Código administrativo incorrecto.');
+    }
+
+// 5. Si no hay sesión, mostrar formulario de inicio
 } else {
     // Si hay sesión temporal, limpiarla
     if (isset($_SESSION['equipo_temporal'])) {
@@ -123,6 +138,8 @@ if (isset($_SESSION['cedula'])) {
             .hero-section { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 60px 0; border-radius: 15px; }
             .member-form { border: 1px solid #dee2e6; border-radius: 5px; padding: 15px; margin-bottom: 15px; }
             .optional-member { background-color: #f8f9fa; }
+            .admin-section { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); color: white; }
+            .hidden { display: none !important; }
         </style>
     </head>
     <body>
@@ -239,8 +256,24 @@ if (isset($_SESSION['cedula'])) {
                         
                         <hr class="my-4">
                         
+                        <!-- Sección de Acceso Administrativo -->
                         <div class="text-center">
-                            <a href="equipos.php" class="btn btn-outline-secondary btn-lg">Ver Ranking de Equipos</a>
+                            <button type="button" class="btn btn-outline-warning btn-sm mb-3" id="toggle-admin-btn">
+                                ¿Eres Administrador?
+                            </button>
+                            
+                            <form method="post" id="admin-form" class="hidden">
+                                <div class="mb-3">
+                                    <label for="codigo_admin" class="form-label">Código de Administrador</label>
+                                    <input type="password" class="form-control" id="codigo_admin" name="codigo_admin" 
+                                           placeholder="Ingresa el código de acceso" required>
+                                </div>
+                                <button type="submit" class="btn btn-warning btn-sm w-100">Acceder al Panel de Control</button>
+                            </form>
+                            
+                            <div class="mt-3">
+                                <a href="equipos.php" class="btn btn-outline-secondary btn-sm">Ver Ranking de Equipos</a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -271,6 +304,9 @@ if (isset($_SESSION['cedula'])) {
                                     <li>Serás redirigido automáticamente a tu equipo</li>
                                     <li>Continúa donde lo dejaste</li>
                                 </ol>
+                                <div class="alert alert-warning mt-3">
+                                    <small><strong>Nota:</strong> Solo los administradores autorizados pueden acceder al panel de control.</small>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -315,6 +351,33 @@ if (isset($_SESSION['cedula'])) {
         
         if (miembrosCompletos < 3) {
             alert('Debes registrar al menos 3 miembros completos para el equipo.');
+            e.preventDefault();
+        }
+    });
+
+    // Toggle del formulario administrativo
+    document.getElementById('toggle-admin-btn').addEventListener('click', function() {
+        const adminForm = document.getElementById('admin-form');
+        const isHidden = adminForm.classList.contains('hidden');
+        
+        if (isHidden) {
+            adminForm.classList.remove('hidden');
+            this.textContent = 'Ocultar Panel Administrativo';
+            this.classList.remove('btn-outline-warning');
+            this.classList.add('btn-warning');
+        } else {
+            adminForm.classList.add('hidden');
+            this.textContent = '¿Eres Administrador?';
+            this.classList.remove('btn-warning');
+            this.classList.add('btn-outline-warning');
+        }
+    });
+
+    // Validación del formulario administrativo
+    document.getElementById('admin-form').addEventListener('submit', function(e) {
+        const codigo = document.getElementById('codigo_admin').value.trim();
+        if (codigo === '') {
+            alert('Por favor ingresa el código de administrador.');
             e.preventDefault();
         }
     });
