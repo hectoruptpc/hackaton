@@ -77,12 +77,19 @@ try {
     $config_hackathon = obtenerConfiguracionHackathon();
     $hackathon_activo = hackathonEstaActivo();
     $tiempo_restante = calcularTiempoRestanteGlobal();
+    
+    // Obtener el equipo ganador (primer lugar) y verificar si hay puntuación
+    $equipo_ganador = !empty($ranking) ? $ranking[0] : null;
+    $hay_ganador = $equipo_ganador && $equipo_ganador['puntuacion_total'] > 0;
+    
 } catch (Exception $e) {
     // Si hay error al obtener datos, mostrar página básica
     $ranking = [];
     $config_hackathon = null;
     $hackathon_activo = false;
     $tiempo_restante = 0;
+    $equipo_ganador = null;
+    $hay_ganador = false;
     $mensaje_error = "Error al cargar datos: " . $e->getMessage();
 }
 ?>
@@ -107,6 +114,32 @@ try {
         .badge-espera { background-color: #6c757d; }
         .badge-compitiendo { background-color: #198754; }
         .actions-column { width: 120px; }
+        .winner-modal { background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); }
+        .no-winner-modal { background: linear-gradient(135deg, #6c757d 0%, #495057 100%); color: white; }
+        .winner-crown { font-size: 4rem; animation: bounce 2s infinite; }
+        .sad-face { font-size: 4rem; animation: pulse 2s infinite; }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-30px);}
+            60% {transform: translateY(-15px);}
+        }
+        @keyframes pulse {
+            0%, 100% {transform: scale(1);}
+            50% {transform: scale(1.1);}
+        }
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            animation: fall linear forwards;
+        }
+        @keyframes fall {
+            to {transform: translateY(100vh);}
+        }
+        .modal-danger .modal-content {
+            border: 3px solid #dc3545;
+        }
     </style>
 </head>
 <body>
@@ -152,7 +185,7 @@ try {
                             echo sprintf("%02d:%02d", $minutos, $segundos);
                             ?>
                         </strong></p>
-                        <p class="mb-0">🕐 Iniciado: <?php echo $config_hackathon ? date('H:i:s', strtotime($config_hackathon['tiempo_inicio_global'])) : 'N/A'; ?></p>
+                       
                     <?php else: ?>
                         <p class="mb-1">⏳ Duración: <strong>1 hora 30 minutos</strong></p>
                         <p class="mb-0">👥 Equipos registrados: <strong><?php echo count($ranking); ?></strong></p>
@@ -161,26 +194,21 @@ try {
                 <div class="col-md-6">
                     <!-- Botones de control -->
                     <div class="d-flex flex-column gap-3">
-                        <form method="post" class="d-inline">
-                            <?php if (!$hackathon_activo): ?>
-                                <button type="submit" name="iniciar_hackathon" class="btn btn-success btn-lg w-100 py-3" 
-                                        onclick="return confirm('🚀 ¿Estás seguro de iniciar el hackathon?\\n\\n📅 Duración: 1 hora 30 minutos\\n✅ Todos los equipos existentes comenzarán\\n🎯 Los desafíos se activarán\\n\\n⚠️ Esta acción no se puede deshacer')">
-                                    🚀 INICIAR HACKATHON
-                                </button>
-                            <?php else: ?>
-                                <button type="button" class="btn btn-success btn-lg w-100 py-3" disabled>
-                                    ✅ HACKATHON EN CURSO
-                                </button>
-                            <?php endif; ?>
-                        </form>
-                        
-                        <!-- Botón de reinicio (solo para testing) -->
-                        <form method="post" class="d-inline">
-                            <button type="submit" name="reiniciar_hackathon" class="btn btn-warning btn-lg w-100 py-3" 
-                                    onclick="return confirm('⚠️ ¿REINICIAR TODO EL HACKATHON?\\n\\n🔴 Esto borrará:\\n   • Todas las puntuaciones\\n   • Desafíos completados\\n   • Tiempos de equipos\\n   • Estado del hackathon\\n\\n🎯 SOLO PARA TESTING')">
-                                🔄 REINICIAR HACKATHON (TESTING)
+                        <!-- Botón Iniciar Hackathon -->
+                        <?php if (!$hackathon_activo): ?>
+                            <button type="button" class="btn btn-success btn-lg w-100 py-3" data-bs-toggle="modal" data-bs-target="#iniciarModal">
+                                🚀 INICIAR HACKATHON
                             </button>
-                        </form>
+                        <?php else: ?>
+                            <button type="button" class="btn btn-success btn-lg w-100 py-3" disabled>
+                                ✅ HACKATHON EN CURSO
+                            </button>
+                        <?php endif; ?>
+                        
+                        <!-- Botón Reiniciar Hackathon -->
+                        <button type="button" class="btn btn-warning btn-lg w-100 py-3" data-bs-toggle="modal" data-bs-target="#reiniciarModal">
+                            🔄 REINICIAR HACKATHON (TESTING)
+                        </button>
                     </div>
                 </div>
             </div>
@@ -286,12 +314,14 @@ try {
                                 </td>
                                 <td class="text-center actions-column">
                                     <!-- Botón Eliminar -->
-                                    <form method="post" class="d-inline" onsubmit="return confirmarEliminacion('<?php echo htmlspecialchars($equipo['nombre_equipo']); ?>')">
-                                        <input type="hidden" name="equipo_id" value="<?php echo $equipo['id']; ?>">
-                                        <button type="submit" name="eliminar_equipo" class="btn btn-danger btn-sm" title="Eliminar equipo">
-                                            🗑️ Eliminar
-                                        </button>
-                                    </form>
+                                    <button type="button" class="btn btn-danger btn-sm" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#eliminarModal"
+                                            data-equipo-id="<?php echo $equipo['id']; ?>"
+                                            data-equipo-nombre="<?php echo htmlspecialchars($equipo['nombre_equipo']); ?>"
+                                            title="Eliminar equipo">
+                                        🗑️ Eliminar
+                                    </button>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -301,7 +331,6 @@ try {
                                     <div class="alert alert-info">
                                         <h4>📋 No hay equipos registrados aún</h4>
                                         <p class="mb-3">¡Sé el primero en crear un equipo y participar en el hackathon!</p>
-                                       
                                     </div>
                                 </td>
                             </tr>
@@ -320,43 +349,262 @@ try {
     <?php endif; ?>
 </div>
 
-<!-- Script para actualizar el tiempo en tiempo real -->
-<?php if ($hackathon_activo): ?>
+<!-- Modal para Iniciar Hackathon -->
+<div class="modal fade" id="iniciarModal" tabindex="-1" aria-labelledby="iniciarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="iniciarModalLabel">🚀 Iniciar Hackathon</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de iniciar el hackathon?</p>
+                <div class="alert alert-info">
+                    <strong>📅 Duración:</strong> 1 hora 30 minutos<br>
+                    <strong>✅ Equipos que comenzarán:</strong> <?php echo count($ranking); ?><br>
+                    <strong>🎯 Desafíos:</strong> Se activarán automáticamente
+                </div>
+                <p class="text-danger"><strong>⚠️ Esta acción no se puede deshacer</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="post" class="d-inline">
+                    <button type="submit" name="iniciar_hackathon" class="btn btn-success">🚀 Iniciar Hackathon</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Reiniciar Hackathon -->
+<div class="modal fade" id="reiniciarModal" tabindex="-1" aria-labelledby="reiniciarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content modal-danger">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="reiniciarModalLabel">🔄 Reiniciar Hackathon</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="fw-bold">¿REINICIAR TODO EL HACKATHON?</p>
+                <div class="alert alert-danger">
+                    <strong>🔴 Esto borrará:</strong><br>
+                    • Todas las puntuaciones<br>
+                    • Desafíos completados<br>
+                    • Tiempos de equipos<br>
+                    • Estado del hackathon
+                </div>
+                <p class="text-warning"><strong>🎯 SOLO PARA TESTING</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="post" class="d-inline">
+                    <button type="submit" name="reiniciar_hackathon" class="btn btn-warning">🔄 Reiniciar Hackathon</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Eliminar Equipo -->
+<div class="modal fade" id="eliminarModal" tabindex="-1" aria-labelledby="eliminarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content modal-danger">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="eliminarModalLabel">🗑️ Eliminar Equipo</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="fw-bold">¿ESTÁS SEGURO DE ELIMINAR EL EQUIPO?</p>
+                <div class="alert alert-danger">
+                    <strong id="equipoNombreEliminar"></strong><br><br>
+                    <strong>❌ Esta acción eliminará:</strong><br>
+                    • Todos los miembros del equipo<br>
+                    • Puntuaciones y progreso<br>
+                    • Desafíos completados
+                </div>
+                <p class="text-danger"><strong>🚫 Esta acción NO se puede deshacer</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="post" id="formEliminarEquipo" class="d-inline">
+                    <input type="hidden" name="equipo_id" id="equipoIdEliminar">
+                    <button type="submit" name="eliminar_equipo" class="btn btn-danger">🗑️ Eliminar Equipo</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal del Ganador -->
+<div class="modal fade" id="winnerModal" tabindex="-1" aria-labelledby="winnerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content winner-modal">
+            <div class="modal-header border-0">
+                <h2 class="modal-title text-center w-100" id="winnerModalLabel">🎉 ¡HACKATHON FINALIZADO! 🎉</h2>
+            </div>
+            <div class="modal-body text-center">
+                <div class="winner-crown">👑</div>
+                <h3 class="mt-3">EQUIPO GANADOR</h3>
+                <h1 class="display-4 fw-bold text-dark" id="winnerTeamName"></h1>
+                <h2 class="text-success" id="winnerScore"></h2>
+                <p class="fs-5 mt-3">¡Felicidades por su excelente desempeño!</p>
+                <div class="mt-4">
+                    <span class="badge bg-success fs-6 p-2">🥇 PRIMER LUGAR</span>
+                </div>
+            </div>
+            <div class="modal-footer border-0 justify-content-center">
+                <button type="button" class="btn btn-dark btn-lg" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Sin Ganador -->
+<div class="modal fade" id="noWinnerModal" tabindex="-1" aria-labelledby="noWinnerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content no-winner-modal">
+            <div class="modal-header border-0">
+                <h2 class="modal-title text-center w-100" id="noWinnerModalLabel">⏰ ¡HACKATHON FINALIZADO! ⏰</h2>
+            </div>
+            <div class="modal-body text-center">
+                <div class="sad-face">😔</div>
+                <h3 class="mt-3">NO HAY GANADOR</h3>
+                <h1 class="display-4 fw-bold text-light">NINGUNO DE LOS EQUIPOS</h1>
+                <h2 class="text-warning">PUDO COMPLETAR LOS NIVELES</h2>
+                <p class="fs-5 mt-3">Los desafíos fueron muy difíciles esta vez.</p>
+                <div class="mt-4">
+                    <span class="badge bg-warning fs-6 p-2">🏆 MEJOR SUERTE PARA LA PRÓXIMA</span>
+                </div>
+            </div>
+            <div class="modal-footer border-0 justify-content-center">
+                <button type="button" class="btn btn-light btn-lg" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Audio para el sonido de finalización -->
+<audio id="finishSound" preload="auto">
+    <source src="aplausos.mp3" type="audio/mpeg">
+    Tu navegador no soporta el elemento de audio.
+</audio>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// Variables globales
+let tiempoRestante = <?php echo $tiempo_restante; ?>;
+let tiempoAgotadoMostrado = false;
+let sonidoReproducido = false;
+
+// Elementos del DOM
+const tiempoElement = document.getElementById('tiempo-global');
+const winnerModal = new bootstrap.Modal(document.getElementById('winnerModal'));
+const noWinnerModal = new bootstrap.Modal(document.getElementById('noWinnerModal'));
+const finishSound = document.getElementById('finishSound');
+const winnerTeamName = document.getElementById('winnerTeamName');
+const winnerScore = document.getElementById('winnerScore');
+
+// Configurar modal de eliminación
+const eliminarModal = document.getElementById('eliminarModal');
+eliminarModal.addEventListener('show.bs.modal', function (event) {
+    const button = event.relatedTarget;
+    const equipoId = button.getAttribute('data-equipo-id');
+    const equipoNombre = button.getAttribute('data-equipo-nombre');
+    
+    document.getElementById('equipoIdEliminar').value = equipoId;
+    document.getElementById('equipoNombreEliminar').textContent = 'Equipo: ' + equipoNombre;
+});
+
+// Función para crear confeti
+function crearConfeti() {
+    const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+    for (let i = 0; i < 150; i++) {
+        setTimeout(() => {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + 'vw';
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            document.body.appendChild(confetti);
+            
+            // Remover confeti después de la animación
+            setTimeout(() => {
+                confetti.remove();
+            }, 5000);
+        }, i * 20);
+    }
+}
+
+// Función para mostrar el ganador o mensaje de no ganador
+function mostrarResultadoFinal() {
+    if (!tiempoAgotadoMostrado) {
+        tiempoAgotadoMostrado = true;
+        
+        // Reproducir sonido (solo una vez)
+        if (!sonidoReproducido) {
+            finishSound.play().catch(e => console.log('Error reproduciendo sonido:', e));
+            sonidoReproducido = true;
+        }
+        
+        <?php if ($hay_ganador): ?>
+        // Mostrar ganador
+        winnerTeamName.textContent = '<?php echo htmlspecialchars($equipo_ganador['nombre_equipo']); ?>';
+        winnerScore.textContent = '<?php echo $equipo_ganador['puntuacion_total']; ?> Puntos';
+        crearConfeti();
+        setTimeout(() => {
+            winnerModal.show();
+        }, 1000);
+        <?php else: ?>
+        // Mostrar mensaje de no ganador
+        setTimeout(() => {
+            noWinnerModal.show();
+        }, 1000);
+        <?php endif; ?>
+    }
+}
+
+// Función principal para actualizar el tiempo
 function actualizarTiempoGlobal() {
-    const tiempoElement = document.getElementById('tiempo-global');
     if (!tiempoElement) return;
     
-    let tiempoTexto = tiempoElement.textContent;
-    let [minutos, segundos] = tiempoTexto.split(':').map(Number);
-    
-    // Restar un segundo
-    if (segundos === 0) {
-        if (minutos === 0) {
-            // Tiempo agotado, recargar página
-            location.reload();
-            return;
-        }
-        minutos--;
-        segundos = 59;
-    } else {
-        segundos--;
+    // Verificar si el tiempo se agotó
+    if (tiempoRestante <= 0) {
+        tiempoElement.textContent = '00:00';
+        tiempoElement.className = 'text-danger';
+        mostrarResultadoFinal();
+        return;
     }
     
+    // Restar un segundo
+    tiempoRestante--;
+    
     // Actualizar display
-    tiempoElement.textContent = 
-        `${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
+    const minutos = Math.floor(tiempoRestante / 60);
+    const segundos = tiempoRestante % 60;
+    tiempoElement.textContent = `${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
+    
+    // Cambiar color cuando queden menos de 5 minutos
+    if (tiempoRestante < 300) {
+        tiempoElement.className = 'text-warning';
+    }
+    
+    // Cambiar color cuando queden menos de 1 minuto
+    if (tiempoRestante < 60) {
+        tiempoElement.className = 'text-danger';
+    }
 }
 
-// Actualizar cada segundo
-setInterval(actualizarTiempoGlobal, 1000);
+// Iniciar el temporizador solo si el hackathon está activo
+<?php if ($hackathon_activo): ?>
+const temporizador = setInterval(actualizarTiempoGlobal, 1000);
 
-// Función para confirmar eliminación de equipo
-function confirmarEliminacion(nombreEquipo) {
-    return confirm(`⚠️ ¿ESTÁS SEGURO DE ELIMINAR EL EQUIPO?\n\n🔴 Equipo: ${nombreEquipo}\n\n❌ Esta acción eliminará:\n   • Todos los miembros del equipo\n   • Puntuaciones y progreso\n   • Desafíos completados\n\n🚫 Esta acción NO se puede deshacer`);
+// Verificar inmediatamente si el tiempo ya se agotó
+if (tiempoRestante <= 0) {
+    mostrarResultadoFinal();
 }
-</script>
 <?php endif; ?>
+</script>
 
 </body>
 </html>
