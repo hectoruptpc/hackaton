@@ -517,7 +517,7 @@ if (isset($_SESSION['cedula'])) {
                             <h5 class="card-title text-primary">1. Aplicación Web CTF</h5>
                             <h6 class="card-subtitle mb-2 text-muted">Web Hacking (200 Pts)</h6>
                             <p class="card-text">Encuentra una vulnerabilidad en este formulario de inicio de sesión.</p>
-                            <p class="fw-bold">Tiempo restante: <span class="text-danger" id="timer-ctf">15:00</span></p>
+                            
                             <a href="challenge_ctf.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
                                 <input type="text" class="form-control" id="flag-ctf" placeholder="Ingresa la bandera">
@@ -535,7 +535,7 @@ if (isset($_SESSION['cedula'])) {
                             <h6 class="card-subtitle mb-2 text-muted">Análisis de Binarios (300 Pts)</h6>
                             <p class="card-text">Descarga el archivo binario y realiza ingeniería inversa para obtener la contraseña oculta.</p>
                             <p class="fw-bold">Archivo: <a href="reverse_challenge.zip">reverse_challenge.zip</a></p>
-                            <p class="fw-bold">Tiempo restante: <span class="text-danger" id="timer-re">15:00</span></p>
+                            
                             <div class="mt-3">
                                 <input type="text" class="form-control" id="flag-re" placeholder="Ingresa la bandera">
                                 <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="re">Verificar</button>
@@ -552,7 +552,7 @@ if (isset($_SESSION['cedula'])) {
                             <h6 class="card-subtitle mb-2 text-muted">Descifrado de Mensajes (250 Pts)</h6>
                             <p class="card-text">Descifra el mensaje oculto. haz lo posible para identificar que cifrado es y desencriptarlo.</p>
                             <p class="fw-bold">Cifrado: RkxBR3tFTF9ERVNFTkNSSVBUQURPUl9NQVNURVJ9</p>
-                            <p class="fw-bold">Tiempo restante: <span class="text-danger" id="timer-crypto">15:00</span></p>
+                            
                             <div class="mt-3">
                                 <input type="text" class="form-control" id="flag-crypto" placeholder="Ingresa la bandera">
                                 <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="crypto">Verificar</button>
@@ -569,7 +569,7 @@ if (isset($_SESSION['cedula'])) {
                             <h6 class="card-subtitle mb-2 text-muted">Ataque de Diccionario (275 Pts)</h6>
                             <p class="card-text">Descarga el archivo ZIP protegido con contraseña y utiliza fuerza bruta para encontrar la clave u otro metodo con tal de sacar la bandera del Zip.</p>
                             <p class="fw-bold">Archivo: <a href="secret_files.zip">secret_files.zip</a></p>
-                            <p class="fw-bold">Tiempo restante: <span class="text-danger" id="timer-zip">15:00</span></p>
+                            
                             <div class="mt-3">
                                 <input type="text" class="form-control" id="flag-zip" placeholder="Ingresa la bandera">
                                 <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="zip">Verificar</button>
@@ -586,7 +586,7 @@ if (isset($_SESSION['cedula'])) {
                             <h6 class="card-subtitle mb-2 text-muted">Metadatos EXIF (225 Pts)</h6>
                             <p class="card-text">Descarga la imagen y analiza sus metadatos EXIF para encontrar la bandera oculta.</p>
                             <p class="fw-bold">Imagen: <a href="mystery_image.jpg">mystery_image.jpg</a></p>
-                            <p class="fw-bold">Tiempo restante: <span class="text-danger" id="timer-meta">15:00</span></p>
+                            
                             <div class="mt-3">
                                 <input type="text" class="form-control" id="flag-meta" placeholder="Ingresa la bandera">
                                 <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="meta">Verificar</button>
