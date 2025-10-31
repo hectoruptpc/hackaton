@@ -303,7 +303,7 @@ try {
                                 </td>
                                 <td>
                                     <strong class="fs-4 text-primary"><?php echo $equipo['puntuacion_total']; ?></strong>
-                                    <small class="text-muted">puntos</small>
+                                    <small class="text-muted">🪙</small>
                                 </td>
                                 <td>
                                     <?php if ($equipo['estado'] == 1): ?>
