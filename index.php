@@ -585,7 +585,7 @@ if (isset($_SESSION['cedula'])) {
                             <h5 class="card-title text-primary">5. Análisis Forense</h5>
                             <h6 class="card-subtitle mb-2 text-muted">Metadatos EXIF (1 🪙)</h6>
                             <p class="card-text">Descarga la imagen y analiza sus metadatos EXIF para encontrar la bandera oculta.</p>
-                            <p class="fw-bold">Imagen: <a href="mystery_image.jpg">mystery_image.jpg</a></p>
+                            <p class="fw-bold">Imagen: <a href="mystery_image.jpeg">mystery_image.jpeg</a></p>
                             
                             <div class="mt-3">
                                 <input type="text" class="form-control" id="flag-meta" placeholder="Ingresa la bandera">
