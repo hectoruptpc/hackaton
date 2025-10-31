@@ -92,6 +92,17 @@ try {
     $hay_ganador = false;
     $mensaje_error = "Error al cargar datos: " . $e->getMessage();
 }
+
+// Inicializar el último ID conocido en la sesión
+if (!isset($_SESSION['ultimo_equipo_id'])) {
+    // Establecer el último ID como el ID más alto actual
+    $ultimo_id = 0;
+    if (!empty($ranking)) {
+        $ultimo_id = max(array_column($ranking, 'id'));
+    }
+    $_SESSION['ultimo_equipo_id'] = $ultimo_id;
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -118,6 +129,46 @@ try {
         .no-winner-modal { background: linear-gradient(135deg, #6c757d 0%, #495057 100%); color: white; }
         .winner-crown { font-size: 4rem; animation: bounce 2s infinite; }
         .sad-face { font-size: 4rem; animation: pulse 2s infinite; }
+        
+        /* TEMPORIZADOR MÁS GRANDE */
+        .temporizador-grande {
+            font-size: 4rem !important;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            padding: 10px 20px;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: inline-block;
+            margin: 10px 0;
+        }
+        
+        /* Estados del temporizador */
+        .temporizador-normal { color: #28a745; }
+        .temporizador-advertencia { color: #ffc107; animation: pulse 1s infinite; }
+        .temporizador-peligro { color: #dc3545; animation: pulse 0.5s infinite; }
+        
+        /* Efectos para nuevos equipos */
+        .equipo-nuevo {
+            animation: highlight 2s ease-in-out;
+            background-color: #d4edda !important;
+        }
+        
+        .badge-nuevo {
+            background-color: #17a2b8;
+            animation: blink 1s infinite;
+        }
+        
+        /* Notificación flotante */
+        .notificacion-flotante {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            animation: slideIn 0.5s ease-out;
+        }
+        
         @keyframes bounce {
             0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
             40% {transform: translateY(-30px);}
@@ -126,6 +177,18 @@ try {
         @keyframes pulse {
             0%, 100% {transform: scale(1);}
             50% {transform: scale(1.1);}
+        }
+        @keyframes highlight {
+            0% { background-color: #d4edda; }
+            100% { background-color: transparent; }
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
         .confetti {
             position: fixed;
@@ -178,17 +241,22 @@ try {
                         <?php endif; ?>
                     </h5>
                     <?php if ($hackathon_activo): ?>
-                        <p class="mb-1">⏰ Tiempo restante: <strong id="tiempo-global" class="fs-4">
-                            <?php 
-                            $minutos = floor($tiempo_restante / 60);
-                            $segundos = $tiempo_restante % 60;
-                            echo sprintf("%02d:%02d", $minutos, $segundos);
-                            ?>
-                        </strong></p>
+                        <!-- TEMPORIZADOR MÁS GRANDE -->
+                        <div class="text-center mb-3">
+                            <p class="mb-1">⏰ Tiempo restante:</p>
+                            <div id="tiempo-global" class="temporizador-grande temporizador-normal">
+                                <?php 
+                                $minutos = floor($tiempo_restante / 60);
+                                $segundos = $tiempo_restante % 60;
+                                echo sprintf("%02d:%02d", $minutos, $segundos);
+                                ?>
+                            </div>
+                            <small class="text-muted">Tiempo global del hackathon</small>
+                        </div>
                        
                     <?php else: ?>
                         <p class="mb-1">⏳ Duración: <strong>1 hora 30 minutos</strong></p>
-                        <p class="mb-0">👥 Equipos registrados: <strong><?php echo count($ranking); ?></strong></p>
+                        <p class="mb-0">👥 Equipos registrados: <strong id="total-equipos"><?php echo count($ranking); ?></strong></p>
                     <?php endif; ?>
                 </div>
                 <div class="col-md-6">
@@ -273,7 +341,7 @@ try {
                             <th width="12%" class="text-center">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="tabla-equipos">
                         <?php if (!empty($ranking)): ?>
                             <?php foreach ($ranking as $index => $equipo): ?>
                             <tr class="<?php 
@@ -281,7 +349,7 @@ try {
                                 elseif ($index == 1) { echo 'top-2'; } 
                                 elseif ($index == 2) { echo 'top-3'; } 
                                 else { echo ''; } 
-                            ?>">
+                            ?>" data-equipo-id="<?php echo $equipo['id']; ?>">
                                 <td>
                                     <strong class="fs-5"><?php echo $index + 1; ?>°</strong>
                                     <?php if ($index < 3): ?>
@@ -314,7 +382,7 @@ try {
                                 </td>
                                 <td class="text-center actions-column">
                                     <!-- Botón Eliminar -->
-                                    <button type="button" class="btn btn-danger btn-sm" 
+                                    <button type="button" class="btn btn-danger btn-sm btn-eliminar-equipo" 
                                             data-bs-toggle="modal" 
                                             data-bs-target="#eliminarModal"
                                             data-equipo-id="<?php echo $equipo['id']; ?>"
@@ -496,6 +564,7 @@ try {
 let tiempoRestante = <?php echo $tiempo_restante; ?>;
 let tiempoAgotadoMostrado = false;
 let sonidoReproducido = false;
+let equiposActuales = new Map(); // Usamos Map para mantener orden
 
 // Elementos del DOM
 const tiempoElement = document.getElementById('tiempo-global');
@@ -504,17 +573,174 @@ const noWinnerModal = new bootstrap.Modal(document.getElementById('noWinnerModal
 const finishSound = document.getElementById('finishSound');
 const winnerTeamName = document.getElementById('winnerTeamName');
 const winnerScore = document.getElementById('winnerScore');
+const totalEquiposElement = document.getElementById('total-equipos');
+const tablaEquipos = document.getElementById('tabla-equipos');
 
-// Configurar modal de eliminación
-const eliminarModal = document.getElementById('eliminarModal');
-eliminarModal.addEventListener('show.bs.modal', function (event) {
-    const button = event.relatedTarget;
-    const equipoId = button.getAttribute('data-equipo-id');
-    const equipoNombre = button.getAttribute('data-equipo-nombre');
+// Inicializar mapa de equipos actuales
+document.addEventListener('DOMContentLoaded', function() {
+    // Guardar los equipos actuales en el mapa
+    const filasEquipos = document.querySelectorAll('#tabla-equipos tr[data-equipo-id]');
+    filasEquipos.forEach(fila => {
+        const equipoId = fila.getAttribute('data-equipo-id');
+        equiposActuales.set(equipoId, fila);
+    });
     
-    document.getElementById('equipoIdEliminar').value = equipoId;
-    document.getElementById('equipoNombreEliminar').textContent = 'Equipo: ' + equipoNombre;
+    // Configurar eventos de eliminación
+    configurarEventosEliminacion();
+    
+    // Iniciar monitoreo de nuevos equipos
+    iniciarMonitoreoEquipos();
 });
+
+// Configurar eventos para botones de eliminar
+function configurarEventosEliminacion() {
+    const botonesEliminar = document.querySelectorAll('.btn-eliminar-equipo');
+    botonesEliminar.forEach(boton => {
+        boton.addEventListener('click', function() {
+            const equipoId = this.getAttribute('data-equipo-id');
+            const equipoNombre = this.getAttribute('data-equipo-nombre');
+            
+            document.getElementById('equipoIdEliminar').value = equipoId;
+            document.getElementById('equipoNombreEliminar').textContent = 'Equipo: ' + equipoNombre;
+        });
+    });
+}
+
+// Función para monitorear nuevos equipos automáticamente
+function iniciarMonitoreoEquipos() {
+    function verificarNuevosEquipos() {
+        fetch('obtener_nuevos_equipos.php?t=' + Date.now())
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const nuevosEquipos = data.nuevos_equipos || [];
+                    const totalEquipos = data.total_equipos || 0;
+                    
+                    // Actualizar contador de equipos
+                    if (totalEquiposElement) {
+                        totalEquiposElement.textContent = totalEquipos;
+                    }
+                    
+                    // Agregar nuevos equipos si los hay
+                    if (nuevosEquipos.length > 0) {
+                        console.log('Nuevos equipos detectados:', nuevosEquipos.length);
+                        nuevosEquipos.forEach(equipo => {
+                            if (!equiposActuales.has(equipo.id.toString())) {
+                                agregarEquipoDinamico(equipo);
+                            }
+                        });
+                        
+                        // Reordenar la tabla completa para mantener el ranking correcto
+                        reordenarTablaRanking();
+                    }
+                } else {
+                    console.error('Error en la respuesta:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error al verificar equipos:', error);
+            });
+    }
+    
+    // Verificar cada 2 segundos
+    setInterval(verificarNuevosEquipos, 2000);
+    
+    // Verificar inmediatamente al cargar
+    setTimeout(verificarNuevosEquipos, 1000);
+}
+
+// Función para reordenar toda la tabla según el ranking
+function reordenarTablaRanking() {
+    // Esta función obtendría el ranking completo y reordenaría
+    // Por simplicidad, recargamos la página después de agregar nuevos equipos
+    // En una implementación más avanzada, podrías hacer un fetch del ranking completo
+}
+
+// Función para agregar equipo dinámicamente
+function agregarEquipoDinamico(equipo) {
+    // Crear nueva fila
+    const nuevaFila = document.createElement('tr');
+    nuevaFila.className = 'equipo-nuevo';
+    nuevaFila.setAttribute('data-equipo-id', equipo.id);
+    
+    // Determinar posición temporal (será recalculada después)
+    const posicionTemporal = equiposActuales.size + 1;
+    
+    nuevaFila.innerHTML = `
+        <td>
+            <strong class="fs-5">${posicionTemporal}°</strong>
+        </td>
+        <td>
+            <strong>${escapeHtml(equipo.nombre_equipo)}</strong>
+            <span class="badge badge-nuevo ms-2">NUEVO</span>
+            ${equipo.inicio_tardio ? '<br><span class="badge bg-info status-badge mt-1" title="Equipo se unió después del inicio">TARDÍO</span>' : ''}
+        </td>
+        <td>
+            <code class="fs-5">${escapeHtml(equipo.codigo_equipo)}</code>
+        </td>
+        <td>
+            <strong class="fs-4 text-primary">${equipo.puntuacion_total}</strong>
+            <small class="text-muted">🪙</small>
+        </td>
+        <td>
+            <span class="badge ${equipo.estado == 1 ? 'badge-compitiendo' : 'badge-espera'} p-2">
+                ${equipo.estado == 1 ? '🏁 COMPITIENDO' : '⏳ EN ESPERA'}
+            </span>
+        </td>
+        <td class="text-center actions-column">
+            <button type="button" class="btn btn-danger btn-sm btn-eliminar-equipo" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#eliminarModal"
+                    data-equipo-id="${equipo.id}"
+                    data-equipo-nombre="${escapeHtml(equipo.nombre_equipo)}"
+                    title="Eliminar equipo">
+                🗑️ Eliminar
+            </button>
+        </td>
+    `;
+    
+    // Agregar a la tabla (al final por ahora)
+    tablaEquipos.appendChild(nuevaFila);
+    
+    // Agregar al mapa de equipos actuales
+    equiposActuales.set(equipo.id.toString(), nuevaFila);
+    
+    // Actualizar contador
+    if (totalEquiposElement) {
+        totalEquiposElement.textContent = equiposActuales.size;
+    }
+    
+    // Configurar evento del nuevo botón
+    configurarEventosEliminacion();
+    
+    // Mostrar notificación
+    mostrarNotificacion(`¡Nuevo equipo registrado: ${equipo.nombre_equipo}!`);
+    
+    // Quitar clases de animación después de un tiempo
+    setTimeout(() => {
+        nuevaFila.classList.remove('equipo-nuevo');
+        const badgeNuevo = nuevaFila.querySelector('.badge-nuevo');
+        if (badgeNuevo) {
+            badgeNuevo.remove();
+        }
+    }, 3000);
+    
+    // Recargar la página después de 4 segundos para mostrar el ranking correcto
+    setTimeout(() => {
+        console.log('Recargando página para actualizar ranking...');
+        window.location.reload();
+    }, 4000);
+}
+
+// Función para escapar HTML (seguridad)
+function escapeHtml(unsafe) {
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
 
 // Función para crear confeti
 function crearConfeti() {
@@ -528,7 +754,6 @@ function crearConfeti() {
             confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
             document.body.appendChild(confetti);
             
-            // Remover confeti después de la animación
             setTimeout(() => {
                 confetti.remove();
             }, 5000);
@@ -541,14 +766,12 @@ function mostrarResultadoFinal() {
     if (!tiempoAgotadoMostrado) {
         tiempoAgotadoMostrado = true;
         
-        // Reproducir sonido (solo una vez)
         if (!sonidoReproducido) {
             finishSound.play().catch(e => console.log('Error reproduciendo sonido:', e));
             sonidoReproducido = true;
         }
         
         <?php if ($hay_ganador): ?>
-        // Mostrar ganador
         winnerTeamName.textContent = '<?php echo htmlspecialchars($equipo_ganador['nombre_equipo']); ?>';
         winnerScore.textContent = '<?php echo $equipo_ganador['puntuacion_total']; ?> Puntos';
         crearConfeti();
@@ -556,7 +779,6 @@ function mostrarResultadoFinal() {
             winnerModal.show();
         }, 1000);
         <?php else: ?>
-        // Mostrar mensaje de no ganador
         setTimeout(() => {
             noWinnerModal.show();
         }, 1000);
@@ -564,35 +786,59 @@ function mostrarResultadoFinal() {
     }
 }
 
-// Función principal para actualizar el tiempo
+// Función para actualizar el temporizador con efectos visuales
 function actualizarTiempoGlobal() {
     if (!tiempoElement) return;
     
-    // Verificar si el tiempo se agotó
     if (tiempoRestante <= 0) {
         tiempoElement.textContent = '00:00';
-        tiempoElement.className = 'text-danger';
+        tiempoElement.className = 'temporizador-grande temporizador-peligro';
         mostrarResultadoFinal();
         return;
     }
     
-    // Restar un segundo
     tiempoRestante--;
     
-    // Actualizar display
     const minutos = Math.floor(tiempoRestante / 60);
     const segundos = tiempoRestante % 60;
     tiempoElement.textContent = `${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
     
-    // Cambiar color cuando queden menos de 5 minutos
+    // Efectos visuales según el tiempo restante
     if (tiempoRestante < 300) {
-        tiempoElement.className = 'text-warning';
+        tiempoElement.className = 'temporizador-grande temporizador-advertencia';
     }
     
-    // Cambiar color cuando queden menos de 1 minuto
     if (tiempoRestante < 60) {
-        tiempoElement.className = 'text-danger';
+        tiempoElement.className = 'temporizador-grande temporizador-peligro';
     }
+}
+
+// Función para mostrar notificación
+function mostrarNotificacion(mensaje, tipo = 'success') {
+    // Eliminar notificaciones existentes primero
+    document.querySelectorAll('.notificacion-flotante').forEach(notif => notif.remove());
+    
+    const notificacion = document.createElement('div');
+    notificacion.className = `alert alert-${tipo} alert-dismissible fade show notificacion-flotante`;
+    
+    notificacion.innerHTML = `
+        <div class="d-flex align-items-center">
+            <span class="fs-5 me-2">${tipo === 'success' ? '🎉' : 'ℹ️'}</span>
+            <div>
+                <strong>${tipo === 'success' ? '¡Nuevo equipo!' : 'Información'}</strong>
+                <p class="mb-0">${mensaje}</p>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notificacion);
+    
+    setTimeout(() => {
+        if (notificacion.parentNode) {
+            notificacion.remove();
+        }
+    }, 4000);
 }
 
 // Iniciar el temporizador solo si el hackathon está activo

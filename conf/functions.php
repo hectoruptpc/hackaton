@@ -500,5 +500,27 @@ function eliminarEquipo($equipo_id) {
 }
 
 
+/**
+ * Obtener equipos creados después de un ID específico
+ */
+function obtenerEquiposNuevos($ultimo_id) {
+    global $db;
+    
+    try {
+        $stmt = $db->prepare("
+            SELECT id, nombre_equipo, codigo_equipo, puntuacion_total, tiempo_inicio, inicio_tardio, estado, creado_en 
+            FROM equipos 
+            WHERE id > ? 
+            ORDER BY id ASC
+        ");
+        $stmt->execute([$ultimo_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        error_log("Error obteniendo equipos nuevos: " . $e->getMessage());
+        return [];
+    }
+}
+
+
 
 ?>

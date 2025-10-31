@@ -132,7 +132,7 @@ if (isset($_SESSION['cedula'])) {
     <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Inicio Hackathon</title>
+        <title>Inicio Hackaton</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
         <style>
             .hero-section { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 60px 0; border-radius: 15px; }
@@ -167,14 +167,14 @@ if (isset($_SESSION['cedula'])) {
                             <div class="mb-3">
                                 <label for="nombre_equipo" class="form-label fs-5">Nombre del Equipo</label>
                                 <input type="text" class="form-control form-control-lg" id="nombre_equipo" name="nombre_equipo" required placeholder="Ingresa el nombre de tu equipo">
-                                <div class="form-text">Este será el nombre oficial de tu equipo en la competencia.</div>
+                                <div class="form-text">Nombre corto y original.</div>
                             </div>
                             
                             <h5 class="mt-4 mb-3">Miembros del Equipo <small class="text-muted">(Mínimo 3, máximo 4)</small></h5>
                             
-                            <!-- Miembro 1 (Obligatorio) -->
+                            <!-- Tutor (Obligatorio) -->
                             <div class="member-form">
-                                <h6 class="text-primary">Miembro 1 <span class="text-danger">*</span></h6>
+                                <h6 class="text-primary">Tutor <span class="text-danger">*</span></h6>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <input type="text" class="form-control" name="nombre_1" placeholder="Nombre completo" required>
@@ -185,9 +185,9 @@ if (isset($_SESSION['cedula'])) {
                                 </div>
                             </div>
                             
-                            <!-- Miembro 2 (Obligatorio) -->
+                            <!-- Miembro 1 (Obligatorio) -->
                             <div class="member-form">
-                                <h6 class="text-primary">Miembro 2 <span class="text-danger">*</span></h6>
+                                <h6 class="text-primary">Miembro 1 <span class="text-danger">*</span></h6>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <input type="text" class="form-control" name="nombre_2" placeholder="Nombre completo" required>
@@ -198,9 +198,9 @@ if (isset($_SESSION['cedula'])) {
                                 </div>
                             </div>
                             
-                            <!-- Miembro 3 (Obligatorio) -->
+                            <!-- Miembro 2 (Obligatorio) -->
                             <div class="member-form">
-                                <h6 class="text-primary">Miembro 3 <span class="text-danger">*</span></h6>
+                                <h6 class="text-primary">Miembro 2 <span class="text-danger">*</span></h6>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <input type="text" class="form-control" name="nombre_3" placeholder="Nombre completo" required>
@@ -211,9 +211,9 @@ if (isset($_SESSION['cedula'])) {
                                 </div>
                             </div>
                             
-                            <!-- Miembro 4 (Opcional) -->
+                            <!-- Miembro 3 (Opcional) -->
                             <div class="member-form optional-member">
-                                <h6 class="text-muted">Miembro 4 <small>(Opcional)</small></h6>
+                                <h6 class="text-muted">Miembro 3 <small>(Opcional)</small></h6>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <input type="text" class="form-control" name="nombre_4" placeholder="Nombre completo">
