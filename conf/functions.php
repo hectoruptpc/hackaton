@@ -225,27 +225,27 @@ function obtenerConfiguracionDesafios() {
     return [
         'ctf' => [
             'flag' => 'FLAG{SQL_INYECCION_EXITOSA}',
-            'puntos' => 200,
+            'puntos' => 1,
             'tiempo' => 15 * 60
         ],
         're' => [
             'flag' => 'FLAG{REVERSE_IS_FUN}',
-            'puntos' => 300,
+            'puntos' => 1,
             'tiempo' => 15 * 60
         ],
         'crypto' => [
             'flag' => 'FLAG{EL_DESENCRIPTADOR_MASTER}',
-            'puntos' => 250,
+            'puntos' => 1,
             'tiempo' => 15 * 60
         ],
         'zip' => [
             'flag' => 'FLAG{Z1P_CR4CK3R_W1N}',
-            'puntos' => 275,
+            'puntos' => 1,
             'tiempo' => 15 * 60
         ],
         'meta' => [
             'flag' => 'FLAG{SOY_EINSTEIN_SIUUU}',
-            'puntos' => 225,
+            'puntos' => 1,
             'tiempo' => 15 * 60
         ]
     ];
