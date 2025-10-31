@@ -773,10 +773,7 @@ function verifyFlag(challenge) {
             alert(data.message || 'Bandera Incorrecta. Sigue buscando.');
         }
     })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Error al verificar la bandera.');
-    });
+    
 }
 
 function handleCorrectFlag(challenge, puntos) {
