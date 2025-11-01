@@ -515,7 +515,7 @@ if (isset($_SESSION['cedula'])) {
                     <div class="card card-challenge shadow">
                         <div class="card-body">
                             <h5 class="card-title text-primary">1. Aplicación Web CTF</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Web Hacking (1 🪙)</h6>
+                            <h6 class="card-subtitle mb-2 text-muted">Web Hacking (1 🚩)</h6>
                             <p class="card-text">Encuentra una vulnerabilidad en este formulario de inicio de sesión.</p>
                             
                             <a href="challenge_ctf.php" class="btn btn-primary">Acceder al Desafío</a>
@@ -532,7 +532,7 @@ if (isset($_SESSION['cedula'])) {
                     <div class="card card-challenge shadow">
                         <div class="card-body">
                             <h5 class="card-title text-primary">2. Ingeniería Inversa</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Análisis de Binarios (1 🪙)</h6>
+                            <h6 class="card-subtitle mb-2 text-muted">Análisis de Binarios (1 🚩)</h6>
                             <p class="card-text">Descarga el archivo binario y realiza ingeniería inversa para obtener la contraseña oculta.</p>
                             <p class="fw-bold">Archivo: <a href="reverse_challenge.zip">reverse_challenge.zip</a></p>
                             
@@ -549,7 +549,7 @@ if (isset($_SESSION['cedula'])) {
                     <div class="card card-challenge shadow">
                         <div class="card-body">
                             <h5 class="card-title text-primary">3. Criptografía</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Descifrado de Mensajes (1 🪙)</h6>
+                            <h6 class="card-subtitle mb-2 text-muted">Descifrado de Mensajes (1 🚩)</h6>
                             <p class="card-text">Descifra el mensaje oculto. haz lo posible para identificar que cifrado es y desencriptarlo.</p>
                             <p class="fw-bold">Cifrado: RkxBR3tFTF9ERVNFTkNSSVBUQURPUl9NQVNURVJ9</p>
                             
@@ -566,7 +566,7 @@ if (isset($_SESSION['cedula'])) {
     <div class="card card-challenge shadow">
         <div class="card-body">
             <h5 class="card-title text-primary">4. Puzzle de Redireccion</h5>
-            <h6 class="card-subtitle mb-2 text-muted">Parámetros Ocultos (1 🪙)</h6>
+            <h6 class="card-subtitle mb-2 text-muted">Parámetros Ocultos (1 🚩)</h6>
             <p class="card-text">Encuentra la vulnerabilidad en las redirecciones para encontrar la bandera.</p>
             
             <a href="nivel4.php" class="btn btn-primary">Iniciar Desafío</a>
@@ -583,7 +583,7 @@ if (isset($_SESSION['cedula'])) {
                     <div class="card card-challenge shadow">
                         <div class="card-body">
                             <h5 class="card-title text-primary">5. Análisis Forense</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Metadatos EXIF (1 🪙)</h6>
+                            <h6 class="card-subtitle mb-2 text-muted">Metadatos EXIF (1 🚩)</h6>
                             <p class="card-text">Descarga la imagen y analiza sus metadatos EXIF para encontrar la bandera oculta.</p>
                             <p class="fw-bold">Imagen: <a href="mystery_image.jpeg">mystery_image.jpeg</a></p>
                             

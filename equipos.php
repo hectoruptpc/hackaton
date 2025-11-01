@@ -411,7 +411,7 @@ if (!isset($_SESSION['ultima_verificacion_puntuaciones'])) {
                                 </td>
                                 <td>
                                     <strong class="fs-4 text-primary"><?php echo $equipo['puntuacion_total']; ?></strong>
-                                    <small class="text-muted">🪙</small>
+                                    <small class="text-muted">🚩</small>
                                 </td>
                                 <td>
                                     <?php if ($equipo['estado'] == 1): ?>
