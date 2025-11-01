@@ -561,22 +561,22 @@ if (isset($_SESSION['cedula'])) {
                     </div>
                 </div>
 
-                <!-- Desafío 4: Fuerza Bruta ZIP -->
-                <div class="col-md-4 mb-4">
-                    <div class="card card-challenge shadow">
-                        <div class="card-body">
-                            <h5 class="card-title text-primary">4. Fuerza Bruta ZIP</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Ataque de Diccionario (1 🪙)</h6>
-                            <p class="card-text">Descarga el archivo ZIP protegido con contraseña y descifra la clave o intenta otro metodo con tal de sacar la bandera del Zip.</p>
-                            <p class="fw-bold">Archivo: <a href="secret_files.zip">secret_files.zip</a></p>
-                            
-                            <div class="mt-3">
-                                <input type="text" class="form-control" id="flag-zip" placeholder="Ingresa la bandera">
-                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="zip">Verificar</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <!-- Desafío 4: Puzzle de URL -->
+<div class="col-md-4 mb-4">
+    <div class="card card-challenge shadow">
+        <div class="card-body">
+            <h5 class="card-title text-primary">4. Puzzle de Redireccion</h5>
+            <h6 class="card-subtitle mb-2 text-muted">Parámetros Ocultos (1 🪙)</h6>
+            <p class="card-text">Encuentra la vulnerabilidad en las redirecciones para encontrar la bandera.</p>
+            
+            <a href="nivel4.php" class="btn btn-primary">Iniciar Desafío</a>
+            <div class="mt-3">
+                <input type="text" class="form-control" id="flag-url" placeholder="Ingresa la bandera">
+                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="url">Verificar</button>
+            </div>
+        </div>
+    </div>
+</div>
 
                 <!-- Desafío 5: Metadatos de Imagen -->
                 <div class="col-md-4 mb-4">
@@ -611,7 +611,7 @@ let completedChallenges = {};
 
 // Calcular tiempo por desafío basado en el tiempo global restante
 const challengeDurations = {};
-const desafios = ['ctf', 're', 'crypto', 'zip', 'meta'];
+const desafios = ['ctf', 're', 'crypto', 'url', 'meta'];
 desafios.forEach(desafio => {
     const tiempoDesafio = Math.min(15 * 60, globalTimeLeft);
     challengeDurations[desafio] = tiempoDesafio;

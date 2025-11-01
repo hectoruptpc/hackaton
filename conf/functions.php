@@ -238,8 +238,8 @@ function obtenerConfiguracionDesafios() {
             'puntos' => 1,
             'tiempo' => 15 * 60
         ],
-        'zip' => [
-            'flag' => 'FLAG{Z1P_CR4CK3R_W1N}',
+         'url' => [
+            'flag' => 'FLAG{URL_HACK}',
             'puntos' => 1,
             'tiempo' => 15 * 60
         ],
