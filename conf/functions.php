@@ -238,13 +238,18 @@ function obtenerConfiguracionDesafios() {
             'puntos' => 1,
             'tiempo' => 15 * 60
         ],
-         'url' => [
+        'url' => [
             'flag' => 'FLAG{URL_HACK}',
             'puntos' => 1,
             'tiempo' => 15 * 60
         ],
         'meta' => [
             'flag' => 'FLAG{SOY_EINSTEIN_SIUUU}',
+            'puntos' => 1,
+            'tiempo' => 15 * 60
+        ],
+        'promo' => [
+            'flag' => 'FLAG{SALDO_INSUFICIENTE}',
             'puntos' => 1,
             'tiempo' => 15 * 60
         ]

@@ -595,6 +595,25 @@ if (isset($_SESSION['cedula'])) {
                     </div>
                 </div>
 
+                    <!-- Desafío 6: Promoción Sospechosa -->
+<div class="col-md-4 mb-4">
+    <div class="card card-challenge shadow">
+        <div class="card-body">
+            <h5 class="card-title text-primary">6. Promoción Sospechosa</h5>
+            <h6 class="card-subtitle mb-2 text-muted">Reconocimiento de Patrones (1 🚩)</h6>
+            <p class="card-text">El departamento de marketing creó esta imagen promocional, pero contiene información sensible escondida.</p>
+            <p class="fw-bold">Imagen: <a href="promocion_sospechosa.jpg" download>promocion_sospechosa.jpg</a></p>
+            
+            <div class="mt-3">
+                <input type="text" class="form-control" id="flag-promo" placeholder="Ingresa la bandera">
+                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="promo">Verificar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
             </div>
         </div>
     <?php endif; ?>
@@ -611,7 +630,7 @@ let completedChallenges = {};
 
 // Calcular tiempo por desafío basado en el tiempo global restante
 const challengeDurations = {};
-const desafios = ['ctf', 're', 'crypto', 'url', 'meta'];
+const desafios = ['ctf', 're', 'crypto', 'url', 'meta', 'promo'];
 desafios.forEach(desafio => {
     const tiempoDesafio = Math.min(15 * 60, globalTimeLeft);
     challengeDurations[desafio] = tiempoDesafio;
