@@ -404,6 +404,10 @@ if (isset($_SESSION['cedula'])) {
     min-height: 250px;
 }
 .member-list { max-height: 200px; overflow-y: auto; }
+.completed-challenge {
+    background-color: #d4edda !important;
+    border-color: #c3e6cb !important;
+}
 </style>
 </head>
 <body>
@@ -512,7 +516,7 @@ if (isset($_SESSION['cedula'])) {
 
                 <!-- Desafío 1: Aplicación Web CTF -->
                 <div class="col-md-4 mb-4">
-                    <div class="card card-challenge shadow">
+                    <div class="card card-challenge shadow" id="challenge-ctf">
                         <div class="card-body">
                             <h5 class="card-title text-primary">1. Aplicación Web CTF</h5>
                             <h6 class="card-subtitle mb-2 text-muted">Web Hacking (1 🚩)</h6>
@@ -529,7 +533,7 @@ if (isset($_SESSION['cedula'])) {
 
                 <!-- Desafío 2: Ingeniería Inversa -->
                 <div class="col-md-4 mb-4">
-                    <div class="card card-challenge shadow">
+                    <div class="card card-challenge shadow" id="challenge-re">
                         <div class="card-body">
                             <h5 class="card-title text-primary">2. Ingeniería Inversa</h5>
                             <h6 class="card-subtitle mb-2 text-muted">Análisis de Binarios (1 🚩)</h6>
@@ -546,7 +550,7 @@ if (isset($_SESSION['cedula'])) {
 
                 <!-- Desafío 3: Criptografía -->
                 <div class="col-md-4 mb-4">
-                    <div class="card card-challenge shadow">
+                    <div class="card card-challenge shadow" id="challenge-crypto">
                         <div class="card-body">
                             <h5 class="card-title text-primary">3. Criptografía</h5>
                             <h6 class="card-subtitle mb-2 text-muted">Descifrado de Mensajes (1 🚩)</h6>
@@ -562,25 +566,25 @@ if (isset($_SESSION['cedula'])) {
                 </div>
 
                 <!-- Desafío 4: Puzzle de URL -->
-<div class="col-md-4 mb-4">
-    <div class="card card-challenge shadow">
-        <div class="card-body">
-            <h5 class="card-title text-primary">4. Puzzle de Redireccion</h5>
-            <h6 class="card-subtitle mb-2 text-muted">Parámetros Ocultos (1 🚩)</h6>
-            <p class="card-text">Encuentra la vulnerabilidad en las redirecciones para encontrar la bandera.</p>
-            
-            <a href="nivel4.php" class="btn btn-primary">Iniciar Desafío</a>
-            <div class="mt-3">
-                <input type="text" class="form-control" id="flag-url" placeholder="Ingresa la bandera">
-                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="url">Verificar</button>
-            </div>
-        </div>
-    </div>
-</div>
+                <div class="col-md-4 mb-4">
+                    <div class="card card-challenge shadow" id="challenge-url">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">4. Puzzle de Redireccion</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Parámetros Ocultos (1 🚩)</h6>
+                            <p class="card-text">Encuentra la vulnerabilidad en las redirecciones para encontrar la bandera.</p>
+                            
+                            <a href="nivel4.php" class="btn btn-primary">Iniciar Desafío</a>
+                            <div class="mt-3">
+                                <input type="text" class="form-control" id="flag-url" placeholder="Ingresa la bandera">
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="url">Verificar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Desafío 5: Metadatos de Imagen -->
                 <div class="col-md-4 mb-4">
-                    <div class="card card-challenge shadow">
+                    <div class="card card-challenge shadow" id="challenge-meta">
                         <div class="card-body">
                             <h5 class="card-title text-primary">5. Análisis Forense</h5>
                             <h6 class="card-subtitle mb-2 text-muted">Metadatos EXIF (1 🚩)</h6>
@@ -595,30 +599,56 @@ if (isset($_SESSION['cedula'])) {
                     </div>
                 </div>
 
-                    <!-- Desafío 6: Promoción Sospechosa -->
-<div class="col-md-4 mb-4">
-    <div class="card card-challenge shadow">
-        <div class="card-body">
-            <h5 class="card-title text-primary">6. Promoción Sospechosa</h5>
-            <h6 class="card-subtitle mb-2 text-muted">Reconocimiento de Patrones (1 🚩)</h6>
-            <p class="card-text">El departamento de marketing creó esta imagen promocional, pero contiene información sensible escondida.</p>
-            <p class="fw-bold">Imagen: <a href="promocion_sospechosa.jpg" download>promocion_sospechosa.jpg</a></p>
-            
-            <div class="mt-3">
-                <input type="text" class="form-control" id="flag-promo" placeholder="Ingresa la bandera">
-                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="promo">Verificar</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-
+                <!-- Desafío 6: Promoción Sospechosa -->
+                <div class="col-md-4 mb-4">
+                    <div class="card card-challenge shadow" id="challenge-promo">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">6. Promoción Sospechosa</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Reconocimiento de Patrones (1 🚩)</h6>
+                            <p class="card-text">El departamento de marketing creó esta imagen promocional, pero contiene información sensible escondida.</p>
+                            <p class="fw-bold">Imagen: <a href="promocion_sospechosa.jpg" download>promocion_sospechosa.jpg</a></p>
+                            
+                            <div class="mt-3">
+                                <input type="text" class="form-control" id="flag-promo" placeholder="Ingresa la bandera">
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="promo">Verificar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
             </div>
         </div>
     <?php endif; ?>
 </div>
 
+<!-- Modal de Felicitaciones -->
+<div class="modal fade" id="congratsModal" tabindex="-1" aria-labelledby="congratsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="congratsModalLabel">🎉 ¡FELICITACIONES! 🎉</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-4">
+                    <i class="fas fa-trophy fa-4x text-warning mb-3"></i>
+                    <h3>¡HAS COMPLETADO TODOS LOS DESAFÍOS!</h3>
+                </div>
+                <p class="lead">El equipo <strong><?php echo htmlspecialchars($_SESSION['nombre_equipo']); ?></strong> ha resuelto exitosamente los 6 desafíos de seguridad.</p>
+                <div class="alert alert-info">
+                    <h5>Puntuación Final: <span id="final-score" class="text-success"><?php echo $_SESSION['puntuacion_equipo']; ?></span> puntos</h5>
+                    <p class="mb-0">Tiempo utilizado: <span id="time-used">--:--</span></p>
+                </div>
+                <p>Espera los resultados finales. ¡Buen trabajo equipo!</p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-success btn-lg" data-bs-dismiss="modal">Continuar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 // ===== CONFIGURACIÓN INICIAL =====
 const segundosTranscurridos = <?php echo $segundos_transcurridos; ?>;
@@ -627,10 +657,11 @@ let globalTimeLeft = tiempoRestanteGlobal;
 let currentScore = <?php echo $_SESSION['puntuacion_equipo']; ?>;
 let timers = {};
 let completedChallenges = {};
+let totalChallenges = 6; // Actualizado a 6 desafíos
 
 // Calcular tiempo por desafío basado en el tiempo global restante
 const challengeDurations = {};
-const desafios = ['ctf', 're', 'crypto', 'url', 'meta', 'promo'];
+const desafios = ['ctf', 're', 'crypto', 'url', 'meta', 'promo']; // Agregado 'promo'
 desafios.forEach(desafio => {
     const tiempoDesafio = Math.min(15 * 60, globalTimeLeft);
     challengeDurations[desafio] = tiempoDesafio;
@@ -661,16 +692,24 @@ function startTimers() {
 function updateChallengeTimer(challenge, timeLeft) {
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
-    document.getElementById(`timer-${challenge}`).textContent = 
-        `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    const timerElement = document.getElementById(`timer-${challenge}`);
+    if (timerElement) {
+        timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
 }
 
 function clearChallengeTimer(challenge) {
     if (timers[challenge]) {
         clearInterval(timers[challenge]);
     }
-    document.getElementById(`timer-${challenge}`).textContent = 'Tiempo agotado';
-    document.getElementById(`flag-${challenge}`).disabled = true;
+    const timerElement = document.getElementById(`timer-${challenge}`);
+    if (timerElement) {
+        timerElement.textContent = 'Tiempo agotado';
+    }
+    const flagInput = document.getElementById(`flag-${challenge}`);
+    if (flagInput) {
+        flagInput.disabled = true;
+    }
     const button = document.querySelector(`button[data-challenge="${challenge}"]`);
     if (button) {
         button.disabled = true;
@@ -762,6 +801,16 @@ function setupFlagVerification() {
             verifyFlag(challenge);
         });
     });
+
+    // Permitir enviar con Enter
+    document.querySelectorAll('input[id^="flag-"]').forEach(input => {
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const challenge = this.id.replace('flag-', '');
+                verifyFlag(challenge);
+            }
+        });
+    });
 }
 
 function verifyFlag(challenge) {
@@ -792,7 +841,10 @@ function verifyFlag(challenge) {
             alert(data.message || 'Bandera Incorrecta. Sigue buscando.');
         }
     })
-    
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al verificar la bandera. Intenta nuevamente.');
+    });
 }
 
 function handleCorrectFlag(challenge, puntos) {
@@ -802,13 +854,57 @@ function handleCorrectFlag(challenge, puntos) {
     document.getElementById('score').textContent = `${currentScore} Puntos`;
     
     completedChallenges[challenge] = true;
+    
+    // Marcar desafío como completado visualmente
+    const challengeCard = document.getElementById(`challenge-${challenge}`);
+    if (challengeCard) {
+        challengeCard.classList.add('completed-challenge');
+    }
+    
     clearChallengeTimer(challenge);
-    document.getElementById(`timer-${challenge}`).textContent = 'COMPLETADO';
-    document.getElementById(`flag-${challenge}`).disabled = true;
+    
+    const timerElement = document.getElementById(`timer-${challenge}`);
+    if (timerElement) {
+        timerElement.textContent = 'COMPLETADO ✓';
+    }
+    
+    const flagInput = document.getElementById(`flag-${challenge}`);
+    if (flagInput) {
+        flagInput.disabled = true;
+        flagInput.value = '✅ COMPLETADO';
+    }
     
     const button = document.querySelector(`button[data-challenge="${challenge}"]`);
     if (button) {
         button.disabled = true;
+        button.textContent = 'Completado';
+        button.classList.remove('btn-outline-success');
+        button.classList.add('btn-success');
+    }
+    
+    // Verificar si se completaron todos los desafíos
+    checkAllChallengesCompleted();
+}
+
+function checkAllChallengesCompleted() {
+    const completedCount = Object.keys(completedChallenges).length;
+    
+    if (completedCount === totalChallenges) {
+        // Calcular tiempo utilizado
+        const tiempoUtilizado = segundosTranscurridos;
+        const minutos = Math.floor(tiempoUtilizado / 60);
+        const segundos = tiempoUtilizado % 60;
+        const tiempoFormateado = `${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
+        
+        // Actualizar modal con información
+        document.getElementById('final-score').textContent = currentScore;
+        document.getElementById('time-used').textContent = tiempoFormateado;
+        
+        // Mostrar modal después de un breve delay
+        setTimeout(() => {
+            const congratsModal = new bootstrap.Modal(document.getElementById('congratsModal'));
+            congratsModal.show();
+        }, 1000);
     }
 }
 
@@ -823,6 +919,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     setupEstadoMonitor();
     setupFlagVerification();
+    
+    // Verificar estado inicial de desafíos completados
+    setTimeout(() => {
+        checkAllChallengesCompleted();
+    }, 500);
 });
 </script>
 </body>
