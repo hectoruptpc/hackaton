@@ -123,12 +123,6 @@ if (!isset($_SESSION['ultima_verificacion_puntuaciones'])) {
         .badge-espera { background-color: #6c757d; }
         .badge-compitiendo { background-color: #198754; }
         .actions-column { width: 120px; }
-        .winner-modal { background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); }
-        .no-winner-modal { background: linear-gradient(135deg, #6c757d 0%, #495057 100%); color: white; }
-        .empate-modal { background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%); color: white; }
-        .winner-crown { font-size: 4rem; animation: bounce 2s infinite; }
-        .sad-face { font-size: 4rem; animation: pulse 2s infinite; }
-        .tie-icon { font-size: 4rem; animation: bounce 2s infinite; }
         
         /* TEMPORIZADOR MÁS GRANDE */
         .temporizador-grande {
@@ -169,32 +163,77 @@ if (!isset($_SESSION['ultima_verificacion_puntuaciones'])) {
             animation: slideIn 0.5s ease-out;
         }
         
-        /* Estilos para el empate */
-        .equipo-ganador-empate {
-            border-left: 5px solid #ffc107;
+        /* Estilos para equipos ganadores */
+        .primer-lugar-tabla {
+            border: 3px solid #FFD700 !important;
+            background: linear-gradient(135deg, #FFF9C4 0%, #FFEB3B 100%) !important;
             animation: pulse 2s infinite;
         }
-        
-        .btn-desempate {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-            border: none;
-            font-weight: bold;
-            padding: 15px 30px;
-            font-size: 1.2rem;
+
+        .segundo-lugar-tabla {
+            border: 3px solid #C0C0C0 !important;
+            background: linear-gradient(135deg, #F5F5F5 0%, #E0E0E0 100%) !important;
+            animation: pulse 2s infinite;
         }
-        
-        .btn-desempate:hover {
-            background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
-            transform: scale(1.05);
-            transition: all 0.3s ease;
+
+        .tercer-lugar-tabla {
+            border: 3px solid #CD7F32 !important;
+            background: linear-gradient(135deg, #FFE0B2 0%, #FFB74D 100%) !important;
+            animation: pulse 2s infinite;
         }
-        
-        /* Modal de desempate */
-        .desempate-modal {
-            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+
+        .ganador-parcial-tabla {
+            border: 3px solid #28a745 !important;
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%) !important;
+        }
+
+        .empate-tabla {
+            border: 3px solid #ffc107 !important;
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%) !important;
+        }
+
+        .equipo-completo {
+            border: 2px solid #28a745 !important;
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%) !important;
+            animation: pulse 2s infinite;
+            position: relative;
+        }
+
+        .equipo-completo::after {
+            content: "✅ COMPLETO";
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8rem;
+            background: #28a745;
             color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
         }
-        
+
+        /* Podio items */
+        .podio-item {
+            padding: 20px;
+            border-radius: 15px;
+            margin: 10px 0;
+        }
+
+        .primer-lugar {
+            background: rgba(255, 215, 0, 0.2);
+            border: 3px solid #FFD700;
+        }
+
+        .segundo-lugar {
+            background: rgba(192, 192, 192, 0.2);
+            border: 3px solid #C0C0C0;
+        }
+
+        .tercer-lugar {
+            background: rgba(205, 127, 50, 0.2);
+            border: 3px solid #CD7F32;
+        }
+
         /* Animaciones para cambios de puntuación */
         .puntuacion-cambiando {
             animation: pulse 0.5s ease-in-out 3;
@@ -251,18 +290,6 @@ if (!isset($_SESSION['ultima_verificacion_puntuaciones'])) {
         <img src="img/img.jpg" alt="Logo Hackathon" style="max-width:800px;">
         <h1>Hackathon UPTPC</h1>
     </div>
-
-    <!-- Panel de Error si hay problemas de base de datos -->
-    <?php if (isset($mensaje_error) && strpos($mensaje_error, 'Error al cargar datos') !== false): ?>
-    <div class="card error-panel mb-4">
-        <div class="card-body text-center">
-            <h3 class="card-title">⚠️ Error de Configuración</h3>
-            <p class="mb-3"><?php echo $mensaje_error; ?></p>
-            <p>Verifica que la base de datos esté configurada correctamente.</p>
-            <a href="index.php" class="btn btn-light">Volver al Inicio</a>
-        </div>
-    </div>
-    <?php endif; ?>
 
     <!-- Panel de Administración -->
     <?php if ($es_admin): ?>
@@ -324,12 +351,10 @@ if (!isset($_SESSION['ultima_verificacion_puntuaciones'])) {
             <?php if ($hackathon_activo): ?>
             <div class="alert alert-warning mb-0">
                 <strong>⚠️ Hackathon en progreso</strong> - El tiempo corre para todos los equipos registrados. 
-                Los nuevos equipos que se registren deberán esperar al siguiente hackathon.
             </div>
             <?php else: ?>
             <div class="alert alert-info mb-0">
                 <strong>💡 Listo para comenzar</strong> - Cuando inicies el hackathon, todos los equipos existentes comenzarán simultáneamente.
-                Asegúrate de que todos los equipos estén registrados antes de iniciar.
             </div>
             <?php endif; ?>
         </div>
@@ -350,7 +375,7 @@ if (!isset($_SESSION['ultima_verificacion_puntuaciones'])) {
     </div>
     <?php endif; ?>
 
-    <?php if ($mensaje_error && strpos($mensaje_error, 'Error al cargar datos') === false): ?>
+    <?php if ($mensaje_error): ?>
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
         <div class="d-flex align-items-center">
             <span class="fs-4 me-2">❌</span>
@@ -364,7 +389,6 @@ if (!isset($_SESSION['ultima_verificacion_puntuaciones'])) {
     <?php endif; ?>
 
     <!-- Ranking de Equipos -->
-    <?php if (!isset($mensaje_error) || strpos($mensaje_error, 'Error al cargar datos') === false): ?>
     <h2 class="text-center mb-4">🏆 Ranking de Equipos</h2>
     
     <div class="row justify-content-center">
@@ -454,7 +478,6 @@ if (!isset($_SESSION['ultima_verificacion_puntuaciones'])) {
             <?php echo isset($_SESSION['cedula']) ? '🎮 Volver al Dashboard' : 'Volver al inicio de sesión'; ?>
         </a>
     </div>
-    <?php endif; ?>
 </div>
 
 <!-- Modal para Iniciar Hackathon -->
@@ -470,7 +493,7 @@ if (!isset($_SESSION['ultima_verificacion_puntuaciones'])) {
                 <div class="alert alert-info">
                     <strong>📅 Duración:</strong> 1 hora 30 minutos<br>
                     <strong>✅ Equipos que comenzarán:</strong> <?php echo count($ranking); ?><br>
-                    <strong>🎯 Desafíos:</strong> Se activarán automáticamente
+                    <strong>🎯 Desafíos:</strong> 6 desafíos de seguridad
                 </div>
                 <p class="text-danger"><strong>⚠️ Esta acción no se puede deshacer</strong></p>
             </div>
@@ -543,55 +566,20 @@ if (!isset($_SESSION['ultima_verificacion_puntuaciones'])) {
     </div>
 </div>
 
-<!-- Modal del Ganador -->
-<div class="modal fade" id="winnerModal" tabindex="-1" aria-labelledby="winnerModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content winner-modal">
+<!-- Modal Podio Completo (Cuando equipos completan los 6 desafíos) -->
+<div class="modal fade" id="podioCompletoModal" tabindex="-1" aria-labelledby="podioCompletoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%);">
             <div class="modal-header border-0">
-                <h2 class="modal-title text-center w-100" id="winnerModalLabel">
-                    🎉 ¡HACKATHON FINALIZADO! 🎉
+                <h2 class="modal-title text-center w-100 text-white" id="podioCompletoModalLabel">
+                    🏆 PODIO OFICIAL 🏆
                 </h2>
             </div>
             <div class="modal-body text-center">
-                <div class="winner-crown">👑</div>
-                <h3 class="mt-3">EQUIPO GANADOR</h3>
-                <h1 class="display-4 fw-bold text-dark" id="winnerTeamName"></h1>
-                <h2 class="text-success" id="winnerScore"></h2>
-                <p class="fs-5 mt-3">¡Felicidades por su excelente desempeño!</p>
-                <div class="mt-4">
-                    <span class="badge bg-success fs-6 p-2">🥇 PRIMER LUGAR</span>
-                </div>
-            </div>
-            <div class="modal-footer border-0 justify-content-center">
-                <button type="button" class="btn btn-dark btn-lg" data-bs-dismiss="modal">Cerrar</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal de Empate -->
-<div class="modal fade" id="empateModal" tabindex="-1" aria-labelledby="empateModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content empate-modal">
-            <div class="modal-header border-0">
-                <h2 class="modal-title text-center w-100" id="empateModalLabel">
-                    🤝 ¡EMPATE EN EL HACKATHON! 🤝
-                </h2>
-            </div>
-            <div class="modal-body text-center">
-                <div class="tie-icon">⚖️</div>
-                <h3 class="mt-3">EQUIPOS GANADORES (EMPATE)</h3>
-                <div id="empateTeamsList" class="my-4">
-                    <!-- Se llenará dinámicamente con JavaScript -->
-                </div>
-                <p class="fs-5 mt-3">¡Felicidades a todos los equipos por su excelente desempeño!</p>
-                
-                <!-- Botón de Desempate -->
-                <div class="mt-4">
-                    <button type="button" class="btn btn-danger btn-lg btn-desempate" id="btnIniciarDesempate">
-                        🏆 INICIAR RONDA DE DESEMPATE
-                    </button>
-                    <p class="text-light mt-2 small">Solo los equipos empatados participarán en esta ronda final</p>
+                <div class="fs-1 mb-3">🎉 ¡FELICITACIONES! 🎉</div>
+                <h4 class="text-white mb-4">Equipos que completaron los 6 desafíos</h4>
+                <div id="podioList">
+                    <!-- Se llena dinámicamente -->
                 </div>
             </div>
             <div class="modal-footer border-0 justify-content-center">
@@ -601,65 +589,71 @@ if (!isset($_SESSION['ultima_verificacion_puntuaciones'])) {
     </div>
 </div>
 
-<!-- Modal de Desempate -->
-<div class="modal fade" id="desempateModal" tabindex="-1" aria-labelledby="desempateModalLabel" aria-hidden="true">
+<!-- Modal Ganador por Tiempo (Cuando se acaba el tiempo y nadie completó todo) -->
+<div class="modal fade" id="ganadorTiempoModal" tabindex="-1" aria-labelledby="ganadorTiempoModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content desempate-modal">
+        <div class="modal-content" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white;">
             <div class="modal-header border-0">
-                <h2 class="modal-title text-center w-100" id="desempateModalLabel">🏆 RONDA DE DESEMPATE</h2>
+                <h2 class="modal-title text-center w-100">⏰ TIEMPO AGOTADO</h2>
             </div>
             <div class="modal-body text-center">
-                <div class="mb-4">
-                    <span class="fs-1">⚔️</span>
-                    <h3 class="mt-3">DESAFÍO FINAL</h3>
-                    <p class="fs-5">Los equipos empatados competirán en un último desafío</p>
+                <div class="fs-1 mb-3">🎯</div>
+                <h3>GANADOR POR PUNTUACIÓN</h3>
+                <h2 id="ganadorTiempoNombre" class="fw-bold"></h2>
+                <h4 class="text-warning" id="ganadorTiempoPuntos"></h4>
+                <p class="mt-3">Mayor puntuación obtenida</p>
+                <div class="alert alert-warning text-dark mt-3">
+                    <strong>Nota:</strong> Ningún equipo completó los 6 desafíos
                 </div>
-                
-                <div class="alert alert-warning text-dark mb-4">
-                    <h5>Equipos Participantes:</h5>
-                    <div id="listaEquiposDesempate">
-                        <!-- Se llenará dinámicamente con JavaScript -->
-                    </div>
-                </div>
-                
-                <div class="mb-4">
-                    <h5>⏱️ Tiempo del Desafío: <span id="tiempoDesempate" class="badge bg-light text-dark fs-4">05:00</span></h5>
-                </div>
-                
-                <div class="mb-4">
-                    <h5>🎯 Tipo de Desafío:</h5>
-                    <p class="fs-5">Próximamente se definirá el desafío final</p>
-                </div>
-                
-                <div class="d-grid gap-2">
-                    <button type="button" class="btn btn-light btn-lg fw-bold" id="btnComenzarDesempate">
-                        🚀 COMENZAR DESEMPATE
-                    </button>
-                    <button type="button" class="btn btn-outline-light btn-sm" data-bs-dismiss="modal">
-                        Cancelar
-                    </button>
-                </div>
+            </div>
+            <div class="modal-footer border-0 justify-content-center">
+                <button type="button" class="btn btn-light btn-lg" data-bs-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal Sin Ganador -->
-<div class="modal fade" id="noWinnerModal" tabindex="-1" aria-labelledby="noWinnerModalLabel" aria-hidden="true">
+<!-- Modal Empate por Tiempo (Cuando se acaba el tiempo y hay empate) -->
+<div class="modal fade" id="empateTiempoModal" tabindex="-1" aria-labelledby="empateTiempoModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content no-winner-modal">
+        <div class="modal-content" style="background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%); color: white;">
             <div class="modal-header border-0">
-                <h2 class="modal-title text-center w-100" id="noWinnerModalLabel">⏰ ¡HACKATHON FINALIZADO! ⏰</h2>
+                <h2 class="modal-title text-center w-100">⏰ TIEMPO AGOTADO</h2>
             </div>
             <div class="modal-body text-center">
-                <div class="sad-face">😔</div>
-                <h3 class="mt-3">NO HAY GANADOR</h3>
-                <h1 class="display-4 fw-bold text-light">NINGUNO DE LOS EQUIPOS</h1>
-                <h2 class="text-warning">PUDO COMPLETAR LOS NIVELES</h2>
-                <p class="fs-5 mt-3">Los desafíos fueron muy difíciles esta vez.</p>
-                <p class="text-info">Nota: En caso de empate, habrá una ronda de desempate.</p>
+                <div class="fs-1 mb-3">⚖️</div>
+                <h3>EMPATE EN PUNTUACIÓN</h3>
+                <h4>Múltiples equipos con <span class="text-dark" id="puntuacionEmpateTiempo"></span></h4>
+                <div id="listaEmpateTiempo" class="my-4">
+                    <!-- Se llena dinámicamente -->
+                </div>
                 <div class="mt-4">
-                    <span class="badge bg-warning fs-6 p-2">🏆 MEJOR SUERTE PARA LA PRÓXIMA</span>
+                    <button type="button" class="btn btn-danger btn-lg" id="btnIniciarDesempateTiempo">
+                        🏆 INICIAR DESEMPATE
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer border-0 justify-content-center">
+                <button type="button" class="btn btn-light btn-lg" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Todos Fallaron -->
+<div class="modal fade" id="todosFallaronModal" tabindex="-1" aria-labelledby="todosFallaronModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: linear-gradient(135deg, #6c757d 0%, #495057 100%); color: white;">
+            <div class="modal-header border-0">
+                <h2 class="modal-title text-center w-100">😔 RESULTADOS</h2>
+            </div>
+            <div class="modal-body text-center">
+                <div class="fs-1 mb-3">💀</div>
+                <h3>NINGÚN EQUIPO</h3>
+                <h2 class="text-warning">LOGRO PUNTUAR</h2>
+                <p class="mt-3">Los desafíos fueron muy desafiantes esta vez</p>
+                <div class="alert alert-info mt-3">
+                    <strong>🏆 Mejor suerte para la próxima</strong>
                 </div>
             </div>
             <div class="modal-footer border-0 justify-content-center">
@@ -682,18 +676,20 @@ if (!isset($_SESSION['ultima_verificacion_puntuaciones'])) {
 let tiempoRestante = <?php echo $tiempo_restante; ?>;
 let tiempoAgotadoMostrado = false;
 let sonidoReproducido = false;
-let equiposActuales = new Map(); // Usamos Map para mantener orden
+let equiposActuales = new Map();
+let podioCompletoMostrado = false;
+let resultadoTiempoMostrado = false;
+
+// Constantes
+const PUNTUACION_MAXIMA = 6; // 6 desafíos completados
 
 // Elementos del DOM
 const tiempoElement = document.getElementById('tiempo-global');
-const winnerModal = new bootstrap.Modal(document.getElementById('winnerModal'));
-const empateModal = new bootstrap.Modal(document.getElementById('empateModal'));
-const noWinnerModal = new bootstrap.Modal(document.getElementById('noWinnerModal'));
 const finishSound = document.getElementById('finishSound');
-const winnerTeamName = document.getElementById('winnerTeamName');
-const winnerScore = document.getElementById('winnerScore');
 const totalEquiposElement = document.getElementById('total-equipos');
 const tablaEquipos = document.getElementById('tabla-equipos');
+
+// ===== SISTEMA DE DETERMINACIÓN DE RESULTADOS =====
 
 // Función para obtener los datos actualizados del ranking
 function obtenerRankingActualizado() {
@@ -708,117 +704,265 @@ function obtenerRankingActualizado() {
         });
 }
 
-// Función para determinar el resultado final con datos actualizados
-function determinarResultadoFinal(ranking) {
-    if (!ranking || ranking.length === 0) {
-        return { tipo: 'sin_ganador' };
+// Función para verificar si hay equipos que completaron los 6 desafíos
+function verificarPodioCompleto(ranking) {
+    if (!ranking || ranking.length === 0) return null;
+    
+    // Filtrar equipos que completaron todos los desafíos
+    const equiposCompletos = ranking.filter(equipo => equipo.puntuacion_total === PUNTUACION_MAXIMA);
+    
+    if (equiposCompletos.length === 0) {
+        return null;
     }
+    
+    // Ordenar por tiempo (más rápido primero) - usando ID como proxy por ahora
+    const equiposOrdenados = equiposCompletos.sort((a, b) => a.id - b.id);
+    
+    // Asignar posiciones del podio
+    const podio = {
+        tipo: 'podio_completo',
+        primero: equiposOrdenados[0],
+        segundo: equiposOrdenados.length > 1 ? equiposOrdenados[1] : null,
+        tercero: equiposOrdenados.length > 2 ? equiposOrdenados[2] : null,
+        otros: equiposOrdenados.slice(3)
+    };
+    
+    return podio;
+}
+
+// Función para determinar resultado cuando se acaba el tiempo
+function determinarResultadoTiempo(ranking) {
+    if (!ranking || ranking.length === 0) return null;
     
     const maxPuntuacion = ranking[0].puntuacion_total;
     
-    // Si todos están en 0
-    const todosEnCero = ranking.every(equipo => equipo.puntuacion_total === 0);
-    if (todosEnCero) {
-        return { tipo: 'sin_ganador' };
+    // Si el máximo es 0, todos fallaron
+    if (maxPuntuacion === 0) {
+        return { tipo: 'todos_fallaron' };
     }
     
     // Buscar equipos con la máxima puntuación
-    const equiposGanadores = ranking.filter(equipo => equipo.puntuacion_total === maxPuntuacion);
+    const equiposEmpatados = ranking.filter(equipo => equipo.puntuacion_total === maxPuntuacion);
     
-    if (equiposGanadores.length === 1) {
+    if (equiposEmpatados.length === 1) {
         return { 
-            tipo: 'ganador_unico', 
-            ganador: equiposGanadores[0] 
+            tipo: 'ganador_tiempo', 
+            ganador: equiposEmpatados[0],
+            puntuacion: maxPuntuacion
         };
     } else {
         return { 
-            tipo: 'empate', 
-            ganadores: equiposGanadores 
+            tipo: 'empate_tiempo', 
+            ganadores: equiposEmpatados,
+            puntuacion: maxPuntuacion
         };
     }
 }
 
-// Función para mostrar modal de empate con datos actualizados
-function mostrarEmpateModal(ganadores) {
-    const empateTeamsList = document.getElementById('empateTeamsList');
-    empateTeamsList.innerHTML = '';
+// Función principal para verificar PODIO COMPLETO (6 desafíos)
+async function verificarPodio() {
+    if (podioCompletoMostrado) return;
     
-    // Agregar equipos empatados a la lista
-    ganadores.forEach(equipo => {
-        const equipoDiv = document.createElement('div');
-        equipoDiv.className = 'equipo-ganador-empate mb-3 p-3 bg-light rounded';
-        equipoDiv.innerHTML = `
-            <h4 class="text-dark mb-1">${escapeHtml(equipo.nombre_equipo)}</h4>
-            <h5 class="text-success">${equipo.puntuacion_total} Puntos</h5>
-            <span class="badge bg-warning fs-6">🥇 PRIMER LUGAR</span>
-        `;
-        empateTeamsList.appendChild(equipoDiv);
-    });
-    
-    crearConfeti();
-    empateModal.show();
-    
-    // Configurar evento del botón de desempate
-    document.getElementById('btnIniciarDesempate').addEventListener('click', function() {
-        empateModal.hide();
-        setTimeout(() => {
-            mostrarModalDesempate(ganadores);
-        }, 500);
-    });
-}
-
-// Función para mostrar modal de ganador único
-function mostrarGanadorModal(ganador) {
-    winnerTeamName.textContent = ganador.nombre_equipo;
-    winnerScore.textContent = ganador.puntuacion_total + ' Puntos';
-    crearConfeti();
-    winnerModal.show();
-}
-
-// Función para mostrar el ganador o mensaje de no ganador
-async function mostrarResultadoFinal() {
-    if (!tiempoAgotadoMostrado) {
-        tiempoAgotadoMostrado = true;
+    try {
+        const data = await obtenerRankingActualizado();
+        const ranking = data.ranking;
         
-        try {
-            // Obtener datos actualizados del servidor
-            const data = await obtenerRankingActualizado();
-            const resultado = determinarResultadoFinal(data.ranking);
-            
-            if (!sonidoReproducido) {
-                finishSound.play().catch(e => console.log('Error reproduciendo sonido:', e));
-                sonidoReproducido = true;
-            }
-            
-            switch (resultado.tipo) {
-                case 'empate':
-                    // Mostrar modal de empate con datos actualizados
-                    mostrarEmpateModal(resultado.ganadores);
-                    break;
-                    
-                case 'ganador_unico':
-                    // Mostrar ganador único con datos actualizados
-                    mostrarGanadorModal(resultado.ganador);
-                    break;
-                    
-                case 'sin_ganador':
-                default:
-                    // Mostrar mensaje de no ganador
-                    setTimeout(() => {
-                        noWinnerModal.show();
-                    }, 1000);
-                    break;
-            }
-            
-        } catch (error) {
-            console.error('Error al obtener ranking actualizado:', error);
-            // En caso de error, mostrar modal sin ganador
-            setTimeout(() => {
-                noWinnerModal.show();
-            }, 1000);
+        const podio = verificarPodioCompleto(ranking);
+        
+        if (podio) {
+            mostrarPodioCompleto(podio);
+            podioCompletoMostrado = true;
         }
+        
+    } catch (error) {
+        console.error('Error al verificar podio:', error);
     }
 }
+
+// Función para mostrar resultados cuando se acaba el tiempo
+async function mostrarResultadoTiempo() {
+    if (resultadoTiempoMostrado) return;
+    
+    try {
+        const data = await obtenerRankingActualizado();
+        const ranking = data.ranking;
+        
+        const resultado = determinarResultadoTiempo(ranking);
+        
+        if (!sonidoReproducido) {
+            finishSound.play().catch(e => console.log('Error reproduciendo sonido:', e));
+            sonidoReproducido = true;
+        }
+        
+        if (resultado) {
+            switch (resultado.tipo) {
+                case 'ganador_tiempo':
+                    mostrarGanadorTiempo(resultado.ganador, resultado.puntuacion);
+                    resultadoTiempoMostrado = true;
+                    break;
+                    
+                case 'empate_tiempo':
+                    mostrarEmpateTiempo(resultado.ganadores, resultado.puntuacion);
+                    resultadoTiempoMostrado = true;
+                    break;
+                    
+                case 'todos_fallaron':
+                    mostrarTodosFallaron();
+                    resultadoTiempoMostrado = true;
+                    break;
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error al mostrar resultado tiempo:', error);
+    }
+}
+
+// ===== FUNCIONES PARA MOSTRAR RESULTADOS =====
+
+// 1. PODIO COMPLETO (Cuando equipos completan los 6 desafíos)
+function mostrarPodioCompleto(podio) {
+    if (!sonidoReproducido) {
+        finishSound.play().catch(e => console.log('Error reproduciendo sonido:', e));
+        sonidoReproducido = true;
+    }
+    
+    const modal = new bootstrap.Modal(document.getElementById('podioCompletoModal'));
+    const podioList = document.getElementById('podioList');
+    
+    podioList.innerHTML = '';
+    
+    // Primer lugar
+    if (podio.primero) {
+        const primerLugar = document.createElement('div');
+        primerLugar.className = 'podio-item primer-lugar mb-4';
+        primerLugar.innerHTML = `
+            <div class="text-center">
+                <div class="fs-1">🥇</div>
+                <h3 class="text-warning">PRIMER LUGAR</h3>
+                <h2 class="fw-bold">${escapeHtml(podio.primero.nombre_equipo)}</h2>
+                <h4 class="text-success">${podio.primero.puntuacion_total}/6 Puntos</h4>
+                <p class="text-muted">¡Completó todos los desafíos más rápido!</p>
+            </div>
+        `;
+        podioList.appendChild(primerLugar);
+        marcarEquipoComoGanador(podio.primero.id, 'primer-lugar');
+    }
+    
+    // Segundo lugar
+    if (podio.segundo) {
+        const segundoLugar = document.createElement('div');
+        segundoLugar.className = 'podio-item segundo-lugar mb-4';
+        segundoLugar.innerHTML = `
+            <div class="text-center">
+                <div class="fs-1">🥈</div>
+                <h4 class="text-secondary">SEGUNDO LUGAR</h4>
+                <h3 class="fw-bold">${escapeHtml(podio.segundo.nombre_equipo)}</h3>
+                <h5 class="text-success">${podio.segundo.puntuacion_total}/6 Puntos</h5>
+            </div>
+        `;
+        podioList.appendChild(segundoLugar);
+        marcarEquipoComoGanador(podio.segundo.id, 'segundo-lugar');
+    }
+    
+    // Tercer lugar
+    if (podio.tercero) {
+        const tercerLugar = document.createElement('div');
+        tercerLugar.className = 'podio-item tercer-lugar mb-4';
+        tercerLugar.innerHTML = `
+            <div class="text-center">
+                <div class="fs-1">🥉</div>
+                <h4 class="text-danger">TERCER LUGAR</h4>
+                <h3 class="fw-bold">${escapeHtml(podio.tercero.nombre_equipo)}</h3>
+                <h5 class="text-success">${podio.tercero.puntuacion_total}/6 Puntos</h5>
+            </div>
+        `;
+        podioList.appendChild(tercerLugar);
+        marcarEquipoComoGanador(podio.tercero.id, 'tercer-lugar');
+    }
+    
+    // Otros equipos que completaron (mención honorífica)
+    if (podio.otros && podio.otros.length > 0) {
+        const otrosDiv = document.createElement('div');
+        otrosDiv.className = 'otros-equipos mt-4';
+        otrosDiv.innerHTML = `
+            <h5 class="text-center text-muted">También completaron todos los desafíos:</h5>
+            <div class="d-flex flex-wrap justify-content-center gap-2 mt-2">
+                ${podio.otros.map(equipo => 
+                    `<span class="badge bg-success">${escapeHtml(equipo.nombre_equipo)}</span>`
+                ).join('')}
+            </div>
+        `;
+        podioList.appendChild(otrosDiv);
+        
+        podio.otros.forEach(equipo => {
+            marcarEquipoComoGanador(equipo.id, 'completo');
+        });
+    }
+    
+    crearConfeti();
+    modal.show();
+}
+
+// 2. GANADOR POR TIEMPO (Cuando se acaba el tiempo y nadie completó todo)
+function mostrarGanadorTiempo(ganador, puntuacion) {
+    const modal = new bootstrap.Modal(document.getElementById('ganadorTiempoModal'));
+    document.getElementById('ganadorTiempoNombre').textContent = ganador.nombre_equipo;
+    document.getElementById('ganadorTiempoPuntos').textContent = `${puntuacion}/6 Puntos`;
+    
+    crearConfeti();
+    modal.show();
+    marcarEquipoComoGanador(ganador.id, 'ganador-parcial');
+}
+
+// 3. EMPATE POR TIEMPO (Cuando se acaba el tiempo y hay empate)
+function mostrarEmpateTiempo(ganadores, puntuacion) {
+    const modal = new bootstrap.Modal(document.getElementById('empateTiempoModal'));
+    const listaEmpate = document.getElementById('listaEmpateTiempo');
+    
+    listaEmpate.innerHTML = '';
+    
+    ganadores.forEach(equipo => {
+        const equipoDiv = document.createElement('div');
+        equipoDiv.className = 'equipo-empate mb-3 p-3 bg-light rounded';
+        equipoDiv.innerHTML = `
+            <h4 class="text-dark mb-1">${escapeHtml(equipo.nombre_equipo)}</h4>
+            <h5 class="text-warning">${puntuacion}/6 Puntos</h5>
+            <span class="badge bg-warning">EMPATADO</span>
+        `;
+        listaEmpate.appendChild(equipoDiv);
+        marcarEquipoComoGanador(equipo.id, 'empate');
+    });
+    
+    document.getElementById('puntuacionEmpateTiempo').textContent = `${puntuacion}/6 Puntos`;
+    
+    // Configurar botón de desempate
+    document.getElementById('btnIniciarDesempateTiempo').onclick = function() {
+        modal.hide();
+        setTimeout(() => {
+            iniciarDesempate(ganadores);
+        }, 500);
+    };
+    
+    modal.show();
+}
+
+// 4. TODOS FALLARON (nadie obtuvo puntos)
+function mostrarTodosFallaron() {
+    const modal = new bootstrap.Modal(document.getElementById('todosFallaronModal'));
+    modal.show();
+}
+
+// Función para iniciar desempate
+function iniciarDesempate(equipos) {
+    console.log('Iniciando desempate para equipos:', equipos);
+    mostrarNotificacion('🏆 Ronda de desempate iniciada!', 'warning');
+    
+    // Aquí puedes implementar la lógica específica del desempate
+    // Por ejemplo, un desafío adicional o criterio de desempate
+}
+
+// ===== SISTEMA DE ACTUALIZACIÓN AUTOMÁTICA =====
 
 // Inicializar mapa de equipos actuales
 document.addEventListener('DOMContentLoaded', function() {
@@ -867,15 +1011,12 @@ function iniciarMonitoreoEquipos() {
                     
                     // Agregar nuevos equipos si los hay
                     if (nuevosEquipos.length > 0) {
-                        console.log('Nuevos equipos detectados:', nuevosEquipos.length);
                         nuevosEquipos.forEach(equipo => {
                             if (!equiposActuales.has(equipo.id.toString())) {
                                 agregarEquipoDinamico(equipo);
                             }
                         });
                     }
-                } else {
-                    console.error('Error en la respuesta:', data.error);
                 }
             })
             .catch(error => {
@@ -893,11 +1034,8 @@ function iniciarMonitoreoEquipos() {
                     
                     // Si hay equipos con puntuaciones actualizadas
                     if (equiposActualizados.length > 0) {
-                        console.log('Puntuaciones actualizadas detectadas:', equiposActualizados.length);
                         actualizarPuntuacionesYRanking(equiposActualizados, rankingCompleto);
                     }
-                } else {
-                    console.error('Error en la respuesta de puntuaciones:', data.error);
                 }
             })
             .catch(error => {
@@ -918,12 +1056,10 @@ function iniciarMonitoreoEquipos() {
 
 // Función para agregar equipo dinámicamente
 function agregarEquipoDinamico(equipo) {
-    // Crear nueva fila
     const nuevaFila = document.createElement('tr');
     nuevaFila.className = 'equipo-nuevo';
     nuevaFila.setAttribute('data-equipo-id', equipo.id);
     
-    // Determinar posición temporal (será recalculada después)
     const posicionTemporal = equiposActuales.size + 1;
     
     nuevaFila.innerHTML = `
@@ -940,7 +1076,7 @@ function agregarEquipoDinamico(equipo) {
         </td>
         <td>
             <strong class="fs-4 text-primary">${equipo.puntuacion_total}</strong>
-            <small class="text-muted">🪙</small>
+            <small class="text-muted">🚩</small>
         </td>
         <td>
             <span class="badge ${equipo.estado == 1 ? 'badge-compitiendo' : 'badge-espera'} p-2">
@@ -959,24 +1095,17 @@ function agregarEquipoDinamico(equipo) {
         </td>
     `;
     
-    // Agregar a la tabla (al final por ahora)
     tablaEquipos.appendChild(nuevaFila);
-    
-    // Agregar al mapa de equipos actuales
     equiposActuales.set(equipo.id.toString(), nuevaFila);
     
-    // Actualizar contador
     if (totalEquiposElement) {
         totalEquiposElement.textContent = equiposActuales.size;
     }
     
-    // Configurar evento del nuevo botón
     configurarEventosEliminacion();
     
-    // Mostrar notificación
     mostrarNotificacion(`¡Nuevo equipo registrado: ${equipo.nombre_equipo}!`);
     
-    // Quitar clases de animación después de un tiempo
     setTimeout(() => {
         nuevaFila.classList.remove('equipo-nuevo');
         const badgeNuevo = nuevaFila.querySelector('.badge-nuevo');
@@ -984,12 +1113,6 @@ function agregarEquipoDinamico(equipo) {
             badgeNuevo.remove();
         }
     }, 3000);
-    
-    // En lugar de recargar, obtener el ranking actualizado
-    setTimeout(() => {
-        console.log('Solicitando ranking actualizado...');
-        verificarCambiosPuntuaciones();
-    }, 2000);
 }
 
 // Función para actualizar puntuaciones y reordenar ranking
@@ -1002,7 +1125,6 @@ function actualizarPuntuacionesYRanking(equiposActualizados, rankingCompleto) {
         if (equiposActuales.has(equipoId)) {
             const filaEquipo = equiposActuales.get(equipoId);
             
-            // Actualizar puntuación en la fila
             const celdaPuntuacion = filaEquipo.querySelector('td:nth-child(4) strong');
             const puntuacionActual = parseInt(celdaPuntuacion.textContent);
             const nuevaPuntuacion = equipoActualizado.puntuacion_total;
@@ -1011,13 +1133,21 @@ function actualizarPuntuacionesYRanking(equiposActualizados, rankingCompleto) {
                 celdaPuntuacion.textContent = nuevaPuntuacion;
                 celdaPuntuacion.classList.add('puntuacion-cambiando');
                 
-                // Animación de cambio de puntuación
+                // Marcar como completo si llegó a 6 puntos
+                if (nuevaPuntuacion === PUNTUACION_MAXIMA) {
+                    filaEquipo.classList.add('equipo-completo');
+                    
+                    // Verificar PODIO inmediatamente cuando alguien completa los 6 desafíos
+                    setTimeout(() => {
+                        verificarPodio();
+                    }, 1000);
+                }
+                
                 setTimeout(() => {
                     celdaPuntuacion.classList.remove('puntuacion-cambiando');
                 }, 2000);
                 
                 huboCambios = true;
-                console.log(`Puntuación actualizada: ${equipoActualizado.nombre_equipo} - ${nuevaPuntuacion} puntos`);
             }
         }
     });
@@ -1033,19 +1163,15 @@ function reordenarTablaCompleta(rankingCompleto) {
     const tbody = document.getElementById('tabla-equipos');
     const filasExistentes = Array.from(tbody.querySelectorAll('tr[data-equipo-id]'));
     
-    // Limpiar el tbody
     tbody.innerHTML = '';
     
-    // Recrear todas las filas en el orden correcto
     rankingCompleto.forEach((equipo, index) => {
         const equipoId = equipo.id.toString();
         let filaExistente = filasExistentes.find(fila => fila.getAttribute('data-equipo-id') === equipoId);
         
         if (!filaExistente) {
-            // Si no existe, crear nueva fila
             filaExistente = crearFilaEquipo(equipo, index);
         } else {
-            // Si existe, actualizar posición y clases
             actualizarFilaEquipo(filaExistente, equipo, index);
         }
         
@@ -1053,10 +1179,7 @@ function reordenarTablaCompleta(rankingCompleto) {
         equiposActuales.set(equipoId, filaExistente);
     });
     
-    // Reconfigurar eventos de eliminación
     configurarEventosEliminacion();
-    
-    console.log('Tabla reordenada según nuevo ranking');
 }
 
 // Función para crear una nueva fila de equipo
@@ -1064,7 +1187,6 @@ function crearFilaEquipo(equipo, index) {
     const nuevaFila = document.createElement('tr');
     nuevaFila.setAttribute('data-equipo-id', equipo.id);
     
-    // Determinar clases según posición
     let claseFila = '';
     if (index === 0) claseFila = 'top-1';
     else if (index === 1) claseFila = 'top-2';
@@ -1091,7 +1213,7 @@ function crearFilaEquipo(equipo, index) {
         </td>
         <td>
             <strong class="fs-4 text-primary">${equipo.puntuacion_total}</strong>
-            <small class="text-muted">🪙</small>
+            <small class="text-muted">🚩</small>
         </td>
         <td>
             <span class="badge ${equipo.estado == 1 ? 'badge-compitiendo' : 'badge-espera'} p-2">
@@ -1115,11 +1237,9 @@ function crearFilaEquipo(equipo, index) {
 
 // Función para actualizar una fila existente de equipo
 function actualizarFilaEquipo(fila, equipo, index) {
-    // Actualizar posición
     const celdaPosicion = fila.querySelector('td:nth-child(1) strong');
     celdaPosicion.textContent = `${index + 1}°`;
     
-    // Actualizar badges de posición
     const badgePosicion = fila.querySelector('.badge');
     if (index < 3) {
         if (!badgePosicion) {
@@ -1134,25 +1254,52 @@ function actualizarFilaEquipo(fila, equipo, index) {
         }
     } else if (badgePosicion) {
         badgePosicion.remove();
-        // También eliminar el <br> si existe
         const br = fila.querySelector('td:nth-child(1) br');
         if (br) br.remove();
     }
     
-    // Actualizar clases de la fila según posición
     fila.className = '';
     if (index === 0) fila.classList.add('top-1');
     else if (index === 1) fila.classList.add('top-2');
     else if (index === 2) fila.classList.add('top-3');
     
-    // Actualizar puntuación
     const celdaPuntuacion = fila.querySelector('td:nth-child(4) strong');
     celdaPuntuacion.textContent = equipo.puntuacion_total;
     
-    // Actualizar estado
     const celdaEstado = fila.querySelector('td:nth-child(5) span');
     celdaEstado.className = `badge ${equipo.estado == 1 ? 'badge-compitiendo' : 'badge-espera'} p-2`;
     celdaEstado.textContent = equipo.estado == 1 ? '🏁 COMPITIENDO' : '⏳ EN ESPERA';
+}
+
+// ===== FUNCIONES UTILITARIAS =====
+
+// Función para marcar equipos ganadores en la tabla
+function marcarEquipoComoGanador(equipoId, tipo) {
+    const fila = document.querySelector(`tr[data-equipo-id="${equipoId}"]`);
+    if (fila) {
+        fila.classList.add('equipo-ganador');
+        
+        switch(tipo) {
+            case 'primer-lugar':
+                fila.classList.add('primer-lugar-tabla');
+                break;
+            case 'segundo-lugar':
+                fila.classList.add('segundo-lugar-tabla');
+                break;
+            case 'tercer-lugar':
+                fila.classList.add('tercer-lugar-tabla');
+                break;
+            case 'ganador-parcial':
+                fila.classList.add('ganador-parcial-tabla');
+                break;
+            case 'empate':
+                fila.classList.add('empate-tabla');
+                break;
+            case 'completo':
+                fila.classList.add('completo-tabla');
+                break;
+        }
+    }
 }
 
 // Función para escapar HTML (seguridad)
@@ -1184,79 +1331,8 @@ function crearConfeti() {
     }
 }
 
-// Función para mostrar el modal de desempate
-function mostrarModalDesempate(ganadores) {
-    const desempateModal = new bootstrap.Modal(document.getElementById('desempateModal'));
-    const listaEquipos = document.getElementById('listaEquiposDesempate');
-    
-    // Limpiar lista anterior
-    listaEquipos.innerHTML = '';
-    
-    // Agregar equipos empatados a la lista
-    ganadores.forEach(equipo => {
-        const equipoItem = document.createElement('div');
-        equipoItem.className = 'd-flex justify-content-between align-items-center p-2 border-bottom';
-        equipoItem.innerHTML = `
-            <span class="fw-bold">${escapeHtml(equipo.nombre_equipo)}</span>
-            <span class="badge bg-success">${equipo.puntuacion_total} pts</span>
-        `;
-        listaEquipos.appendChild(equipoItem);
-    });
-    
-    // Configurar evento del botón comenzar desempate
-    document.getElementById('btnComenzarDesempate').addEventListener('click', function() {
-        iniciarRondaDesempate();
-        desempateModal.hide();
-    });
-    
-    // Mostrar modal
-    desempateModal.show();
-}
-
-// Función para iniciar la ronda de desempate
-function iniciarRondaDesempate() {
-    console.log('Iniciando ronda de desempate...');
-    
-    // Mostrar notificación
-    mostrarNotificacion('¡Ronda de desempate iniciada! Preparando desafío final...', 'warning');
-    
-    // Aquí iría la lógica para iniciar el desafío de desempate
-    // Por ahora solo mostramos un mensaje
-    setTimeout(() => {
-        mostrarNotificacion('Sistema de desempate activado. El desafío final se implementará próximamente.', 'info');
-    }, 2000);
-}
-
-// Función para actualizar el temporizador con efectos visuales
-function actualizarTiempoGlobal() {
-    if (!tiempoElement) return;
-    
-    if (tiempoRestante <= 0) {
-        tiempoElement.textContent = '00:00';
-        tiempoElement.className = 'temporizador-grande temporizador-peligro';
-        mostrarResultadoFinal();
-        return;
-    }
-    
-    tiempoRestante--;
-    
-    const minutos = Math.floor(tiempoRestante / 60);
-    const segundos = tiempoRestante % 60;
-    tiempoElement.textContent = `${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
-    
-    // Efectos visuales según el tiempo restante
-    if (tiempoRestante < 300) {
-        tiempoElement.className = 'temporizador-grande temporizador-advertencia';
-    }
-    
-    if (tiempoRestante < 60) {
-        tiempoElement.className = 'temporizador-grande temporizador-peligro';
-    }
-}
-
 // Función para mostrar notificación
 function mostrarNotificacion(mensaje, tipo = 'success') {
-    // Eliminar notificaciones existentes primero
     document.querySelectorAll('.notificacion-flotante').forEach(notif => notif.remove());
     
     const notificacion = document.createElement('div');
@@ -1282,13 +1358,40 @@ function mostrarNotificacion(mensaje, tipo = 'success') {
     }, 4000);
 }
 
+// Función para actualizar el temporizador con efectos visuales
+function actualizarTiempoGlobal() {
+    if (!tiempoElement) return;
+    
+    if (tiempoRestante <= 0) {
+        tiempoElement.textContent = '00:00';
+        tiempoElement.className = 'temporizador-grande temporizador-peligro';
+        mostrarResultadoTiempo();
+        return;
+    }
+    
+    tiempoRestante--;
+    
+    const minutos = Math.floor(tiempoRestante / 60);
+    const segundos = tiempoRestante % 60;
+    tiempoElement.textContent = `${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
+    
+    // Efectos visuales según el tiempo restante
+    if (tiempoRestante < 300) {
+        tiempoElement.className = 'temporizador-grande temporizador-advertencia';
+    }
+    
+    if (tiempoRestante < 60) {
+        tiempoElement.className = 'temporizador-grande temporizador-peligro';
+    }
+}
+
 // Iniciar el temporizador solo si el hackathon está activo
 <?php if ($hackathon_activo): ?>
 const temporizador = setInterval(actualizarTiempoGlobal, 1000);
 
 // Verificar inmediatamente si el tiempo ya se agotó
 if (tiempoRestante <= 0) {
-    mostrarResultadoFinal();
+    mostrarResultadoTiempo();
 }
 <?php endif; ?>
 </script>
