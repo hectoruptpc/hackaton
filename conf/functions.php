@@ -133,6 +133,12 @@ function completarDesafio($equipo_id, $desafio_id, $puntos) {
     $stmt = $db->prepare("INSERT INTO desafios_completados (equipo_id, desafio_id) VALUES (?, ?)");
     $stmt->execute([$equipo_id, $desafio_id]);
     
+    // Registrar tiempo acumulado
+    registrarTiempoDesafioCompletado($equipo_id, $desafio_id);
+    
+    // Actualizar contador de desafíos completados
+    actualizarDesafiosCompletados($equipo_id);
+    
     // Sumar puntos al equipo
     $stmt = $db->prepare("UPDATE equipos SET puntuacion_total = puntuacion_total + ? WHERE id = ?");
     return $stmt->execute([$puntos, $equipo_id]);
@@ -286,8 +292,17 @@ function reiniciarHackathon() {
     $stmt = $db->prepare("UPDATE configuracion_hackathon SET hackathon_iniciado = FALSE, tiempo_inicio_global = NULL");
     $stmt->execute();
     
-    // Reiniciar puntuaciones, desafíos completados y estado
-    $stmt = $db->prepare("UPDATE equipos SET puntuacion_total = 0, tiempo_inicio = NULL, inicio_tardio = FALSE, estado = 0");
+    // Reiniciar puntuaciones, desafíos completados, estado y TIEMPOS
+    $stmt = $db->prepare("UPDATE equipos SET 
+        puntuacion_total = 0, 
+        tiempo_inicio = NULL, 
+        inicio_tardio = FALSE, 
+        estado = 0,
+        tiempo_acumulado = 0,
+        tiempo_finalizacion = NULL,
+        desafios_completados = 0,
+        completado = FALSE
+    ");
     $stmt->execute();
     
     $stmt = $db->prepare("DELETE FROM desafios_completados");
@@ -527,5 +542,102 @@ function obtenerEquiposNuevos($ultimo_id) {
 }
 
 
+/**
+ * Registrar tiempo cuando se completa un desafío
+ */
+function registrarTiempoDesafioCompletado($equipo_id, $desafio_id) {
+    global $db;
+    
+    // Obtener tiempo actual del equipo
+    $equipo = obtenerInfoEquipo($equipo_id);
+    if (!$equipo || !$equipo['tiempo_inicio']) {
+        return false;
+    }
+    
+    // Calcular tiempo transcurrido hasta ahora
+    $tiempo_transcurrido = calcularTiempoTranscurrido($equipo['tiempo_inicio']);
+    
+    // Actualizar tiempo acumulado
+    $stmt = $db->prepare("UPDATE equipos SET tiempo_acumulado = ? WHERE id = ?");
+    return $stmt->execute([$tiempo_transcurrido, $equipo_id]);
+}
+
+/**
+ * Marcar equipo como completado (cuando termina los 6 desafíos)
+ */
+function marcarEquipoCompletado($equipo_id) {
+    global $db;
+    
+    $tiempo_finalizacion = date('Y-m-d H:i:s');
+    $stmt = $db->prepare("UPDATE equipos SET completado = TRUE, tiempo_finalizacion = ?, desafios_completados = 6 WHERE id = ?");
+    return $stmt->execute([$tiempo_finalizacion, $equipo_id]);
+}
+
+/**
+ * Obtener ranking de equipos considerando tiempo acumulado
+ */
+function obtenerRankingEquiposConTiempo() {
+    global $db;
+    
+    $stmt = $db->prepare("
+        SELECT 
+            id, 
+            nombre_equipo, 
+            codigo_equipo, 
+            puntuacion_total, 
+            tiempo_inicio, 
+            inicio_tardio, 
+            estado,
+            tiempo_acumulado,
+            tiempo_finalizacion,
+            desafios_completados,
+            completado
+        FROM equipos 
+        ORDER BY 
+            completado DESC,
+            puntuacion_total DESC,
+            tiempo_acumulado ASC,
+            creado_en ASC
+    ");
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+/**
+ * Actualizar desafíos completados
+ */
+function actualizarDesafiosCompletados($equipo_id) {
+    global $db;
+    
+    $stmt = $db->prepare("
+        UPDATE equipos 
+        SET desafios_completados = (
+            SELECT COUNT(*) FROM desafios_completados WHERE equipo_id = ?
+        ) 
+        WHERE id = ?
+    ");
+    $stmt->execute([$equipo_id, $equipo_id]);
+    
+    // Verificar si completó todos los desafíos
+    $equipo = obtenerInfoEquipo($equipo_id);
+    if ($equipo['desafios_completados'] >= 6 && !$equipo['completado']) {
+        marcarEquipoCompletado($equipo_id);
+    }
+    
+    return $equipo['desafios_completados'];
+}
+
+
+/**
+ * Formatear segundos a formato MM:SS
+ */
+function formatearTiempo($segundos) {
+    if ($segundos <= 0) return '--:--';
+    
+    $minutos = floor($segundos / 60);
+    $segundos_restantes = $segundos % 60;
+    
+    return sprintf("%02d:%02d", $minutos, $segundos_restantes);
+}
 
 ?>
