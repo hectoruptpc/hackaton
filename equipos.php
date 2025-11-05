@@ -49,6 +49,9 @@ if ($es_admin && isset($_POST['reiniciar_hackathon'])) {
     try {
         if (reiniciarHackathon()) {
             $mensaje_exito = "Hackathon reiniciado para testing";
+            // Resetear variables de sesión para sonidos
+            unset($_SESSION['banderas_reproducidas']);
+            unset($_SESSION['max_puntuacion_global']);
         } else {
             $mensaje_error = "Error al reiniciar el hackathon";
         }
@@ -100,6 +103,11 @@ if (!isset($_SESSION['ultimo_equipo_id'])) {
 // Inicializar timestamp de verificación de puntuaciones
 if (!isset($_SESSION['ultima_verificacion_puntuaciones'])) {
     $_SESSION['ultima_verificacion_puntuaciones'] = date('Y-m-d H:i:s');
+}
+
+// Inicializar timestamp de verificación de tiempos
+if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
+    $_SESSION['ultima_verificacion_tiempo'] = date('Y-m-d H:i:s');
 }
 ?>
 
@@ -282,6 +290,21 @@ if (!isset($_SESSION['ultima_verificacion_puntuaciones'])) {
         .modal-danger .modal-content {
             border: 3px solid #dc3545;
         }
+        
+        /* Efectos para tiempo cambiando */
+        .tiempo-cambiando {
+            animation: pulse 0.5s ease-in-out 3;
+            background-color: #e3f2fd !important;
+        }
+
+        @keyframes highlight-time {
+            0% { background-color: #e3f2fd; }
+            100% { background-color: transparent; }
+        }
+
+        .fila-tiempo-actualizado {
+            animation: highlight-time 2s ease-in-out;
+        }
     </style>
 </head>
 <body>
@@ -345,6 +368,7 @@ if (!isset($_SESSION['ultima_verificacion_puntuaciones'])) {
                             🔄 REINICIAR HACKATHON (TESTING)
                         </button>
                     </div>
+                    
                 </div>
             </div>
             
@@ -389,104 +413,104 @@ if (!isset($_SESSION['ultima_verificacion_puntuaciones'])) {
     <?php endif; ?>
 
     <!-- Ranking de Equipos -->
-<h2 class="text-center mb-4">🏆 Ranking de Equipos</h2>
-
-<div class="row justify-content-center">
-    <div class="col-md-12">
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th width="8%">Posición</th>
-                        <th width="25%">Nombre del Equipo</th>
-                        <th width="12%">Código</th>
-                        <th width="12%">Puntuación</th>
-                        <th width="15%">Tiempo</th>
-                        <th width="18%">Estado</th>
-                        <th width="10%" class="text-center">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="tabla-equipos">
-                    <?php if (!empty($ranking)): ?>
-                        <?php foreach ($ranking as $index => $equipo): ?>
-                        <tr class="<?php 
-                            if ($index == 0) { echo 'top-1'; } 
-                            elseif ($index == 1) { echo 'top-2'; } 
-                            elseif ($index == 2) { echo 'top-3'; } 
-                            else { echo ''; } 
-                        ?>" data-equipo-id="<?php echo $equipo['id']; ?>">
-                            <td>
-                                <strong class="fs-5"><?php echo $index + 1; ?>°</strong>
-                                <?php if ($index < 3): ?>
-                                    <br>
-                                    <span class="badge bg-<?php echo $index == 0 ? 'warning' : ($index == 1 ? 'secondary' : 'danger'); ?> mt-1">
-                                        <?php echo $index == 0 ? '🥇 ORO' : ($index == 1 ? '🥈 PLATA' : '🥉 BRONCE'); ?>
-                                    </span>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <strong><?php echo htmlspecialchars($equipo['nombre_equipo']); ?></strong>
-                                <?php if ($equipo['inicio_tardio']): ?>
-                                    <br>
-                                    <span class="badge bg-info status-badge mt-1" title="Equipo se unió después del inicio">TARDÍO</span>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <code class="fs-5"><?php echo htmlspecialchars($equipo['codigo_equipo']); ?></code>
-                            </td>
-                            <td>
-                                <strong class="fs-4 text-primary"><?php echo $equipo['puntuacion_total']; ?></strong>
-                                <small class="text-muted">🚩</small>
-                            </td>
-                            <td>
-                                <?php if ($equipo['tiempo_acumulado'] > 0): ?>
-                                    <?php
-                                    $minutos = floor($equipo['tiempo_acumulado'] / 60);
-                                    $segundos = $equipo['tiempo_acumulado'] % 60;
-                                    echo sprintf("%02d:%02d", $minutos, $segundos);
-                                    ?>
-                                    <?php if ($equipo['completado']): ?>
-                                        <br><small class="text-success">✅ Completado</small>
-                                    <?php endif; ?>
-                                <?php else: ?>
-                                    <span class="text-muted">--:--</span>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <?php if ($equipo['estado'] == 1): ?>
-                                    <span class="badge badge-compitiendo p-2">🏁 COMPITIENDO</span>
-                                <?php else: ?>
-                                    <span class="badge badge-espera p-2">⏳ EN ESPERA</span>
-                                <?php endif; ?>
-                            </td>
-                            <td class="text-center actions-column">
-                                <!-- Botón Eliminar -->
-                                <button type="button" class="btn btn-danger btn-sm btn-eliminar-equipo" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#eliminarModal"
-                                        data-equipo-id="<?php echo $equipo['id']; ?>"
-                                        data-equipo-nombre="<?php echo htmlspecialchars($equipo['nombre_equipo']); ?>"
-                                        title="Eliminar equipo">
-                                    🗑️ Eliminar
-                                </button>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    <?php else: ?>
+    <h2 class="text-center mb-4">🏆 Ranking de Equipos</h2>
+    
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
                         <tr>
-                            <td colspan="7" class="text-center py-5">
-                                <div class="alert alert-info">
-                                    <h4>📋 No hay equipos registrados aún</h4>
-                                    <p class="mb-3">¡Sé el primero en crear un equipo y participar en el hackathon!</p>
-                                </div>
-                            </td>
+                            <th width="8%">Posición</th>
+                            <th width="25%">Nombre del Equipo</th>
+                            <th width="12%">Código</th>
+                            <th width="12%">Puntuación</th>
+                            <th width="15%">Tiempo</th>
+                            <th width="18%">Estado</th>
+                            <th width="10%" class="text-center">Acciones</th>
                         </tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody id="tabla-equipos">
+                        <?php if (!empty($ranking)): ?>
+                            <?php foreach ($ranking as $index => $equipo): ?>
+                            <tr class="<?php 
+                                if ($index == 0) { echo 'top-1'; } 
+                                elseif ($index == 1) { echo 'top-2'; } 
+                                elseif ($index == 2) { echo 'top-3'; } 
+                                else { echo ''; } 
+                            ?>" data-equipo-id="<?php echo $equipo['id']; ?>">
+                                <td>
+                                    <strong class="fs-5"><?php echo $index + 1; ?>°</strong>
+                                    <?php if ($index < 3): ?>
+                                        <br>
+                                        <span class="badge bg-<?php echo $index == 0 ? 'warning' : ($index == 1 ? 'secondary' : 'danger'); ?> mt-1">
+                                            <?php echo $index == 0 ? '🥇 ORO' : ($index == 1 ? '🥈 PLATA' : '🥉 BRONCE'); ?>
+                                        </span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <strong><?php echo htmlspecialchars($equipo['nombre_equipo']); ?></strong>
+                                    <?php if ($equipo['inicio_tardio']): ?>
+                                        <br>
+                                        <span class="badge bg-info status-badge mt-1" title="Equipo se unió después del inicio">TARDÍO</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <code class="fs-5"><?php echo htmlspecialchars($equipo['codigo_equipo']); ?></code>
+                                </td>
+                                <td>
+                                    <strong class="fs-4 text-primary"><?php echo $equipo['puntuacion_total']; ?></strong>
+                                    <small class="text-muted">🚩</small>
+                                </td>
+                                <td>
+                                    <?php if ($equipo['tiempo_acumulado'] > 0): ?>
+                                        <?php
+                                        $minutos = floor($equipo['tiempo_acumulado'] / 60);
+                                        $segundos = $equipo['tiempo_acumulado'] % 60;
+                                        echo sprintf("%02d:%02d", $minutos, $segundos);
+                                        ?>
+                                        <?php if ($equipo['completado']): ?>
+                                            <br><small class="text-success">✅ Completado</small>
+                                        <?php endif; ?>
+                                    <?php else: ?>
+                                        <span class="text-muted">--:--</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php if ($equipo['estado'] == 1): ?>
+                                        <span class="badge badge-compitiendo p-2">🏁 COMPITIENDO</span>
+                                    <?php else: ?>
+                                        <span class="badge badge-espera p-2">⏳ EN ESPERA</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="text-center actions-column">
+                                    <!-- Botón Eliminar -->
+                                    <button type="button" class="btn btn-danger btn-sm btn-eliminar-equipo" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#eliminarModal"
+                                            data-equipo-id="<?php echo $equipo['id']; ?>"
+                                            data-equipo-nombre="<?php echo htmlspecialchars($equipo['nombre_equipo']); ?>"
+                                            title="Eliminar equipo">
+                                        🗑️ Eliminar
+                                    </button>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="7" class="text-center py-5">
+                                    <div class="alert alert-info">
+                                        <h4>📋 No hay equipos registrados aún</h4>
+                                        <p class="mb-3">¡Sé el primero en crear un equipo y participar en el hackathon!</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</div>
     
     <div class="text-center mt-4">
         <a href="index.php" class="btn btn-primary btn-lg">
@@ -684,6 +708,28 @@ if (!isset($_SESSION['ultima_verificacion_puntuaciones'])) {
     Tu navegador no soporta el elemento de audio.
 </audio>
 
+<!-- Audio para las banderas capturadas -->
+<audio id="audioBandera1" preload="auto">
+    <source src="estamos_siendo_atacados.mp3" type="audio/mpeg">
+</audio>
+<audio id="audioBandera2" preload="auto">
+    <source src="nuestras_defensas_estan_cayendo.mp3" type="audio/mpeg">
+</audio>
+<audio id="audioBandera3" preload="auto">
+    <source src="tumbaron_la_mitad_de_nuestras_defensas.mp3" type="audio/mpeg">
+</audio>
+<audio id="audioBandera4" preload="auto">
+    <source src="si_no_hacemos_algo_todo_se_vendra_abajo.mp3" type="audio/mpeg">
+</audio>
+<audio id="audioBandera5" preload="auto">
+    <source src="solo_nos_queda_una_defensa_que_no_avancen.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Audio para victoria -->
+<audio id="audioVictoria" preload="auto">
+    <source src="aplausos.mp3" type="audio/mpeg">
+</audio>
+
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -694,6 +740,18 @@ let sonidoReproducido = false;
 let equiposActuales = new Map();
 let podioCompletoMostrado = false;
 let resultadoTiempoMostrado = false;
+
+// Variables globales para sonidos
+let banderasReproducidas = new Set(); // Para evitar repetir sonidos
+let maxPuntuacionGlobal = 0; // Para trackear la máxima puntuación alcanzada
+const audiosBanderas = {
+    1: document.getElementById('audioBandera1'),
+    2: document.getElementById('audioBandera2'), 
+    3: document.getElementById('audioBandera3'),
+    4: document.getElementById('audioBandera4'),
+    5: document.getElementById('audioBandera5')
+};
+const audioVictoria = document.getElementById('audioVictoria');
 
 // Constantes
 const PUNTUACION_MAXIMA = 6; // 6 desafíos completados
@@ -730,24 +788,84 @@ function verificarPodioCompleto(ranking) {
         return null;
     }
     
-    // Ordenar por tiempo acumulado (más rápido primero)
+    // Ordenar por tiempo acumulado (más rápido primero) - DESEMPATE POR TIEMPO
     const equiposOrdenados = equiposCompletos.sort((a, b) => {
         // Primero por puntuación (descendente)
         if (b.puntuacion_total !== a.puntuacion_total) {
             return b.puntuacion_total - a.puntuacion_total;
         }
-        // Luego por tiempo acumulado (ascendente)
+        // Luego por tiempo acumulado (ascendente) - desempate
         return a.tiempo_acumulado - b.tiempo_acumulado;
     });
     
-    // Asignar posiciones del podio
+    // Asignar posiciones del podio considerando empates por tiempo
     const podio = {
         tipo: 'podio_completo',
         primero: equiposOrdenados[0],
-        segundo: equiposOrdenados.length > 1 ? equiposOrdenados[1] : null,
-        tercero: equiposOrdenados.length > 2 ? equiposOrdenados[2] : null,
-        otros: equiposOrdenados.slice(3)
+        segundo: null,
+        tercero: null,
+        otros: [],
+        empates: []
     };
+    
+    // Verificar empates para primer lugar
+    const primerPuntuacion = podio.primero.puntuacion_total;
+    const primerTiempo = podio.primero.tiempo_acumulado;
+    const empatesPrimero = equiposOrdenados.filter(equipo => 
+        equipo.puntuacion_total === primerPuntuacion && 
+        equipo.tiempo_acumulado === primerTiempo
+    );
+    
+    if (empatesPrimero.length > 1) {
+        podio.empates.push({ posicion: 1, equipos: empatesPrimero });
+    }
+    
+    // Buscar segundo lugar (excluyendo los empatados en primer lugar)
+    const equiposRestantes = equiposOrdenados.filter(equipo => 
+        !empatesPrimero.includes(equipo)
+    );
+    
+    if (equiposRestantes.length > 0) {
+        podio.segundo = equiposRestantes[0];
+        
+        // Verificar empates para segundo lugar
+        const segundoPuntuacion = podio.segundo.puntuacion_total;
+        const segundoTiempo = podio.segundo.tiempo_acumulado;
+        const empatesSegundo = equiposRestantes.filter(equipo => 
+            equipo.puntuacion_total === segundoPuntuacion && 
+            equipo.tiempo_acumulado === segundoTiempo
+        );
+        
+        if (empatesSegundo.length > 1) {
+            podio.empates.push({ posicion: 2, equipos: empatesSegundo });
+        }
+        
+        // Buscar tercer lugar (excluyendo los empatados en primer y segundo lugar)
+        const equiposParaTercero = equiposRestantes.filter(equipo => 
+            !empatesSegundo.includes(equipo)
+        );
+        
+        if (equiposParaTercero.length > 0) {
+            podio.tercero = equiposParaTercero[0];
+            
+            // Verificar empates para tercer lugar
+            const tercerPuntuacion = podio.tercero.puntuacion_total;
+            const tercerTiempo = podio.tercero.tiempo_acumulado;
+            const empatesTercero = equiposParaTercero.filter(equipo => 
+                equipo.puntuacion_total === tercerPuntuacion && 
+                equipo.tiempo_acumulado === tercerTiempo
+            );
+            
+            if (empatesTercero.length > 1) {
+                podio.empates.push({ posicion: 3, equipos: empatesTercero });
+            }
+            
+            // Los demás equipos completos
+            podio.otros = equiposParaTercero.slice(1).filter(equipo => 
+                !empatesTercero.includes(equipo)
+            );
+        }
+    }
     
     return podio;
 }
@@ -764,23 +882,43 @@ function determinarResultadoTiempo(ranking) {
     }
     
     // Buscar equipos con la máxima puntuación
-    const equiposEmpatados = ranking.filter(equipo => equipo.puntuacion_total === maxPuntuacion);
+    const equiposMaxPuntuacion = ranking.filter(equipo => equipo.puntuacion_total === maxPuntuacion);
     
-    if (equiposEmpatados.length === 1) {
+    if (equiposMaxPuntuacion.length === 1) {
         return { 
             tipo: 'ganador_tiempo', 
-            ganador: equiposEmpatados[0],
+            ganador: equiposMaxPuntuacion[0],
             puntuacion: maxPuntuacion
         };
     } else {
-        // En caso de empate, desempatar por tiempo acumulado
-        const equiposDesempatados = equiposEmpatados.sort((a, b) => a.tiempo_acumulado - b.tiempo_acumulado);
+        // En caso de empate en puntuación, desempatar por tiempo acumulado
+        const equiposOrdenadosPorTiempo = equiposMaxPuntuacion.sort((a, b) => {
+            // Ordenar por tiempo acumulado (menor tiempo primero)
+            return a.tiempo_acumulado - b.tiempo_acumulado;
+        });
         
-        return { 
-            tipo: 'empate_tiempo', 
-            ganadores: equiposDesempatados,
-            puntuacion: maxPuntuacion
-        };
+        // Verificar si hay empate también en tiempo
+        const primerTiempo = equiposOrdenadosPorTiempo[0].tiempo_acumulado;
+        const equiposEmpatadosTiempo = equiposOrdenadosPorTiempo.filter(equipo => 
+            equipo.tiempo_acumulado === primerTiempo
+        );
+        
+        if (equiposEmpatadosTiempo.length === 1) {
+            // Solo un equipo con el menor tiempo
+            return { 
+                tipo: 'ganador_tiempo', 
+                ganador: equiposOrdenadosPorTiempo[0],
+                puntuacion: maxPuntuacion
+            };
+        } else {
+            // Empate tanto en puntuación como en tiempo
+            return { 
+                tipo: 'empate_tiempo', 
+                ganadores: equiposEmpatadosTiempo,
+                puntuacion: maxPuntuacion,
+                tiempo: primerTiempo
+            };
+        }
     }
 }
 
@@ -827,7 +965,7 @@ async function mostrarResultadoTiempo() {
                     break;
                     
                 case 'empate_tiempo':
-                    mostrarEmpateTiempo(resultado.ganadores, resultado.puntuacion);
+                    mostrarEmpateTiempo(resultado.ganadores, resultado.puntuacion, resultado.tiempo);
                     resultadoTiempoMostrado = true;
                     break;
                     
@@ -857,8 +995,33 @@ function mostrarPodioCompleto(podio) {
     
     podioList.innerHTML = '';
     
-    // Primer lugar
-    if (podio.primero) {
+    // Manejar empates en primer lugar
+    const empatePrimero = podio.empates.find(empate => empate.posicion === 1);
+    
+    if (empatePrimero) {
+        // Mostrar empate en primer lugar
+        const empateDiv = document.createElement('div');
+        empateDiv.className = 'podio-item primer-lugar mb-4';
+        empateDiv.innerHTML = `
+            <div class="text-center">
+                <div class="fs-1">🏆</div>
+                <h3 class="text-warning">EMPATE EN PRIMER LUGAR</h3>
+                <h4>Mismo puntaje y tiempo</h4>
+                ${empatePrimero.equipos.map(equipo => `
+                    <div class="my-2">
+                        <h4 class="fw-bold">${escapeHtml(equipo.nombre_equipo)}</h4>
+                        <h5 class="text-success">${equipo.puntuacion_total}/6 Puntos - ${formatearTiempo(equipo.tiempo_acumulado)}</h5>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        podioList.appendChild(empateDiv);
+        
+        empatePrimero.equipos.forEach(equipo => {
+            marcarEquipoComoGanador(equipo.id, 'primer-lugar');
+        });
+    } else if (podio.primero) {
+        // Primer lugar normal
         const primerLugar = document.createElement('div');
         primerLugar.className = 'podio-item primer-lugar mb-4';
         primerLugar.innerHTML = `
@@ -867,6 +1030,7 @@ function mostrarPodioCompleto(podio) {
                 <h3 class="text-warning">PRIMER LUGAR</h3>
                 <h2 class="fw-bold">${escapeHtml(podio.primero.nombre_equipo)}</h2>
                 <h4 class="text-success">${podio.primero.puntuacion_total}/6 Puntos</h4>
+                <h5 class="text-info">Tiempo: ${formatearTiempo(podio.primero.tiempo_acumulado)}</h5>
                 <p class="text-muted">¡Completó todos los desafíos más rápido!</p>
             </div>
         `;
@@ -874,8 +1038,31 @@ function mostrarPodioCompleto(podio) {
         marcarEquipoComoGanador(podio.primero.id, 'primer-lugar');
     }
     
-    // Segundo lugar
-    if (podio.segundo) {
+    // Manejar empates en segundo lugar
+    const empateSegundo = podio.empates.find(empate => empate.posicion === 2);
+    
+    if (empateSegundo) {
+        const empateDiv = document.createElement('div');
+        empateDiv.className = 'podio-item segundo-lugar mb-4';
+        empateDiv.innerHTML = `
+            <div class="text-center">
+                <div class="fs-1">🥈</div>
+                <h4 class="text-secondary">EMPATE EN SEGUNDO LUGAR</h4>
+                ${empateSegundo.equipos.map(equipo => `
+                    <div class="my-2">
+                        <h4 class="fw-bold">${escapeHtml(equipo.nombre_equipo)}</h4>
+                        <h5 class="text-success">${equipo.puntuacion_total}/6 Puntos - ${formatearTiempo(equipo.tiempo_acumulado)}</h5>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        podioList.appendChild(empateDiv);
+        
+        empateSegundo.equipos.forEach(equipo => {
+            marcarEquipoComoGanador(equipo.id, 'segundo-lugar');
+        });
+    } else if (podio.segundo) {
+        // Segundo lugar normal
         const segundoLugar = document.createElement('div');
         segundoLugar.className = 'podio-item segundo-lugar mb-4';
         segundoLugar.innerHTML = `
@@ -884,14 +1071,38 @@ function mostrarPodioCompleto(podio) {
                 <h4 class="text-secondary">SEGUNDO LUGAR</h4>
                 <h3 class="fw-bold">${escapeHtml(podio.segundo.nombre_equipo)}</h3>
                 <h5 class="text-success">${podio.segundo.puntuacion_total}/6 Puntos</h5>
+                <h6 class="text-info">Tiempo: ${formatearTiempo(podio.segundo.tiempo_acumulado)}</h6>
             </div>
         `;
         podioList.appendChild(segundoLugar);
         marcarEquipoComoGanador(podio.segundo.id, 'segundo-lugar');
     }
     
-    // Tercer lugar
-    if (podio.tercero) {
+    // Manejar empates en tercer lugar
+    const empateTercero = podio.empates.find(empate => empate.posicion === 3);
+    
+    if (empateTercero) {
+        const empateDiv = document.createElement('div');
+        empateDiv.className = 'podio-item tercer-lugar mb-4';
+        empateDiv.innerHTML = `
+            <div class="text-center">
+                <div class="fs-1">🥉</div>
+                <h4 class="text-danger">EMPATE EN TERCER LUGAR</h4>
+                ${empateTercero.equipos.map(equipo => `
+                    <div class="my-2">
+                        <h4 class="fw-bold">${escapeHtml(equipo.nombre_equipo)}</h4>
+                        <h5 class="text-success">${equipo.puntuacion_total}/6 Puntos - ${formatearTiempo(equipo.tiempo_acumulado)}</h5>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        podioList.appendChild(empateDiv);
+        
+        empateTercero.equipos.forEach(equipo => {
+            marcarEquipoComoGanador(equipo.id, 'tercer-lugar');
+        });
+    } else if (podio.tercero) {
+        // Tercer lugar normal
         const tercerLugar = document.createElement('div');
         tercerLugar.className = 'podio-item tercer-lugar mb-4';
         tercerLugar.innerHTML = `
@@ -900,6 +1111,7 @@ function mostrarPodioCompleto(podio) {
                 <h4 class="text-danger">TERCER LUGAR</h4>
                 <h3 class="fw-bold">${escapeHtml(podio.tercero.nombre_equipo)}</h3>
                 <h5 class="text-success">${podio.tercero.puntuacion_total}/6 Puntos</h5>
+                <h6 class="text-info">Tiempo: ${formatearTiempo(podio.tercero.tiempo_acumulado)}</h6>
             </div>
         `;
         podioList.appendChild(tercerLugar);
@@ -914,7 +1126,7 @@ function mostrarPodioCompleto(podio) {
             <h5 class="text-center text-muted">También completaron todos los desafíos:</h5>
             <div class="d-flex flex-wrap justify-content-center gap-2 mt-2">
                 ${podio.otros.map(equipo => 
-                    `<span class="badge bg-success">${escapeHtml(equipo.nombre_equipo)}</span>`
+                    `<span class="badge bg-success">${escapeHtml(equipo.nombre_equipo)} (${formatearTiempo(equipo.tiempo_acumulado)})</span>`
                 ).join('')}
             </div>
         `;
@@ -940,8 +1152,8 @@ function mostrarGanadorTiempo(ganador, puntuacion) {
     marcarEquipoComoGanador(ganador.id, 'ganador-parcial');
 }
 
-// 3. EMPATE POR TIEMPO (Cuando se acaba el tiempo y hay empate)
-function mostrarEmpateTiempo(ganadores, puntuacion) {
+// 3. EMPATE POR TIEMPO (Cuando se acaba el tiempo y hay empate en puntuación Y tiempo)
+function mostrarEmpateTiempo(ganadores, puntuacion, tiempo) {
     const modal = new bootstrap.Modal(document.getElementById('empateTiempoModal'));
     const listaEmpate = document.getElementById('listaEmpateTiempo');
     
@@ -953,7 +1165,9 @@ function mostrarEmpateTiempo(ganadores, puntuacion) {
         equipoDiv.innerHTML = `
             <h4 class="text-dark mb-1">${escapeHtml(equipo.nombre_equipo)}</h4>
             <h5 class="text-warning">${puntuacion}/6 Puntos</h5>
-            <span class="badge bg-warning">EMPATADO</span>
+            <h6 class="text-info">Tiempo: ${formatearTiempo(equipo.tiempo_acumulado)}</h6>
+            <span class="badge bg-warning">EMPATE EXACTO</span>
+            <small class="d-block text-muted mt-1">Mismo puntaje y mismo tiempo</small>
         `;
         listaEmpate.appendChild(equipoDiv);
         marcarEquipoComoGanador(equipo.id, 'empate');
@@ -987,6 +1201,52 @@ function iniciarDesempate(equipos) {
     // Por ejemplo, un desafío adicional o criterio de desempate
 }
 
+// ===== SISTEMA DE SONIDOS =====
+
+// Función para reproducir sonidos según banderas capturadas
+function reproducirSonidoBanderas(puntuacion) {
+    // Solo reproducir si es una nueva bandera y no hemos reproducido este sonido antes
+    if (puntuacion > maxPuntuacionGlobal && !banderasReproducidas.has(puntuacion)) {
+        
+        // Actualizar máxima puntuación
+        maxPuntuacionGlobal = puntuacion;
+        banderasReproducidas.add(puntuacion);
+        
+        // Reproducir sonido correspondiente
+        if (audiosBanderas[puntuacion]) {
+            console.log(`Reproduciendo sonido para ${puntuacion} banderas`);
+            audiosBanderas[puntuacion].play().catch(e => {
+                console.log('Error reproduciendo sonido de bandera:', e);
+            });
+        }
+        
+        // Si llegó a 6 banderas, reproducir sonido de victoria
+        if (puntuacion === PUNTUACION_MAXIMA) {
+            setTimeout(() => {
+                audioVictoria.play().catch(e => {
+                    console.log('Error reproduciendo sonido de victoria:', e);
+                });
+            }, 1000);
+        }
+    }
+}
+
+// Función para resetear los sonidos cuando se reinicia el hackathon
+function resetearSonidos() {
+    banderasReproducidas.clear();
+    maxPuntuacionGlobal = 0;
+    console.log('Sonidos reseteados para nuevo hackathon');
+}
+
+// Función para probar sonidos (solo para testing)
+function probarSonido(numero) {
+    if (numero === 'victoria') {
+        audioVictoria.play().catch(e => console.log('Error probando sonido de victoria:', e));
+    } else if (audiosBanderas[numero]) {
+        audiosBanderas[numero].play().catch(e => console.log(`Error probando sonido ${numero}:`, e));
+    }
+}
+
 // ===== SISTEMA DE ACTUALIZACIÓN AUTOMÁTICA =====
 
 // Inicializar mapa de equipos actuales
@@ -1000,6 +1260,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Configurar eventos de eliminación
     configurarEventosEliminacion();
+    
+    // Inicializar volumen de los audios
+    Object.values(audiosBanderas).forEach(audio => {
+        if (audio) {
+            audio.volume = 0.7; // 70% de volumen
+        }
+    });
+    if (audioVictoria) {
+        audioVictoria.volume = 0.8; // 80% de volumen para victoria
+    }
     
     // Iniciar monitoreo de nuevos equipos y puntuaciones
     iniciarMonitoreoEquipos();
@@ -1083,6 +1353,16 @@ function actualizarTiemposEquipos(equiposActualizados) {
                     // Marcar como completo si es necesario
                     if (equipo.completado || equipo.puntuacion_total === PUNTUACION_MAXIMA) {
                         filaEquipo.classList.add('equipo-completo');
+                        
+                        // Reproducir sonido de victoria si completó todos los desafíos
+                        if (equipo.puntuacion_total === PUNTUACION_MAXIMA && !banderasReproducidas.has('victoria')) {
+                            banderasReproducidas.add('victoria');
+                            setTimeout(() => {
+                                audioVictoria.play().catch(e => {
+                                    console.log('Error reproduciendo sonido de victoria:', e);
+                                });
+                            }, 500);
+                        }
                     }
                     
                     setTimeout(() => {
@@ -1162,12 +1442,18 @@ function iniciarMonitoreoEquipos() {
     setInterval(verificarCambiosPuntuaciones, 3000);
     
     // Verificar cambios en tiempos cada 2 segundos
-    setInterval(verificarCambiosTiempo, 2000);
+    setInterval(() => {
+        console.log('Ejecutando verificación de tiempo...');
+        verificarCambiosTiempo();
+    }, 3000);
     
     // Verificar inmediatamente al cargar
     setTimeout(verificarNuevosEquipos, 1000);
     setTimeout(verificarCambiosPuntuaciones, 1500);
-    setTimeout(verificarCambiosTiempo, 2000);
+    setTimeout(() => {
+        console.log('Ejecutando verificación de tiempo...');
+        verificarCambiosTiempo();
+    }, 2000);
 }
 
 // Función para agregar equipo dinámicamente
@@ -1256,6 +1542,12 @@ function actualizarPuntuacionesYRanking(equiposActualizados, rankingCompleto) {
             const necesitaActualizarTiempo = equipoActualizado.tiempo_acumulado > 0;
             
             if (puntuacionActual !== nuevaPuntuacion || necesitaActualizarTiempo) {
+                // REPRODUCIR SONIDO si hay nueva bandera capturada
+                if (nuevaPuntuacion > puntuacionActual) {
+                    console.log(`Nueva bandera capturada: ${nuevaPuntuacion}`);
+                    reproducirSonidoBanderas(nuevaPuntuacion);
+                }
+                
                 // Actualizar puntuación
                 if (puntuacionActual !== nuevaPuntuacion) {
                     celdaPuntuacion.textContent = nuevaPuntuacion;
