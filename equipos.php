@@ -332,45 +332,35 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
         .config-duracion-panel {
             background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
             color: white;
+            border: 2px solid #138496;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
+        .config-duracion-panel .btn-close-white {
+            filter: invert(1);
+        }
 
-/* Estilos para el panel de configuración de duración */
-.config-duracion-panel {
-    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
-    color: white;
-    border: 2px solid #138496;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
+        .config-duracion-panel .form-control {
+            border: 1px solid #ced4da;
+        }
 
-.config-duracion-panel .btn-close-white {
-    filter: invert(1);
-}
+        .config-duracion-panel .input-group-text {
+            background-color: #f8f9fa;
+            border: 1px solid #ced4da;
+        }
 
-.config-duracion-panel .form-control {
-    border: 1px solid #ced4da;
-}
+        .btn-toggle-config {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+            border: none;
+            transition: all 0.3s ease;
+        }
 
-.config-duracion-panel .input-group-text {
-    background-color: #f8f9fa;
-    border: 1px solid #ced4da;
-}
-
-.btn-toggle-config {
-    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
-    color: white;
-    border: none;
-    transition: all 0.3s ease;
-}
-
-.btn-toggle-config:hover {
-    background: linear-gradient(135deg, #5a6268 0%, #3d4348 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-
-
+        .btn-toggle-config:hover {
+            background: linear-gradient(135deg, #5a6268 0%, #3d4348 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
     </style>
 </head>
 <body>
@@ -450,7 +440,7 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
         </div>
     </div>
 
-       <!-- Botón para mostrar/ocultar configuración de duración -->
+    <!-- Botón para mostrar/ocultar configuración de duración -->
     <?php if (sePuedeModificarDuracion()): ?>
     <div class="row mt-3">
         <div class="col-md-12 text-center">
@@ -951,16 +941,71 @@ let equiposActuales = new Map();
 let podioCompletoMostrado = false;
 let resultadoTiempoMostrado = false;
 
-// Variables globales para sonidos
-let banderasReproducidas = new Set(); // Para evitar repetir sonidos
-let maxPuntuacionGlobal = 0; // Para trackear la máxima puntuación alcanzada
-const audiosBanderas = {
-    1: document.getElementById('audioBandera1'),
-    2: document.getElementById('audioBandera2'), 
-    3: document.getElementById('audioBandera3'),
-    4: document.getElementById('audioBandera4'),
-    5: document.getElementById('audioBandera5')
+// ===== SISTEMA DE SONIDOS MEJORADO =====
+
+// Contadores para cada bandera (seguimos el orden)
+let contadorAudios = {
+    1: 0, // Bandera 1
+    2: 0, // Bandera 2 
+    3: 0, // Bandera 3
+    4: 0, // Bandera 4
+    5: 0  // Bandera 5
 };
+
+// Cantidad máxima de audios por bandera
+const maxAudiosPorBandera = {
+    1: 6, // 6 audios para bandera 1
+    2: 6, // 6 audios para bandera 2
+    3: 5, // 5 audios para bandera 3
+    4: 6, // 6 audios para bandera 4
+    5: 6  // 6 audios para bandera 5
+};
+
+// Mapeo de audios por bandera
+const audiosBanderas = {
+    1: [
+        document.getElementById('audioBandera1_1'),
+        document.getElementById('audioBandera1_2'),
+        document.getElementById('audioBandera1_3'),
+        document.getElementById('audioBandera1_4'),
+        document.getElementById('audioBandera1_5'),
+        document.getElementById('audioBandera1_6')
+    ],
+    2: [
+        document.getElementById('audioBandera2_1'),
+        document.getElementById('audioBandera2_2'),
+        document.getElementById('audioBandera2_3'),
+        document.getElementById('audioBandera2_4'),
+        document.getElementById('audioBandera2_5'),
+        document.getElementById('audioBandera2_6')
+    ],
+    3: [
+        document.getElementById('audioBandera3_1'),
+        document.getElementById('audioBandera3_2'),
+        document.getElementById('audioBandera3_3'),
+        document.getElementById('audioBandera3_4'),
+        document.getElementById('audioBandera3_5')
+    ],
+    4: [
+        document.getElementById('audioBandera4_1'),
+        document.getElementById('audioBandera4_2'),
+        document.getElementById('audioBandera4_3'),
+        document.getElementById('audioBandera4_4'),
+        document.getElementById('audioBandera4_5'),
+        document.getElementById('audioBandera4_6')
+    ],
+    5: [
+        document.getElementById('audioBandera5_1'),
+        document.getElementById('audioBandera5_2'),
+        document.getElementById('audioBandera5_3'),
+        document.getElementById('audioBandera5_4'),
+        document.getElementById('audioBandera5_5'),
+        document.getElementById('audioBandera5_6')
+    ]
+};
+
+// Variables globales para sonidos
+let maxPuntuacionGlobal = 0; // Para trackear la máxima puntuación alcanzada
 const audioVictoria = document.getElementById('audioVictoria');
 
 // Constantes
@@ -971,6 +1016,66 @@ const tiempoElement = document.getElementById('tiempo-global');
 const finishSound = document.getElementById('finishSound');
 const totalEquiposElement = document.getElementById('total-equipos');
 const tablaEquipos = document.getElementById('tabla-equipos');
+
+// Función para reproducir sonidos según banderas capturadas (EN ORDEN)
+function reproducirSonidoBanderas(puntuacion) {
+    // Solo reproducir si es una nueva bandera
+    if (puntuacion > maxPuntuacionGlobal) {
+        // Actualizar máxima puntuación
+        maxPuntuacionGlobal = puntuacion;
+        
+        // Determinar qué bandera se acaba de capturar
+        const banderaCapturada = puntuacion;
+        
+        if (banderaCapturada >= 1 && banderaCapturada <= 5) {
+            // Obtener el índice del audio a reproducir
+            const indiceAudio = contadorAudios[banderaCapturada];
+            
+            // Verificar si hay audio disponible para esta bandera
+            if (audiosBanderas[banderaCapturada] && audiosBanderas[banderaCapturada][indiceAudio]) {
+                console.log(`Reproduciendo audio para bandera ${banderaCapturada}: ${indiceAudio + 1}/${maxAudiosPorBandera[banderaCapturada]}`);
+                
+                // Reproducir el audio correspondiente
+                const audio = audiosBanderas[banderaCapturada][indiceAudio];
+                audio.play().catch(e => {
+                    console.log(`Error reproduciendo audio para bandera ${banderaCapturada}:`, e);
+                });
+                
+                // Incrementar contador para la próxima vez
+                contadorAudios[banderaCapturada]++;
+                
+                // Si llegamos al máximo, reiniciar contador (ciclar)
+                if (contadorAudios[banderaCapturada] >= maxAudiosPorBandera[banderaCapturada]) {
+                    contadorAudios[banderaCapturada] = 0;
+                    console.log(`Reiniciando ciclo de audios para bandera ${banderaCapturada}`);
+                }
+            }
+            
+            // Si llegó a 6 banderas, reproducir sonido de victoria
+            if (puntuacion === PUNTUACION_MAXIMA) {
+                setTimeout(() => {
+                    audioVictoria.play().catch(e => {
+                        console.log('Error reproduciendo sonido de victoria:', e);
+                    });
+                }, 1000);
+            }
+        }
+    }
+}
+
+// Función para resetear los sonidos cuando se reinicia el hackathon
+function resetearSonidos() {
+    // Reiniciar todos los contadores
+    contadorAudios = {
+        1: 0,
+        2: 0, 
+        3: 0,
+        4: 0,
+        5: 0
+    };
+    maxPuntuacionGlobal = 0;
+    console.log('Sistema de sonidos reseteados - contadores en 0');
+}
 
 // ===== SISTEMA DE DETERMINACIÓN DE RESULTADOS =====
 
@@ -1411,147 +1516,6 @@ function iniciarDesempate(equipos) {
     // Por ejemplo, un desafío adicional o criterio de desempate
 }
 
-// ===== SISTEMA DE SONIDOS MEJORADO =====
-
-// Contadores para cada bandera (seguimos el orden)
-let contadorAudios = {
-    1: 0, // Bandera 1
-    2: 0, // Bandera 2 
-    3: 0, // Bandera 3
-    4: 0, // Bandera 4
-    5: 0  // Bandera 5
-};
-
-// Cantidad máxima de audios por bandera
-const maxAudiosPorBandera = {
-    1: 6, // 6 audios para bandera 1
-    2: 6, // 6 audios para bandera 2
-    3: 5, // 5 audios para bandera 3
-    4: 6, // 6 audios para bandera 4
-    5: 6  // 6 audios para bandera 5
-};
-
-// Mapeo de audios por bandera
-const audiosBanderas = {
-    1: [
-        document.getElementById('audioBandera1_1'),
-        document.getElementById('audioBandera1_2'),
-        document.getElementById('audioBandera1_3'),
-        document.getElementById('audioBandera1_4'),
-        document.getElementById('audioBandera1_5'),
-        document.getElementById('audioBandera1_6')
-    ],
-    2: [
-        document.getElementById('audioBandera2_1'),
-        document.getElementById('audioBandera2_2'),
-        document.getElementById('audioBandera2_3'),
-        document.getElementById('audioBandera2_4'),
-        document.getElementById('audioBandera2_5'),
-        document.getElementById('audioBandera2_6')
-    ],
-    3: [
-        document.getElementById('audioBandera3_1'),
-        document.getElementById('audioBandera3_2'),
-        document.getElementById('audioBandera3_3'),
-        document.getElementById('audioBandera3_4'),
-        document.getElementById('audioBandera3_5')
-    ],
-    4: [
-        document.getElementById('audioBandera4_1'),
-        document.getElementById('audioBandera4_2'),
-        document.getElementById('audioBandera4_3'),
-        document.getElementById('audioBandera4_4'),
-        document.getElementById('audioBandera4_5'),
-        document.getElementById('audioBandera4_6')
-    ],
-    5: [
-        document.getElementById('audioBandera5_1'),
-        document.getElementById('audioBandera5_2'),
-        document.getElementById('audioBandera5_3'),
-        document.getElementById('audioBandera5_4'),
-        document.getElementById('audioBandera5_5'),
-        document.getElementById('audioBandera5_6')
-    ]
-};
-
-// Función para reproducir sonidos según banderas capturadas (EN ORDEN)
-function reproducirSonidoBanderas(puntuacion) {
-    // Solo reproducir si es una nueva bandera
-    if (puntuacion > maxPuntuacionGlobal) {
-        // Actualizar máxima puntuación
-        maxPuntuacionGlobal = puntuacion;
-        
-        // Determinar qué bandera se acaba de capturar
-        const banderaCapturada = puntuacion;
-        
-        if (banderaCapturada >= 1 && banderaCapturada <= 5) {
-            // Obtener el índice del audio a reproducir
-            const indiceAudio = contadorAudios[banderaCapturada];
-            
-            // Verificar si hay audio disponible para esta bandera
-            if (audiosBanderas[banderaCapturada] && audiosBanderas[banderaCapturada][indiceAudio]) {
-                console.log(`Reproduciendo audio para bandera ${banderaCapturada}: ${indiceAudio + 1}/${maxAudiosPorBandera[banderaCapturada]}`);
-                
-                // Reproducir el audio correspondiente
-                const audio = audiosBanderas[banderaCapturada][indiceAudio];
-                audio.play().catch(e => {
-                    console.log(`Error reproduciendo audio para bandera ${banderaCapturada}:`, e);
-                });
-                
-                // Incrementar contador para la próxima vez
-                contadorAudios[banderaCapturada]++;
-                
-                // Si llegamos al máximo, reiniciar contador (ciclar)
-                if (contadorAudios[banderaCapturada] >= maxAudiosPorBandera[banderaCapturada]) {
-                    contadorAudios[banderaCapturada] = 0;
-                    console.log(`Reiniciando ciclo de audios para bandera ${banderaCapturada}`);
-                }
-            }
-            
-            // Si llegó a 6 banderas, reproducir sonido de victoria
-            if (puntuacion === PUNTUACION_MAXIMA) {
-                setTimeout(() => {
-                    audioVictoria.play().catch(e => {
-                        console.log('Error reproduciendo sonido de victoria:', e);
-                    });
-                }, 1000);
-            }
-        }
-    }
-}
-
-// Función para resetear los sonidos cuando se reinicia el hackathon
-function resetearSonidos() {
-    // Reiniciar todos los contadores
-    contadorAudios = {
-        1: 0,
-        2: 0, 
-        3: 0,
-        4: 0,
-        5: 0
-    };
-    maxPuntuacionGlobal = 0;
-    console.log('Sistema de sonidos reseteados - contadores en 0');
-}
-
-// Función para probar sonidos específicos (solo para testing)
-function probarSonido(bandera, indice) {
-    if (bandera >= 1 && bandera <= 5 && audiosBanderas[bandera] && audiosBanderas[bandera][indice]) {
-        console.log(`Probando audio: Bandera ${bandera}, Audio ${indice + 1}`);
-        audiosBanderas[bandera][indice].play().catch(e => {
-            console.log(`Error probando audio ${bandera}_${indice + 1}:`, e);
-        });
-    }
-}
-
-// Función para verificar estado del sistema de sonidos (debug)
-function estadoSonidos() {
-    console.log('=== ESTADO SISTEMA DE SONIDOS ===');
-    console.log('Máxima puntuación global:', maxPuntuacionGlobal);
-    console.log('Contadores de audios:', contadorAudios);
-    console.log('==============================');
-}
-
 // ===== SISTEMA DE ACTUALIZACIÓN AUTOMÁTICA =====
 
 // Inicializar mapa de equipos actuales
@@ -1567,18 +1531,22 @@ document.addEventListener('DOMContentLoaded', function() {
     configurarEventosEliminacion();
     
     // Inicializar volumen de los audios
-for (let bandera = 1; bandera <= 5; bandera++) {
-    if (audiosBanderas[bandera]) {
-        audiosBanderas[bandera].forEach(audio => {
-            if (audio) {
-                audio.volume = 0.7; // 70% de volumen para todos los audios
-            }
-        });
+    for (let bandera = 1; bandera <= 5; bandera++) {
+        if (audiosBanderas[bandera]) {
+            audiosBanderas[bandera].forEach(audio => {
+                if (audio) {
+                    audio.volume = 0.7; // 70% de volumen para todos los audios
+                }
+            });
+        }
     }
-}
-if (audioVictoria) {
-    audioVictoria.volume = 0.8; // 80% de volumen para victoria
-}
+    if (audioVictoria) {
+        audioVictoria.volume = 0.8; // 80% de volumen para victoria
+    }
+    
+    // Iniciar monitoreo de nuevos equipos y puntuaciones
+    iniciarMonitoreoEquipos();
+});
 
 // Configurar eventos para botones de eliminar
 function configurarEventosEliminacion() {
@@ -1593,6 +1561,55 @@ function configurarEventosEliminacion() {
         });
     });
 }
+
+// ===== CONTROL DE CONFIGURACIÓN DE DURACIÓN =====
+
+// Elementos del DOM para configuración
+const btnToggleConfiguracion = document.getElementById('btnToggleConfiguracion');
+const btnCerrarConfiguracion = document.getElementById('btnCerrarConfiguracion');
+const panelConfiguracion = document.getElementById('panelConfiguracion');
+
+// Función para mostrar/ocultar panel de configuración
+function toggleConfiguracionDuracion() {
+    if (panelConfiguracion.style.display === 'none') {
+        panelConfiguracion.style.display = 'block';
+        if (btnToggleConfiguracion) {
+            btnToggleConfiguracion.innerHTML = '⚙️ Ocultar Configuración de Duración';
+        }
+    } else {
+        panelConfiguracion.style.display = 'none';
+        if (btnToggleConfiguracion) {
+            btnToggleConfiguracion.innerHTML = '⚙️ Mostrar Configuración de Duración';
+        }
+    }
+}
+
+// Configurar eventos
+if (btnToggleConfiguracion) {
+    btnToggleConfiguracion.addEventListener('click', toggleConfiguracionDuracion);
+}
+
+if (btnCerrarConfiguracion) {
+    btnCerrarConfiguracion.addEventListener('click', function() {
+        panelConfiguracion.style.display = 'none';
+        if (btnToggleConfiguracion) {
+            btnToggleConfiguracion.innerHTML = '⚙️ Mostrar Configuración de Duración';
+        }
+    });
+}
+
+// Mostrar automáticamente si hay un error relacionado con la duración
+<?php if (isset($_POST['actualizar_duracion']) && $mensaje_error): ?>
+    // Si hubo un error al actualizar la duración, mostrar el panel
+    setTimeout(() => {
+        if (panelConfiguracion) {
+            panelConfiguracion.style.display = 'block';
+            if (btnToggleConfiguracion) {
+                btnToggleConfiguracion.innerHTML = '⚙️ Ocultar Configuración de Duración';
+            }
+        }
+    }, 500);
+<?php endif; ?>
 
 // Función para verificar cambios en tiempos acumulados (MEJORADA)
 function verificarCambiosTiempo() {
@@ -1660,8 +1677,7 @@ function actualizarTiemposEquipos(equiposActualizados) {
                         filaEquipo.classList.add('equipo-completo');
                         
                         // Reproducir sonido de victoria si completó todos los desafíos
-                        if (equipo.puntuacion_total === PUNTUACION_MAXIMA && !banderasReproducidas.has('victoria')) {
-                            banderasReproducidas.add('victoria');
+                        if (equipo.puntuacion_total === PUNTUACION_MAXIMA) {
                             setTimeout(() => {
                                 audioVictoria.play().catch(e => {
                                     console.log('Error reproduciendo sonido de victoria:', e);
@@ -2075,7 +2091,7 @@ function escapeHtml(unsafe) {
 // Función para crear confeti
 function crearConfeti() {
     const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
-    for (let i = 0; i < 150; i++) {
+    for (let i = 0; i < 150; i) {
         setTimeout(() => {
             const confetti = document.createElement('div');
             confetti.className = 'confetti';
@@ -2154,59 +2170,6 @@ if (tiempoRestante <= 0) {
     mostrarResultadoTiempo();
 }
 <?php endif; ?>
-
-
-
-// ===== CONTROL DE CONFIGURACIÓN DE DURACIÓN =====
-
-// Elementos del DOM para configuración
-const btnToggleConfiguracion = document.getElementById('btnToggleConfiguracion');
-const btnCerrarConfiguracion = document.getElementById('btnCerrarConfiguracion');
-const panelConfiguracion = document.getElementById('panelConfiguracion');
-
-// Función para mostrar/ocultar panel de configuración
-function toggleConfiguracionDuracion() {
-    if (panelConfiguracion.style.display === 'none') {
-        panelConfiguracion.style.display = 'block';
-        if (btnToggleConfiguracion) {
-            btnToggleConfiguracion.innerHTML = '⚙️ Ocultar Configuración de Duración';
-        }
-    } else {
-        panelConfiguracion.style.display = 'none';
-        if (btnToggleConfiguracion) {
-            btnToggleConfiguracion.innerHTML = '⚙️ Mostrar Configuración de Duración';
-        }
-    }
-}
-
-// Configurar eventos
-if (btnToggleConfiguracion) {
-    btnToggleConfiguracion.addEventListener('click', toggleConfiguracionDuracion);
-}
-
-if (btnCerrarConfiguracion) {
-    btnCerrarConfiguracion.addEventListener('click', function() {
-        panelConfiguracion.style.display = 'none';
-        if (btnToggleConfiguracion) {
-            btnToggleConfiguracion.innerHTML = '⚙️ Mostrar Configuración de Duración';
-        }
-    });
-}
-
-// Mostrar automáticamente si hay un error relacionado con la duración
-<?php if (isset($_POST['actualizar_duracion']) && $mensaje_error): ?>
-    // Si hubo un error al actualizar la duración, mostrar el panel
-    setTimeout(() => {
-        if (panelConfiguracion) {
-            panelConfiguracion.style.display = 'block';
-            if (btnToggleConfiguracion) {
-                btnToggleConfiguracion.innerHTML = '⚙️ Ocultar Configuración de Duración';
-            }
-        }
-    }, 500);
-<?php endif; ?>
-
-
 </script>
 
 </body>
