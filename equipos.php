@@ -1004,47 +1004,62 @@ const audiosBanderas = {
     ]
 };
 
+// Variables globales para sonidos
+let maxPuntuacionGlobal = 0; // Para trackear la máxima puntuación alcanzada
 const audioVictoria = document.getElementById('audioVictoria');
 
-// Función para reproducir sonidos según banderas capturadas (CADA VEZ que alguien capture una bandera)
-function reproducirSonidoBanderas(equipoId, puntuacionAnterior, nuevaPuntuacion) {
-    console.log(`Equipo ${equipoId}: ${puntuacionAnterior} → ${nuevaPuntuacion} puntos`);
-    
-    // Determinar qué bandera(s) se acaba de capturar
-    for (let bandera = puntuacionAnterior + 1; bandera <= nuevaPuntuacion; bandera++) {
-        if (bandera >= 1 && bandera <= 5) {
+// Constantes
+const PUNTUACION_MAXIMA = 6; // 6 desafíos completados
+
+// Elementos del DOM
+const tiempoElement = document.getElementById('tiempo-global');
+const finishSound = document.getElementById('finishSound');
+const totalEquiposElement = document.getElementById('total-equipos');
+const tablaEquipos = document.getElementById('tabla-equipos');
+
+// Función para reproducir sonidos según banderas capturadas (EN ORDEN)
+function reproducirSonidoBanderas(puntuacion) {
+    // Solo reproducir si es una nueva bandera
+    if (puntuacion > maxPuntuacionGlobal) {
+        // Actualizar máxima puntuación
+        maxPuntuacionGlobal = puntuacion;
+        
+        // Determinar qué bandera se acaba de capturar
+        const banderaCapturada = puntuacion;
+        
+        if (banderaCapturada >= 1 && banderaCapturada <= 5) {
             // Obtener el índice del audio a reproducir
-            const indiceAudio = contadorAudios[bandera];
+            const indiceAudio = contadorAudios[banderaCapturada];
             
             // Verificar si hay audio disponible para esta bandera
-            if (audiosBanderas[bandera] && audiosBanderas[bandera][indiceAudio]) {
-                console.log(`Reproduciendo audio para bandera ${bandera}: ${indiceAudio + 1}/${maxAudiosPorBandera[bandera]}`);
+            if (audiosBanderas[banderaCapturada] && audiosBanderas[banderaCapturada][indiceAudio]) {
+                console.log(`Reproduciendo audio para bandera ${banderaCapturada}: ${indiceAudio + 1}/${maxAudiosPorBandera[banderaCapturada]}`);
                 
                 // Reproducir el audio correspondiente
-                const audio = audiosBanderas[bandera][indiceAudio];
+                const audio = audiosBanderas[banderaCapturada][indiceAudio];
                 audio.play().catch(e => {
-                    console.log(`Error reproduciendo audio para bandera ${bandera}:`, e);
+                    console.log(`Error reproduciendo audio para bandera ${banderaCapturada}:`, e);
                 });
                 
                 // Incrementar contador para la próxima vez
-                contadorAudios[bandera]++;
+                contadorAudios[banderaCapturada]++;
                 
                 // Si llegamos al máximo, reiniciar contador (ciclar)
-                if (contadorAudios[bandera] >= maxAudiosPorBandera[bandera]) {
-                    contadorAudios[bandera] = 0;
-                    console.log(`Reiniciando ciclo de audios para bandera ${bandera}`);
+                if (contadorAudios[banderaCapturada] >= maxAudiosPorBandera[banderaCapturada]) {
+                    contadorAudios[banderaCapturada] = 0;
+                    console.log(`Reiniciando ciclo de audios para bandera ${banderaCapturada}`);
                 }
             }
+            
+            // Si llegó a 6 banderas, reproducir sonido de victoria
+            if (puntuacion === PUNTUACION_MAXIMA) {
+                setTimeout(() => {
+                    audioVictoria.play().catch(e => {
+                        console.log('Error reproduciendo sonido de victoria:', e);
+                    });
+                }, 1000);
+            }
         }
-    }
-    
-    // Si llegó a 6 banderas, reproducir sonido de victoria
-    if (nuevaPuntuacion === 6) {
-        setTimeout(() => {
-            audioVictoria.play().catch(e => {
-                console.log('Error reproduciendo sonido de victoria:', e);
-            });
-        }, 1000);
     }
 }
 
@@ -1058,6 +1073,7 @@ function resetearSonidos() {
         4: 0,
         5: 0
     };
+    maxPuntuacionGlobal = 0;
     console.log('Sistema de sonidos reseteados - contadores en 0');
 }
 
@@ -1819,14 +1835,6 @@ function agregarEquipoDinamico(equipo) {
     
     mostrarNotificacion(`¡Nuevo equipo registrado: ${equipo.nombre_equipo}!`);
     
-    // Si el equipo nuevo ya tiene puntuación, reproducir sonidos para las banderas que ya tiene
-    if (equipo.puntuacion_total > 0) {
-        setTimeout(() => {
-            console.log(`Equipo nuevo ${equipo.id} ya tiene ${equipo.puntuacion_total} banderas`);
-            reproducirSonidoBanderas(equipo.id, 0, equipo.puntuacion_total);
-        }, 1000);
-    }
-    
     setTimeout(() => {
         nuevaFila.classList.remove('equipo-nuevo');
         const badgeNuevo = nuevaFila.querySelector('.badge-nuevo');
@@ -1847,22 +1855,22 @@ function actualizarPuntuacionesYRanking(equiposActualizados, rankingCompleto) {
             const filaEquipo = equiposActuales.get(equipoId);
             
             const celdaPuntuacion = filaEquipo.querySelector('td:nth-child(4) strong');
-            const puntuacionAnterior = parseInt(celdaPuntuacion.textContent);
+            const puntuacionActual = parseInt(celdaPuntuacion.textContent);
             const nuevaPuntuacion = equipoActualizado.puntuacion_total;
             
             // Actualizar tiempo también si está disponible
             const celdaTiempo = filaEquipo.querySelector('td:nth-child(5)');
             const necesitaActualizarTiempo = equipoActualizado.tiempo_acumulado > 0;
             
-            if (puntuacionAnterior !== nuevaPuntuacion || necesitaActualizarTiempo) {
-                // REPRODUCIR SONIDO CADA VEZ que hay un cambio de puntuación
-                if (nuevaPuntuacion > puntuacionAnterior) {
-                    console.log(`Nueva(s) bandera(s) capturada(s) por equipo ${equipoId}: ${puntuacionAnterior} → ${nuevaPuntuacion}`);
-                    reproducirSonidoBanderas(equipoId, puntuacionAnterior, nuevaPuntuacion);
+            if (puntuacionActual !== nuevaPuntuacion || necesitaActualizarTiempo) {
+                // REPRODUCIR SONIDO si hay nueva bandera capturada
+                if (nuevaPuntuacion > puntuacionActual) {
+                    console.log(`Nueva bandera capturada: ${nuevaPuntuacion}`);
+                    reproducirSonidoBanderas(nuevaPuntuacion);
                 }
                 
                 // Actualizar puntuación
-                if (puntuacionAnterior !== nuevaPuntuacion) {
+                if (puntuacionActual !== nuevaPuntuacion) {
                     celdaPuntuacion.textContent = nuevaPuntuacion;
                     celdaPuntuacion.classList.add('puntuacion-cambiando');
                 }
@@ -1874,7 +1882,7 @@ function actualizarPuntuacionesYRanking(equiposActualizados, rankingCompleto) {
                 }
                 
                 // Marcar como completo si llegó a 6 puntos
-                if (nuevaPuntuacion === 6 || equipoActualizado.completado) {
+                if (nuevaPuntuacion === PUNTUACION_MAXIMA || equipoActualizado.completado) {
                     filaEquipo.classList.add('equipo-completo');
                     
                     // Verificar PODIO inmediatamente cuando alguien completa los 6 desafíos
