@@ -640,4 +640,55 @@ function formatearTiempo($segundos) {
     return sprintf("%02d:%02d", $minutos, $segundos_restantes);
 }
 
+
+/**
+ * Actualizar la duración del hackathon
+ */
+function actualizarDuracionHackathon($duracion_minutos) {
+    global $db;
+    
+    // Validar que la duración sea un número positivo
+    if (!is_numeric($duracion_minutos) || $duracion_minutos <= 0) {
+        return false;
+    }
+    
+    $stmt = $db->prepare("UPDATE configuracion_hackathon SET duracion_minutos = ?");
+    return $stmt->execute([$duracion_minutos]);
+}
+
+/**
+ * Obtener la duración actual del hackathon
+ */
+function obtenerDuracionHackathon() {
+    $config = obtenerConfiguracionHackathon();
+    return $config ? $config['duracion_minutos'] : 90; // Valor por defecto: 90 minutos
+}
+
+/**
+ * Verificar si se puede modificar la duración (solo si el hackathon no ha iniciado)
+ */
+function sePuedeModificarDuracion() {
+    $config = obtenerConfiguracionHackathon();
+    return !$config || !$config['hackathon_iniciado'];
+}
+
+
+/**
+ * Formatear duración en minutos a texto legible
+ */
+function formatearDuracionLegible($minutos) {
+    if ($minutos < 60) {
+        return $minutos . " minutos";
+    } else {
+        $horas = floor($minutos / 60);
+        $minutos_restantes = $minutos % 60;
+        
+        if ($minutos_restantes == 0) {
+            return $horas . " hora" . ($horas > 1 ? "s" : "");
+        } else {
+            return $horas . " hora" . ($horas > 1 ? "s" : "") . " y " . $minutos_restantes . " minutos";
+        }
+    }
+}
+
 ?>

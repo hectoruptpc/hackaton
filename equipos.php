@@ -23,7 +23,7 @@ $mensaje_error = '';
 if ($es_admin && isset($_POST['iniciar_hackathon'])) {
     try {
         if (iniciarHackathonGlobal()) {
-            $mensaje_exito = "¡Hackathon iniciado! Tiempo: 1 hora 30 minutos";
+            $mensaje_exito = "¡Hackathon iniciado! Tiempo: " . formatearDuracionLegible(obtenerDuracionHackathon());
             
             // Iniciar tiempo para todos los equipos existentes que ya tienen miembros
             $equipos = obtenerRankingEquipos();
@@ -74,12 +74,32 @@ if ($es_admin && isset($_POST['eliminar_equipo'])) {
     }
 }
 
+// Procesar actualización de duración
+if ($es_admin && isset($_POST['actualizar_duracion'])) {
+    try {
+        $nueva_duracion = intval($_POST['duracion_minutos']);
+        
+        if (sePuedeModificarDuracion()) {
+            if (actualizarDuracionHackathon($nueva_duracion)) {
+                $mensaje_exito = "Duración actualizada a " . $nueva_duracion . " minutos (" . formatearDuracionLegible($nueva_duracion) . ")";
+            } else {
+                $mensaje_error = "Error al actualizar la duración";
+            }
+        } else {
+            $mensaje_error = "No se puede modificar la duración mientras el hackathon esté en curso";
+        }
+    } catch (Exception $e) {
+        $mensaje_error = "Error: " . $e->getMessage();
+    }
+}
+
 // Obtener datos con manejo de errores
 try {
     $ranking = obtenerRankingEquiposConTiempo();
     $config_hackathon = obtenerConfiguracionHackathon();
     $hackathon_activo = hackathonEstaActivo();
     $tiempo_restante = calcularTiempoRestanteGlobal();
+    $duracion_actual = obtenerDuracionHackathon();
     
 } catch (Exception $e) {
     // Si hay error al obtener datos, mostrar página básica
@@ -87,6 +107,7 @@ try {
     $config_hackathon = null;
     $hackathon_activo = false;
     $tiempo_restante = 0;
+    $duracion_actual = 90;
     $mensaje_error = "Error al cargar datos: " . $e->getMessage();
 }
 
@@ -128,6 +149,7 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
         .btn-success { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); border: none; }
         .btn-warning { background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%); border: none; }
         .btn-danger { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); border: none; }
+        .btn-info { background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); border: none; }
         .badge-espera { background-color: #6c757d; }
         .badge-compitiendo { background-color: #198754; }
         .actions-column { width: 120px; }
@@ -305,6 +327,50 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
         .fila-tiempo-actualizado {
             animation: highlight-time 2s ease-in-out;
         }
+        
+        /* Estilos para el panel de configuración de duración */
+        .config-duracion-panel {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+            color: white;
+        }
+
+
+/* Estilos para el panel de configuración de duración */
+.config-duracion-panel {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    color: white;
+    border: 2px solid #138496;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.config-duracion-panel .btn-close-white {
+    filter: invert(1);
+}
+
+.config-duracion-panel .form-control {
+    border: 1px solid #ced4da;
+}
+
+.config-duracion-panel .input-group-text {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+}
+
+.btn-toggle-config {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-toggle-config:hover {
+    background: linear-gradient(135deg, #5a6268 0%, #3d4348 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+
+
     </style>
 </head>
 <body>
@@ -345,7 +411,7 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
                         </div>
                        
                     <?php else: ?>
-                        <p class="mb-1">⏳ Duración: <strong>2 horas</strong></p>
+                        <p class="mb-1">⏳ Duración: <strong><?php echo formatearDuracionLegible($duracion_actual); ?></strong></p>
                         <p class="mb-0">👥 Equipos registrados: <strong id="total-equipos"><?php echo count($ranking); ?></strong></p>
                     <?php endif; ?>
                 </div>
@@ -381,6 +447,71 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
                 <strong>💡 Listo para comenzar</strong> - Cuando inicies el hackathon, todos los equipos existentes comenzarán simultáneamente.
             </div>
             <?php endif; ?>
+        </div>
+    </div>
+
+       <!-- Botón para mostrar/ocultar configuración de duración -->
+    <?php if (sePuedeModificarDuracion()): ?>
+    <div class="row mt-3">
+        <div class="col-md-12 text-center">
+            <button type="button" class="btn btn-outline-info btn-sm" id="btnToggleConfiguracion">
+                ⚙️ Mostrar Configuración de Duración
+            </button>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <!-- Panel de Configuración de Duración (Oculto por defecto) -->
+    <div class="row mt-3" id="panelConfiguracion" style="display: none;">
+        <div class="col-md-12">
+            <div class="card config-duracion-panel">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">⏱️ Configurar Duración del Hackathon</h5>
+                    <button type="button" class="btn-close btn-close-white" id="btnCerrarConfiguracion"></button>
+                </div>
+                <div class="card-body">
+                    <?php if (sePuedeModificarDuracion()): ?>
+                        <form method="post" class="row g-3 align-items-center">
+                            <div class="col-auto">
+                                <label for="duracion_minutos" class="form-label"><strong>Duración actual:</strong></label>
+                            </div>
+                            <div class="col-auto">
+                                <div class="input-group">
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="duracion_minutos" 
+                                           name="duracion_minutos" 
+                                           value="<?php echo $duracion_actual; ?>" 
+                                           min="1" 
+                                           max="480" 
+                                           required
+                                           style="width: 120px;">
+                                    <span class="input-group-text">minutos</span>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <button type="submit" name="actualizar_duracion" class="btn btn-light">
+                                    💾 Actualizar Duración
+                                </button>
+                            </div>
+                            <div class="col-12">
+                                <small>
+                                    <strong>Nota:</strong> Solo puedes modificar la duración antes de iniciar el hackathon. 
+                                    Rango permitido: 1-480 minutos (1-8 horas).
+                                    <br>
+                                    <strong>Duración actual:</strong> <?php echo $duracion_actual; ?> minutos (<?php echo formatearDuracionLegible($duracion_actual); ?>)
+                                </small>
+                            </div>
+                        </form>
+                    <?php else: ?>
+                        <div class="alert alert-warning mb-0">
+                            <strong>⏰ Duración actual:</strong> <?php echo $duracion_actual; ?> minutos (<?php echo formatearDuracionLegible($duracion_actual); ?>)
+                            <br>
+                            <small>La duración no se puede modificar mientras el hackathon esté en curso.</small>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
     </div>
     <?php endif; ?>
@@ -530,7 +661,7 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
             <div class="modal-body">
                 <p>¿Estás seguro de iniciar el hackathon?</p>
                 <div class="alert alert-info">
-                    <strong>📅 Duración:</strong> 2 horas <br>
+                    <strong>📅 Duración:</strong> <?php echo formatearDuracionLegible($duracion_actual); ?><br>
                     <strong>✅ Equipos que comenzarán:</strong> <?php echo count($ranking); ?><br>
                     <strong>🎯 Desafíos:</strong> 6 desafíos de seguridad
                 </div>
@@ -1849,6 +1980,59 @@ if (tiempoRestante <= 0) {
     mostrarResultadoTiempo();
 }
 <?php endif; ?>
+
+
+
+// ===== CONTROL DE CONFIGURACIÓN DE DURACIÓN =====
+
+// Elementos del DOM para configuración
+const btnToggleConfiguracion = document.getElementById('btnToggleConfiguracion');
+const btnCerrarConfiguracion = document.getElementById('btnCerrarConfiguracion');
+const panelConfiguracion = document.getElementById('panelConfiguracion');
+
+// Función para mostrar/ocultar panel de configuración
+function toggleConfiguracionDuracion() {
+    if (panelConfiguracion.style.display === 'none') {
+        panelConfiguracion.style.display = 'block';
+        if (btnToggleConfiguracion) {
+            btnToggleConfiguracion.innerHTML = '⚙️ Ocultar Configuración de Duración';
+        }
+    } else {
+        panelConfiguracion.style.display = 'none';
+        if (btnToggleConfiguracion) {
+            btnToggleConfiguracion.innerHTML = '⚙️ Mostrar Configuración de Duración';
+        }
+    }
+}
+
+// Configurar eventos
+if (btnToggleConfiguracion) {
+    btnToggleConfiguracion.addEventListener('click', toggleConfiguracionDuracion);
+}
+
+if (btnCerrarConfiguracion) {
+    btnCerrarConfiguracion.addEventListener('click', function() {
+        panelConfiguracion.style.display = 'none';
+        if (btnToggleConfiguracion) {
+            btnToggleConfiguracion.innerHTML = '⚙️ Mostrar Configuración de Duración';
+        }
+    });
+}
+
+// Mostrar automáticamente si hay un error relacionado con la duración
+<?php if (isset($_POST['actualizar_duracion']) && $mensaje_error): ?>
+    // Si hubo un error al actualizar la duración, mostrar el panel
+    setTimeout(() => {
+        if (panelConfiguracion) {
+            panelConfiguracion.style.display = 'block';
+            if (btnToggleConfiguracion) {
+                btnToggleConfiguracion.innerHTML = '⚙️ Ocultar Configuración de Duración';
+            }
+        }
+    }, 500);
+<?php endif; ?>
+
+
 </script>
 
 </body>
