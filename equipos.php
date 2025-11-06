@@ -341,11 +341,11 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
                                 echo sprintf("%02d:%02d", $minutos, $segundos);
                                 ?>
                             </div>
-                            <small class="text-muted">Tiempo global del hackathon</small>
+                            
                         </div>
                        
                     <?php else: ?>
-                        <p class="mb-1">⏳ Duración: <strong>1 hora 30 minutos</strong></p>
+                        <p class="mb-1">⏳ Duración: <strong>2 horas</strong></p>
                         <p class="mb-0">👥 Equipos registrados: <strong id="total-equipos"><?php echo count($ranking); ?></strong></p>
                     <?php endif; ?>
                 </div>
@@ -530,7 +530,7 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
             <div class="modal-body">
                 <p>¿Estás seguro de iniciar el hackathon?</p>
                 <div class="alert alert-info">
-                    <strong>📅 Duración:</strong> 1 hora 30 minutos<br>
+                    <strong>📅 Duración:</strong> 2 horas <br>
                     <strong>✅ Equipos que comenzarán:</strong> <?php echo count($ranking); ?><br>
                     <strong>🎯 Desafíos:</strong> 6 desafíos de seguridad
                 </div>
