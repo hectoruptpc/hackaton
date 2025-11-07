@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost:3306
--- Tiempo de generación: 31-10-2025 a las 17:24:29
+-- Tiempo de generación: 07-11-2025 a las 17:20:06
 -- Versión del servidor: 8.0.43-0ubuntu0.24.04.2
 -- Versión de PHP: 8.3.6
 
@@ -40,7 +40,7 @@ CREATE TABLE `configuracion_hackathon` (
 --
 
 INSERT INTO `configuracion_hackathon` (`id`, `hackathon_iniciado`, `tiempo_inicio_global`, `duracion_minutos`, `creado_en`) VALUES
-(1, 0, NULL, 2, '2025-10-30 13:44:43');
+(1, 0, NULL, 1, '2025-10-30 13:44:43');
 
 -- --------------------------------------------------------
 
@@ -70,16 +70,12 @@ CREATE TABLE `equipos` (
   `inicio_tardio` tinyint(1) DEFAULT '0',
   `creado_en` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `estado` tinyint DEFAULT '0' COMMENT '0: En espera, 1: Compitiendo',
-  `actualizado_en` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `actualizado_en` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `tiempo_acumulado` int DEFAULT '0',
+  `tiempo_finalizacion` datetime DEFAULT NULL,
+  `desafios_completados` int DEFAULT '0',
+  `completado` tinyint(1) DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
-
---
--- Volcado de datos para la tabla `equipos`
---
-
-INSERT INTO `equipos` (`id`, `nombre_equipo`, `codigo_equipo`, `tiempo_inicio`, `puntuacion_total`, `inicio_tardio`, `creado_en`, `estado`, `actualizado_en`) VALUES
-(28, 'El fantasma de la puerta', '68EZO9', NULL, 0, 0, '2025-10-31 16:32:08', 0, '2025-10-31 17:24:15'),
-(29, 'Los cara de papa', 'E02N2M', NULL, 0, 0, '2025-10-31 16:33:18', 0, '2025-10-31 17:24:15');
 
 -- --------------------------------------------------------
 
@@ -94,20 +90,6 @@ CREATE TABLE `participantes` (
   `equipo_id` int DEFAULT NULL,
   `creado_en` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
-
---
--- Volcado de datos para la tabla `participantes`
---
-
-INSERT INTO `participantes` (`id`, `nombre`, `cedula`, `equipo_id`, `creado_en`) VALUES
-(48, 'Hector', '30692052', 28, '2025-10-31 16:32:09'),
-(49, 'Juan', '98765555', 28, '2025-10-31 16:32:09'),
-(50, 'Luis', '1738172', 28, '2025-10-31 16:32:09'),
-(51, 'Carlos', '99988877', 28, '2025-10-31 16:32:09'),
-(52, 'Pepe', '12345555', 29, '2025-10-31 16:33:19'),
-(53, 'Susi', '2737283', 29, '2025-10-31 16:33:19'),
-(54, 'Lola', '56789111', 29, '2025-10-31 16:33:19'),
-(55, 'Petra', '12345678', 29, '2025-10-31 16:33:19');
 
 --
 -- Índices para tablas volcadas
@@ -156,19 +138,19 @@ ALTER TABLE `configuracion_hackathon`
 -- AUTO_INCREMENT de la tabla `desafios_completados`
 --
 ALTER TABLE `desafios_completados`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=115;
 
 --
 -- AUTO_INCREMENT de la tabla `equipos`
 --
 ALTER TABLE `equipos`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT de la tabla `participantes`
 --
 ALTER TABLE `participantes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=64;
 
 --
 -- Restricciones para tablas volcadas
