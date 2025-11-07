@@ -488,7 +488,7 @@ if (isset($_SESSION['cedula'])) {
                         <p class="text-warning small">Esperando inicio del hackathon</p>
                         <p class="text-muted small">El administrador iniciará el tiempo para todos los equipos</p>
                     <?php else: ?>
-                        <p class="text-success small">Tiempo iniciado: <?php echo date('H:i:s', strtotime($info_equipo['tiempo_inicio'])); ?></p>
+                        
                         <?php if ($info_equipo['inicio_tardio']): ?>
                             <p class="text-info small">Equipo se unió después del inicio</p>
                         <?php endif; ?>
@@ -621,6 +621,32 @@ if (isset($_SESSION['cedula'])) {
     <?php endif; ?>
 </div>
 
+<!-- Elementos de audio -->
+<audio id="successSound" preload="auto">
+    <source src="audios/yay.mp3" type="audio/mpeg">
+</audio>
+<audio id="errorSound" preload="auto">
+    <source src="audios/no.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Modal para mostrar resultados de banderas -->
+<div class="modal fade" id="resultModal" tabindex="-1" aria-labelledby="resultModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" id="resultModalHeader">
+                <h5 class="modal-title" id="resultModalLabel"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center" id="resultModalBody">
+                <!-- Contenido dinámico -->
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Continuar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal de Felicitaciones -->
 <div class="modal fade" id="congratsModal" tabindex="-1" aria-labelledby="congratsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -658,6 +684,13 @@ let currentScore = <?php echo $_SESSION['puntuacion_equipo']; ?>;
 let timers = {};
 let completedChallenges = {};
 let totalChallenges = 6; // Actualizado a 6 desafíos
+
+// Elementos de audio
+const successSound = document.getElementById('successSound');
+const errorSound = document.getElementById('errorSound');
+
+// Modal de resultados
+const resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
 
 // Calcular tiempo por desafío basado en el tiempo global restante
 const challengeDurations = {};
@@ -815,14 +848,14 @@ function setupFlagVerification() {
 
 function verifyFlag(challenge) {
     if (completedChallenges[challenge]) {
-        alert('Este desafío ya fue completado por tu equipo.');
+        showResultModal('Desafío Completado', 'Este desafío ya fue completado por tu equipo.', 'warning', false);
         return;
     }
 
     const userInput = document.getElementById(`flag-${challenge}`).value.trim();
     
     if (!userInput) {
-        alert('Por favor ingresa una bandera.');
+        showResultModal('Campo Vacío', 'Por favor ingresa una bandera.', 'warning', false);
         return;
     }
     
@@ -838,17 +871,73 @@ function verifyFlag(challenge) {
         if (data.success) {
             handleCorrectFlag(challenge, data.puntos);
         } else {
-            alert(data.message || 'Bandera Incorrecta. Sigue buscando.');
+            showResultModal('Bandera Incorrecta', data.message || 'Sigue buscando.', 'danger', true);
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Error al verificar la bandera. Intenta nuevamente.');
+        showResultModal('Error', 'Error al verificar la bandera. Intenta nuevamente.', 'danger', true);
     });
 }
 
+function showResultModal(title, message, type, playErrorSound) {
+    // Configurar el modal según el tipo
+    const header = document.getElementById('resultModalHeader');
+    const titleElement = document.getElementById('resultModalLabel');
+    const body = document.getElementById('resultModalBody');
+    
+    // Limpiar clases anteriores
+    header.className = 'modal-header';
+    body.className = 'modal-body text-center';
+    
+    // Configurar según el tipo
+    switch(type) {
+        case 'success':
+            header.classList.add('bg-success', 'text-white');
+            titleElement.textContent = title;
+            body.innerHTML = `
+                <div class="mb-3">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <h4>${message}</h4>
+                </div>
+            `;
+            successSound.play();
+            break;
+        case 'danger':
+            header.classList.add('bg-danger', 'text-white');
+            titleElement.textContent = title;
+            body.innerHTML = `
+                <div class="mb-3">
+                    <i class="fas fa-times-circle fa-3x text-danger mb-3"></i>
+                    <h4>${message}</h4>
+                </div>
+            `;
+            if (playErrorSound) {
+                errorSound.play();
+            }
+            break;
+        case 'warning':
+            header.classList.add('bg-warning', 'text-dark');
+            titleElement.textContent = title;
+            body.innerHTML = `
+                <div class="mb-3">
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                    <h4>${message}</h4>
+                </div>
+            `;
+            break;
+    }
+    
+    resultModal.show();
+}
+
 function handleCorrectFlag(challenge, puntos) {
-    alert(`¡Bandera Correcta! Tu equipo ha ganado ${puntos} puntos.`);
+    showResultModal(
+        '¡Bandera Correcta!', 
+        `Tu equipo ha ganado ${puntos} puntos.`, 
+        'success', 
+        false
+    );
     
     currentScore += puntos;
     document.getElementById('score').textContent = `${currentScore} Puntos`;
@@ -899,6 +988,9 @@ function checkAllChallengesCompleted() {
         // Actualizar modal con información
         document.getElementById('final-score').textContent = currentScore;
         document.getElementById('time-used').textContent = tiempoFormateado;
+        
+        // Reproducir sonido de éxito
+        successSound.play();
         
         // Mostrar modal después de un breve delay
         setTimeout(() => {
