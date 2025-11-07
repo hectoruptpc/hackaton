@@ -763,7 +763,7 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
                 <h4 class="text-warning" id="ganadorTiempoPuntos"></h4>
                 <p class="mt-3">Mayor puntuación obtenida</p>
                 <div class="alert alert-warning text-dark mt-3">
-                    <strong>Nota:</strong> Ningún equipo completó los 6 desafíos
+                    <strong>🏆 ¡Felicidades al equipo ganador!</strong>
                 </div>
             </div>
             <div class="modal-footer border-0 justify-content-center">
