@@ -6,18 +6,20 @@ header('Content-Type: application/json');
 
 try {
     $ranking = obtenerRankingEquiposConTiempo();
+    $hackathon_activo = hackathonEstaActivo();
+    $tiempo_restante = calcularTiempoRestanteGlobal();
     
     echo json_encode([
         'success' => true,
         'ranking' => $ranking,
-        'timestamp' => date('Y-m-d H:i:s')
+        'hackathon_activo' => $hackathon_activo,
+        'tiempo_restante' => $tiempo_restante
     ]);
     
 } catch (Exception $e) {
     echo json_encode([
         'success' => false,
-        'error' => $e->getMessage(),
-        'ranking' => []
+        'error' => $e->getMessage()
     ]);
 }
 ?>

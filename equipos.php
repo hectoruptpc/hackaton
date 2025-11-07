@@ -933,7 +933,11 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// Variables globales
+// =============================================
+// VARIABLES GLOBALES Y CONFIGURACIÓN
+// =============================================
+
+// Variables de estado del sistema
 let tiempoRestante = <?php echo $tiempo_restante; ?>;
 let tiempoAgotadoMostrado = false;
 let sonidoReproducido = false;
@@ -941,7 +945,18 @@ let equiposActuales = new Map();
 let podioCompletoMostrado = false;
 let resultadoTiempoMostrado = false;
 
-// ===== SISTEMA DE SONIDOS MEJORADO =====
+// Mapa para llevar registro de las puntuaciones anteriores de cada equipo
+let puntuacionesAnteriores = new Map();
+
+// Elementos del DOM
+const tiempoElement = document.getElementById('tiempo-global');
+const tablaEquipos = document.getElementById('tabla-equipos');
+const totalEquiposElement = document.getElementById('total-equipos');
+const PUNTUACION_MAXIMA = 6;
+
+// =============================================
+// SISTEMA DE SONIDOS COMPLETO - CORREGIDO
+// =============================================
 
 // Contadores para cada bandera (seguimos el orden)
 let contadorAudios = {
@@ -1004,62 +1019,63 @@ const audiosBanderas = {
     ]
 };
 
-// Variables globales para sonidos
-let maxPuntuacionGlobal = 0; // Para trackear la máxima puntuación alcanzada
 const audioVictoria = document.getElementById('audioVictoria');
-
-// Constantes
-const PUNTUACION_MAXIMA = 6; // 6 desafíos completados
-
-// Elementos del DOM
-const tiempoElement = document.getElementById('tiempo-global');
 const finishSound = document.getElementById('finishSound');
-const totalEquiposElement = document.getElementById('total-equipos');
-const tablaEquipos = document.getElementById('tabla-equipos');
 
-// Función para reproducir sonidos según banderas capturadas (EN ORDEN)
-function reproducirSonidoBanderas(puntuacion) {
-    // Solo reproducir si es una nueva bandera
-    if (puntuacion > maxPuntuacionGlobal) {
-        // Actualizar máxima puntuación
-        maxPuntuacionGlobal = puntuacion;
-        
-        // Determinar qué bandera se acaba de capturar
-        const banderaCapturada = puntuacion;
-        
-        if (banderaCapturada >= 1 && banderaCapturada <= 5) {
-            // Obtener el índice del audio a reproducir
-            const indiceAudio = contadorAudios[banderaCapturada];
+// Función para reproducir sonidos según banderas capturadas - CORREGIDA
+function reproducirSonidoBanderas(equipoId, puntuacionAnterior, nuevaPuntuacion) {
+    console.log(`🔊 SONIDOS: Equipo ${equipoId}: ${puntuacionAnterior} → ${nuevaPuntuacion} puntos`);
+    
+    // Determinar qué bandera(s) se acaba de capturar
+    for (let bandera = puntuacionAnterior + 1; bandera <= nuevaPuntuacion; bandera++) {
+        if (bandera >= 1 && bandera <= 5) {
+            // Obtener el índice del audio a reproducir para ESTA bandera
+            const indiceAudio = contadorAudios[bandera];
+            
+            console.log(`🔊 Bandera ${bandera} capturada - Audio #${indiceAudio + 1}`);
             
             // Verificar si hay audio disponible para esta bandera
-            if (audiosBanderas[banderaCapturada] && audiosBanderas[banderaCapturada][indiceAudio]) {
-                console.log(`Reproduciendo audio para bandera ${banderaCapturada}: ${indiceAudio + 1}/${maxAudiosPorBandera[banderaCapturada]}`);
+            if (audiosBanderas[bandera] && audiosBanderas[bandera][indiceAudio]) {
+                console.log(`🔊 Reproduciendo audio para bandera ${bandera}: ${indiceAudio + 1}/${maxAudiosPorBandera[bandera]}`);
                 
                 // Reproducir el audio correspondiente
-                const audio = audiosBanderas[banderaCapturada][indiceAudio];
-                audio.play().catch(e => {
-                    console.log(`Error reproduciendo audio para bandera ${banderaCapturada}:`, e);
-                });
+                const audio = audiosBanderas[bandera][indiceAudio];
+                try {
+                    audio.currentTime = 0; // Reiniciar audio
+                    audio.play().catch(e => {
+                        console.log(`❌ Error reproduciendo audio para bandera ${bandera}:`, e);
+                    });
+                } catch (error) {
+                    console.log(`❌ Error con audio bandera ${bandera}:`, error);
+                }
                 
-                // Incrementar contador para la próxima vez
-                contadorAudios[banderaCapturada]++;
+                // Incrementar contador para la PRÓXIMA vez que se capture esta bandera
+                contadorAudios[bandera]++;
                 
                 // Si llegamos al máximo, reiniciar contador (ciclar)
-                if (contadorAudios[banderaCapturada] >= maxAudiosPorBandera[banderaCapturada]) {
-                    contadorAudios[banderaCapturada] = 0;
-                    console.log(`Reiniciando ciclo de audios para bandera ${banderaCapturada}`);
+                if (contadorAudios[bandera] >= maxAudiosPorBandera[bandera]) {
+                    contadorAudios[bandera] = 0;
+                    console.log(`🔄 Reiniciando ciclo de audios para bandera ${bandera}`);
                 }
-            }
-            
-            // Si llegó a 6 banderas, reproducir sonido de victoria
-            if (puntuacion === PUNTUACION_MAXIMA) {
-                setTimeout(() => {
-                    audioVictoria.play().catch(e => {
-                        console.log('Error reproduciendo sonido de victoria:', e);
-                    });
-                }, 1000);
+            } else {
+                console.log(`❌ No hay audio disponible para bandera ${bandera}, índice ${indiceAudio}`);
             }
         }
+    }
+    
+    // Si llegó a 6 banderas, reproducir sonido de victoria
+    if (nuevaPuntuacion === 6) {
+        setTimeout(() => {
+            console.log('🎉 Reproduciendo sonido de victoria!');
+            try {
+                audioVictoria.currentTime = 0;
+                audioVictoria.play().catch(e => {
+                    console.log('❌ Error reproduciendo sonido de victoria:', e);
+                });
+            } catch (error) {
+                console.log('❌ Error con audio victoria:', error);
+            }
+        }, 1000);
     }
 }
 
@@ -1073,458 +1089,75 @@ function resetearSonidos() {
         4: 0,
         5: 0
     };
-    maxPuntuacionGlobal = 0;
-    console.log('Sistema de sonidos reseteados - contadores en 0');
+    console.log('🔄 Sistema de sonidos reseteados - contadores en 0');
 }
 
-// ===== SISTEMA DE DETERMINACIÓN DE RESULTADOS =====
+// =============================================
+// SISTEMA DE TEMPORIZADOR GLOBAL
+// =============================================
 
-// Función para obtener los datos actualizados del ranking
-function obtenerRankingActualizado() {
-    return fetch('obtener_ranking_actual.php?t=' + Date.now())
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                return data;
-            } else {
-                throw new Error(data.error || 'Error al obtener ranking actualizado');
-            }
-        });
-}
-
-// Función para verificar si hay equipos que completaron los 6 desafíos
-function verificarPodioCompleto(ranking) {
-    if (!ranking || ranking.length === 0) return null;
-    
-    // Filtrar equipos que completaron todos los desafíos
-    const equiposCompletos = ranking.filter(equipo => equipo.completado === true || equipo.puntuacion_total === PUNTUACION_MAXIMA);
-    
-    if (equiposCompletos.length === 0) {
-        return null;
+// Función para actualizar el temporizador global
+function actualizarTiempoGlobal() {
+    if (!tiempoElement) {
+        console.error('❌ Elemento tiempo-global no encontrado');
+        return;
     }
     
-    // Ordenar por tiempo acumulado (más rápido primero) - DESEMPATE POR TIEMPO
-    const equiposOrdenados = equiposCompletos.sort((a, b) => {
-        // Primero por puntuación (descendente)
-        if (b.puntuacion_total !== a.puntuacion_total) {
-            return b.puntuacion_total - a.puntuacion_total;
+    if (tiempoRestante <= 0) {
+        tiempoElement.textContent = '00:00';
+        tiempoElement.className = 'temporizador-grande temporizador-peligro';
+        
+        // Mostrar resultado cuando el tiempo se agote
+        if (!tiempoAgotadoMostrado) {
+            console.log('⏰ Tiempo agotado - Mostrando resultados...');
+            mostrarResultadoTiempo();
+            tiempoAgotadoMostrado = true;
         }
-        // Luego por tiempo acumulado (ascendente) - desempate
-        return a.tiempo_acumulado - b.tiempo_acumulado;
+        return;
+    }
+    
+    tiempoRestante--;
+    
+    const minutos = Math.floor(tiempoRestante / 60);
+    const segundos = tiempoRestante % 60;
+    tiempoElement.textContent = `${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
+    
+    // Efectos visuales según el tiempo restante
+    if (tiempoRestante < 300) { // 5 minutos
+        tiempoElement.className = 'temporizador-grande temporizador-advertencia';
+    }
+    
+    if (tiempoRestante < 60) { // 1 minuto
+        tiempoElement.className = 'temporizador-grande temporizador-peligro';
+    }
+}
+
+// =============================================
+// SISTEMA DE ACTUALIZACIÓN AUTOMÁTICA - MEJORADO
+// =============================================
+
+// Función para inicializar las puntuaciones anteriores
+function inicializarPuntuacionesAnteriores(ranking) {
+    if (!ranking) return;
+    
+    ranking.forEach(equipo => {
+        puntuacionesAnteriores.set(equipo.id.toString(), equipo.puntuacion_total);
     });
-    
-    // Asignar posiciones del podio considerando empates por tiempo
-    const podio = {
-        tipo: 'podio_completo',
-        primero: equiposOrdenados[0],
-        segundo: null,
-        tercero: null,
-        otros: [],
-        empates: []
-    };
-    
-    // Verificar empates para primer lugar
-    const primerPuntuacion = podio.primero.puntuacion_total;
-    const primerTiempo = podio.primero.tiempo_acumulado;
-    const empatesPrimero = equiposOrdenados.filter(equipo => 
-        equipo.puntuacion_total === primerPuntuacion && 
-        equipo.tiempo_acumulado === primerTiempo
-    );
-    
-    if (empatesPrimero.length > 1) {
-        podio.empates.push({ posicion: 1, equipos: empatesPrimero });
-    }
-    
-    // Buscar segundo lugar (excluyendo los empatados en primer lugar)
-    const equiposRestantes = equiposOrdenados.filter(equipo => 
-        !empatesPrimero.includes(equipo)
-    );
-    
-    if (equiposRestantes.length > 0) {
-        podio.segundo = equiposRestantes[0];
-        
-        // Verificar empates para segundo lugar
-        const segundoPuntuacion = podio.segundo.puntuacion_total;
-        const segundoTiempo = podio.segundo.tiempo_acumulado;
-        const empatesSegundo = equiposRestantes.filter(equipo => 
-            equipo.puntuacion_total === segundoPuntuacion && 
-            equipo.tiempo_acumulado === segundoTiempo
-        );
-        
-        if (empatesSegundo.length > 1) {
-            podio.empates.push({ posicion: 2, equipos: empatesSegundo });
-        }
-        
-        // Buscar tercer lugar (excluyendo los empatados en primer y segundo lugar)
-        const equiposParaTercero = equiposRestantes.filter(equipo => 
-            !empatesSegundo.includes(equipo)
-        );
-        
-        if (equiposParaTercero.length > 0) {
-            podio.tercero = equiposParaTercero[0];
-            
-            // Verificar empates para tercer lugar
-            const tercerPuntuacion = podio.tercero.puntuacion_total;
-            const tercerTiempo = podio.tercero.tiempo_acumulado;
-            const empatesTercero = equiposParaTercero.filter(equipo => 
-                equipo.puntuacion_total === tercerPuntuacion && 
-                equipo.tiempo_acumulado === tercerTiempo
-            );
-            
-            if (empatesTercero.length > 1) {
-                podio.empates.push({ posicion: 3, equipos: empatesTercero });
-            }
-            
-            // Los demás equipos completos
-            podio.otros = equiposParaTercero.slice(1).filter(equipo => 
-                !empatesTercero.includes(equipo)
-            );
-        }
-    }
-    
-    return podio;
 }
-
-// Función para determinar resultado cuando se acaba el tiempo
-function determinarResultadoTiempo(ranking) {
-    if (!ranking || ranking.length === 0) return null;
-    
-    const maxPuntuacion = ranking[0].puntuacion_total;
-    
-    // Si el máximo es 0, todos fallaron
-    if (maxPuntuacion === 0) {
-        return { tipo: 'todos_fallaron' };
-    }
-    
-    // Buscar equipos con la máxima puntuación
-    const equiposMaxPuntuacion = ranking.filter(equipo => equipo.puntuacion_total === maxPuntuacion);
-    
-    if (equiposMaxPuntuacion.length === 1) {
-        return { 
-            tipo: 'ganador_tiempo', 
-            ganador: equiposMaxPuntuacion[0],
-            puntuacion: maxPuntuacion
-        };
-    } else {
-        // En caso de empate en puntuación, desempatar por tiempo acumulado
-        const equiposOrdenadosPorTiempo = equiposMaxPuntuacion.sort((a, b) => {
-            // Ordenar por tiempo acumulado (menor tiempo primero)
-            return a.tiempo_acumulado - b.tiempo_acumulado;
-        });
-        
-        // Verificar si hay empate también en tiempo
-        const primerTiempo = equiposOrdenadosPorTiempo[0].tiempo_acumulado;
-        const equiposEmpatadosTiempo = equiposOrdenadosPorTiempo.filter(equipo => 
-            equipo.tiempo_acumulado === primerTiempo
-        );
-        
-        if (equiposEmpatadosTiempo.length === 1) {
-            // Solo un equipo con el menor tiempo
-            return { 
-                tipo: 'ganador_tiempo', 
-                ganador: equiposOrdenadosPorTiempo[0],
-                puntuacion: maxPuntuacion
-            };
-        } else {
-            // Empate tanto en puntuación como en tiempo
-            return { 
-                tipo: 'empate_tiempo', 
-                ganadores: equiposEmpatadosTiempo,
-                puntuacion: maxPuntuacion,
-                tiempo: primerTiempo
-            };
-        }
-    }
-}
-
-// Función principal para verificar PODIO COMPLETO (6 desafíos)
-async function verificarPodio() {
-    if (podioCompletoMostrado) return;
-    
-    try {
-        const data = await obtenerRankingActualizado();
-        const ranking = data.ranking;
-        
-        const podio = verificarPodioCompleto(ranking);
-        
-        if (podio) {
-            mostrarPodioCompleto(podio);
-            podioCompletoMostrado = true;
-        }
-        
-    } catch (error) {
-        console.error('Error al verificar podio:', error);
-    }
-}
-
-// Función para mostrar resultados cuando se acaba el tiempo
-async function mostrarResultadoTiempo() {
-    if (resultadoTiempoMostrado) return;
-    
-    try {
-        const data = await obtenerRankingActualizado();
-        const ranking = data.ranking;
-        
-        const resultado = determinarResultadoTiempo(ranking);
-        
-        if (!sonidoReproducido) {
-            finishSound.play().catch(e => console.log('Error reproduciendo sonido:', e));
-            sonidoReproducido = true;
-        }
-        
-        if (resultado) {
-            switch (resultado.tipo) {
-                case 'ganador_tiempo':
-                    mostrarGanadorTiempo(resultado.ganador, resultado.puntuacion);
-                    resultadoTiempoMostrado = true;
-                    break;
-                    
-                case 'empate_tiempo':
-                    mostrarEmpateTiempo(resultado.ganadores, resultado.puntuacion, resultado.tiempo);
-                    resultadoTiempoMostrado = true;
-                    break;
-                    
-                case 'todos_fallaron':
-                    mostrarTodosFallaron();
-                    resultadoTiempoMostrado = true;
-                    break;
-            }
-        }
-        
-    } catch (error) {
-        console.error('Error al mostrar resultado tiempo:', error);
-    }
-}
-
-// ===== FUNCIONES PARA MOSTRAR RESULTADOS =====
-
-// 1. PODIO COMPLETO (Cuando equipos completan los 6 desafíos)
-function mostrarPodioCompleto(podio) {
-    if (!sonidoReproducido) {
-        finishSound.play().catch(e => console.log('Error reproduciendo sonido:', e));
-        sonidoReproducido = true;
-    }
-    
-    const modal = new bootstrap.Modal(document.getElementById('podioCompletoModal'));
-    const podioList = document.getElementById('podioList');
-    
-    podioList.innerHTML = '';
-    
-    // Manejar empates en primer lugar
-    const empatePrimero = podio.empates.find(empate => empate.posicion === 1);
-    
-    if (empatePrimero) {
-        // Mostrar empate en primer lugar
-        const empateDiv = document.createElement('div');
-        empateDiv.className = 'podio-item primer-lugar mb-4';
-        empateDiv.innerHTML = `
-            <div class="text-center">
-                <div class="fs-1">🏆</div>
-                <h3 class="text-warning">EMPATE EN PRIMER LUGAR</h3>
-                <h4>Mismo puntaje y tiempo</h4>
-                ${empatePrimero.equipos.map(equipo => `
-                    <div class="my-2">
-                        <h4 class="fw-bold">${escapeHtml(equipo.nombre_equipo)}</h4>
-                        <h5 class="text-success">${equipo.puntuacion_total}/6 Puntos - ${formatearTiempo(equipo.tiempo_acumulado)}</h5>
-                    </div>
-                `).join('')}
-            </div>
-        `;
-        podioList.appendChild(empateDiv);
-        
-        empatePrimero.equipos.forEach(equipo => {
-            marcarEquipoComoGanador(equipo.id, 'primer-lugar');
-        });
-    } else if (podio.primero) {
-        // Primer lugar normal
-        const primerLugar = document.createElement('div');
-        primerLugar.className = 'podio-item primer-lugar mb-4';
-        primerLugar.innerHTML = `
-            <div class="text-center">
-                <div class="fs-1">🥇</div>
-                <h3 class="text-warning">PRIMER LUGAR</h3>
-                <h2 class="fw-bold">${escapeHtml(podio.primero.nombre_equipo)}</h2>
-                <h4 class="text-success">${podio.primero.puntuacion_total}/6 Puntos</h4>
-                <h5 class="text-info">Tiempo: ${formatearTiempo(podio.primero.tiempo_acumulado)}</h5>
-                <p class="text-muted">¡Completó todos los desafíos más rápido!</p>
-            </div>
-        `;
-        podioList.appendChild(primerLugar);
-        marcarEquipoComoGanador(podio.primero.id, 'primer-lugar');
-    }
-    
-    // Manejar empates en segundo lugar
-    const empateSegundo = podio.empates.find(empate => empate.posicion === 2);
-    
-    if (empateSegundo) {
-        const empateDiv = document.createElement('div');
-        empateDiv.className = 'podio-item segundo-lugar mb-4';
-        empateDiv.innerHTML = `
-            <div class="text-center">
-                <div class="fs-1">🥈</div>
-                <h4 class="text-secondary">EMPATE EN SEGUNDO LUGAR</h4>
-                ${empateSegundo.equipos.map(equipo => `
-                    <div class="my-2">
-                        <h4 class="fw-bold">${escapeHtml(equipo.nombre_equipo)}</h4>
-                        <h5 class="text-success">${equipo.puntuacion_total}/6 Puntos - ${formatearTiempo(equipo.tiempo_acumulado)}</h5>
-                    </div>
-                `).join('')}
-            </div>
-        `;
-        podioList.appendChild(empateDiv);
-        
-        empateSegundo.equipos.forEach(equipo => {
-            marcarEquipoComoGanador(equipo.id, 'segundo-lugar');
-        });
-    } else if (podio.segundo) {
-        // Segundo lugar normal
-        const segundoLugar = document.createElement('div');
-        segundoLugar.className = 'podio-item segundo-lugar mb-4';
-        segundoLugar.innerHTML = `
-            <div class="text-center">
-                <div class="fs-1">🥈</div>
-                <h4 class="text-secondary">SEGUNDO LUGAR</h4>
-                <h3 class="fw-bold">${escapeHtml(podio.segundo.nombre_equipo)}</h3>
-                <h5 class="text-success">${podio.segundo.puntuacion_total}/6 Puntos</h5>
-                <h6 class="text-info">Tiempo: ${formatearTiempo(podio.segundo.tiempo_acumulado)}</h6>
-            </div>
-        `;
-        podioList.appendChild(segundoLugar);
-        marcarEquipoComoGanador(podio.segundo.id, 'segundo-lugar');
-    }
-    
-    // Manejar empates en tercer lugar
-    const empateTercero = podio.empates.find(empate => empate.posicion === 3);
-    
-    if (empateTercero) {
-        const empateDiv = document.createElement('div');
-        empateDiv.className = 'podio-item tercer-lugar mb-4';
-        empateDiv.innerHTML = `
-            <div class="text-center">
-                <div class="fs-1">🥉</div>
-                <h4 class="text-danger">EMPATE EN TERCER LUGAR</h4>
-                ${empateTercero.equipos.map(equipo => `
-                    <div class="my-2">
-                        <h4 class="fw-bold">${escapeHtml(equipo.nombre_equipo)}</h4>
-                        <h5 class="text-success">${equipo.puntuacion_total}/6 Puntos - ${formatearTiempo(equipo.tiempo_acumulado)}</h5>
-                    </div>
-                `).join('')}
-            </div>
-        `;
-        podioList.appendChild(empateDiv);
-        
-        empateTercero.equipos.forEach(equipo => {
-            marcarEquipoComoGanador(equipo.id, 'tercer-lugar');
-        });
-    } else if (podio.tercero) {
-        // Tercer lugar normal
-        const tercerLugar = document.createElement('div');
-        tercerLugar.className = 'podio-item tercer-lugar mb-4';
-        tercerLugar.innerHTML = `
-            <div class="text-center">
-                <div class="fs-1">🥉</div>
-                <h4 class="text-danger">TERCER LUGAR</h4>
-                <h3 class="fw-bold">${escapeHtml(podio.tercero.nombre_equipo)}</h3>
-                <h5 class="text-success">${podio.tercero.puntuacion_total}/6 Puntos</h5>
-                <h6 class="text-info">Tiempo: ${formatearTiempo(podio.tercero.tiempo_acumulado)}</h6>
-            </div>
-        `;
-        podioList.appendChild(tercerLugar);
-        marcarEquipoComoGanador(podio.tercero.id, 'tercer-lugar');
-    }
-    
-    // Otros equipos que completaron (mención honorífica)
-    if (podio.otros && podio.otros.length > 0) {
-        const otrosDiv = document.createElement('div');
-        otrosDiv.className = 'otros-equipos mt-4';
-        otrosDiv.innerHTML = `
-            <h5 class="text-center text-muted">También completaron todos los desafíos:</h5>
-            <div class="d-flex flex-wrap justify-content-center gap-2 mt-2">
-                ${podio.otros.map(equipo => 
-                    `<span class="badge bg-success">${escapeHtml(equipo.nombre_equipo)} (${formatearTiempo(equipo.tiempo_acumulado)})</span>`
-                ).join('')}
-            </div>
-        `;
-        podioList.appendChild(otrosDiv);
-        
-        podio.otros.forEach(equipo => {
-            marcarEquipoComoGanador(equipo.id, 'completo');
-        });
-    }
-    
-    crearConfeti();
-    modal.show();
-}
-
-// 2. GANADOR POR TIEMPO (Cuando se acaba el tiempo y nadie completó todo)
-function mostrarGanadorTiempo(ganador, puntuacion) {
-    const modal = new bootstrap.Modal(document.getElementById('ganadorTiempoModal'));
-    document.getElementById('ganadorTiempoNombre').textContent = ganador.nombre_equipo;
-    document.getElementById('ganadorTiempoPuntos').textContent = `${puntuacion}/6 Puntos`;
-    
-    crearConfeti();
-    modal.show();
-    marcarEquipoComoGanador(ganador.id, 'ganador-parcial');
-}
-
-// 3. EMPATE POR TIEMPO (Cuando se acaba el tiempo y hay empate en puntuación Y tiempo)
-function mostrarEmpateTiempo(ganadores, puntuacion, tiempo) {
-    const modal = new bootstrap.Modal(document.getElementById('empateTiempoModal'));
-    const listaEmpate = document.getElementById('listaEmpateTiempo');
-    
-    listaEmpate.innerHTML = '';
-    
-    ganadores.forEach(equipo => {
-        const equipoDiv = document.createElement('div');
-        equipoDiv.className = 'equipo-empate mb-3 p-3 bg-light rounded';
-        equipoDiv.innerHTML = `
-            <h4 class="text-dark mb-1">${escapeHtml(equipo.nombre_equipo)}</h4>
-            <h5 class="text-warning">${puntuacion}/6 Puntos</h5>
-            <h6 class="text-info">Tiempo: ${formatearTiempo(equipo.tiempo_acumulado)}</h6>
-            <span class="badge bg-warning">EMPATE EXACTO</span>
-            <small class="d-block text-muted mt-1">Mismo puntaje y mismo tiempo</small>
-        `;
-        listaEmpate.appendChild(equipoDiv);
-        marcarEquipoComoGanador(equipo.id, 'empate');
-    });
-    
-    document.getElementById('puntuacionEmpateTiempo').textContent = `${puntuacion}/6 Puntos`;
-    
-    // Configurar botón de desempate
-    document.getElementById('btnIniciarDesempateTiempo').onclick = function() {
-        modal.hide();
-        setTimeout(() => {
-            iniciarDesempate(ganadores);
-        }, 500);
-    };
-    
-    modal.show();
-}
-
-// 4. TODOS FALLARON (nadie obtuvo puntos)
-function mostrarTodosFallaron() {
-    const modal = new bootstrap.Modal(document.getElementById('todosFallaronModal'));
-    modal.show();
-}
-
-// Función para iniciar desempate
-function iniciarDesempate(equipos) {
-    console.log('Iniciando desempate para equipos:', equipos);
-    mostrarNotificacion('🏆 Ronda de desempate iniciada!', 'warning');
-    
-    // Aquí puedes implementar la lógica específica del desempate
-    // Por ejemplo, un desafío adicional o criterio de desempate
-}
-
-// ===== SISTEMA DE ACTUALIZACIÓN AUTOMÁTICA =====
 
 // Inicializar mapa de equipos actuales
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Página cargada - Inicializando sistema completo...');
+    
     // Guardar los equipos actuales en el mapa
     const filasEquipos = document.querySelectorAll('#tabla-equipos tr[data-equipo-id]');
     filasEquipos.forEach(fila => {
         const equipoId = fila.getAttribute('data-equipo-id');
         equiposActuales.set(equipoId, fila);
+        
+        // Inicializar puntuaciones anteriores
+        const puntuacionActual = fila.querySelector('td:nth-child(4) strong').textContent;
+        puntuacionesAnteriores.set(equipoId, parseInt(puntuacionActual));
     });
     
     // Configurar eventos de eliminación
@@ -1543,9 +1176,29 @@ document.addEventListener('DOMContentLoaded', function() {
     if (audioVictoria) {
         audioVictoria.volume = 0.8; // 80% de volumen para victoria
     }
+    if (finishSound) {
+        finishSound.volume = 0.8; // 80% de volumen para finalización
+    }
     
-    // Iniciar monitoreo de nuevos equipos y puntuaciones
+    // Iniciar temporizador solo si el hackathon está activo
+    <?php if ($hackathon_activo): ?>
+    console.log('⏱️ Hackathon activo - Iniciando temporizador...');
+    const temporizador = setInterval(actualizarTiempoGlobal, 1000);
+
+    // Verificar inmediatamente si el tiempo ya se agotó
+    if (tiempoRestante <= 0) {
+        console.log('⏰ Tiempo ya agotado - Mostrando resultado...');
+        mostrarResultadoTiempo();
+    }
+    <?php else: ?>
+    console.log('⏸️ Hackathon no activo - Temporizador no iniciado');
+    <?php endif; ?>
+    
+    // Iniciar monitoreo de cambios
     iniciarMonitoreoEquipos();
+    
+    // Configurar panel de configuración
+    configurarPanelConfiguracion();
 });
 
 // Configurar eventos para botones de eliminar
@@ -1562,60 +1215,26 @@ function configurarEventosEliminacion() {
     });
 }
 
-// ===== CONTROL DE CONFIGURACIÓN DE DURACIÓN =====
+// =============================================
+// SISTEMA DE MONITOREO EN TIEMPO REAL - MEJORADO
+// =============================================
 
-// Elementos del DOM para configuración
-const btnToggleConfiguracion = document.getElementById('btnToggleConfiguracion');
-const btnCerrarConfiguracion = document.getElementById('btnCerrarConfiguracion');
-const panelConfiguracion = document.getElementById('panelConfiguracion');
-
-// Función para mostrar/ocultar panel de configuración
-function toggleConfiguracionDuracion() {
-    if (panelConfiguracion.style.display === 'none') {
-        panelConfiguracion.style.display = 'block';
-        if (btnToggleConfiguracion) {
-            btnToggleConfiguracion.innerHTML = '⚙️ Ocultar Configuración de Duración';
-        }
-    } else {
-        panelConfiguracion.style.display = 'none';
-        if (btnToggleConfiguracion) {
-            btnToggleConfiguracion.innerHTML = '⚙️ Mostrar Configuración de Duración';
-        }
-    }
-}
-
-// Configurar eventos
-if (btnToggleConfiguracion) {
-    btnToggleConfiguracion.addEventListener('click', toggleConfiguracionDuracion);
-}
-
-if (btnCerrarConfiguracion) {
-    btnCerrarConfiguracion.addEventListener('click', function() {
-        panelConfiguracion.style.display = 'none';
-        if (btnToggleConfiguracion) {
-            btnToggleConfiguracion.innerHTML = '⚙️ Mostrar Configuración de Duración';
-        }
-    });
-}
-
-// Mostrar automáticamente si hay un error relacionado con la duración
-<?php if (isset($_POST['actualizar_duracion']) && $mensaje_error): ?>
-    // Si hubo un error al actualizar la duración, mostrar el panel
-    setTimeout(() => {
-        if (panelConfiguracion) {
-            panelConfiguracion.style.display = 'block';
-            if (btnToggleConfiguracion) {
-                btnToggleConfiguracion.innerHTML = '⚙️ Ocultar Configuración de Duración';
-            }
-        }
-    }, 500);
-<?php endif; ?>
-
-// Función para verificar cambios en tiempos acumulados (MEJORADA)
-function verificarCambiosTiempo() {
-    console.log('Verificando cambios de tiempo...');
+// Función para monitorear nuevos equipos y cambios
+function iniciarMonitoreoEquipos() {
+    console.log('📡 Iniciando monitoreo de equipos en tiempo real...');
     
-    fetch('obtener_actualizaciones_tiempo.php?t=' + Date.now())
+    // Verificar cambios cada 2 segundos
+    setInterval(() => {
+        verificarCambiosEquipos();
+    }, 2000);
+    
+    // Verificar inmediatamente
+    setTimeout(verificarCambiosEquipos, 1000);
+}
+
+// Función para verificar cambios en equipos - MEJORADA
+function verificarCambiosEquipos() {
+    fetch('obtener_ranking_actual.php?t=' + Date.now())
         .then(response => {
             if (!response.ok) {
                 throw new Error('Error en la respuesta del servidor');
@@ -1623,171 +1242,119 @@ function verificarCambiosTiempo() {
             return response.json();
         })
         .then(data => {
-            if (data.success && data.equipos_actualizados) {
-                console.log('Datos recibidos:', data.equipos_actualizados);
-                
-                if (data.equipos_actualizados.length > 0) {
-                    actualizarTiemposEquipos(data.equipos_actualizados);
-                } else {
-                    console.log('No hay equipos con tiempo actualizado');
+            if (data.success) {
+                // Si es la primera vez, inicializar las puntuaciones anteriores
+                if (puntuacionesAnteriores.size === 0) {
+                    inicializarPuntuacionesAnteriores(data.ranking);
                 }
-            } else {
-                console.error('Error en datos:', data.error);
+                
+                // Verificar cambios individuales por equipo
+                verificarCambiosIndividuales(data.ranking);
+                
+                // Actualizar ranking completo
+                actualizarRankingCompleto(data.ranking);
+                
+                // Verificar si hay equipos que completaron todos los desafíos
+                verificarPodioCompleto(data.ranking);
             }
         })
         .catch(error => {
-            console.error('Error al verificar tiempos:', error);
-            // Si falla, intentar con obtener_ranking_actual.php como respaldo
-            obtenerRankingActualizado().then(data => {
-                if (data.success) {
-                    const equiposConTiempo = data.ranking.filter(equipo => equipo.tiempo_acumulado > 0);
-                    if (equiposConTiempo.length > 0) {
-                        actualizarTiemposEquipos(equiposConTiempo);
-                    }
-                }
-            });
+            console.error('❌ Error al verificar cambios:', error);
         });
 }
 
-// Función mejorada para actualizar tiempos
-function actualizarTiemposEquipos(equiposActualizados) {
-    console.log('Actualizando tiempos para equipos:', equiposActualizados);
+// Función para verificar cambios individuales por equipo - NUEVA
+function verificarCambiosIndividuales(ranking) {
+    if (!ranking || ranking.length === 0) return;
     
     let huboCambios = false;
     
-    equiposActualizados.forEach(equipo => {
+    ranking.forEach(equipo => {
         const equipoId = equipo.id.toString();
-        if (equiposActuales.has(equipoId)) {
-            const filaEquipo = equiposActuales.get(equipoId);
-            const celdaTiempo = filaEquipo.querySelector('td:nth-child(5)');
+        const puntuacionAnterior = puntuacionesAnteriores.get(equipoId) || 0;
+        const puntuacionActual = equipo.puntuacion_total;
+        
+        // Si la puntuación cambió
+        if (puntuacionActual !== puntuacionAnterior) {
+            console.log(`📊 Cambio detectado - Equipo ${equipoId}: ${puntuacionAnterior} → ${puntuacionActual}`);
             
-            if (celdaTiempo && equipo.tiempo_acumulado > 0) {
-                const nuevoTiempo = formatearTiempo(equipo.tiempo_acumulado);
-                const contenidoActual = celdaTiempo.innerHTML;
-                const nuevoContenido = `${nuevoTiempo}${equipo.completado ? '<br><small class="text-success">✅ Completado</small>' : ''}`;
-                
-                // Solo actualizar si el contenido cambió
-                if (contenidoActual !== nuevoContenido) {
-                    console.log(`Actualizando tiempo equipo ${equipoId}: ${nuevoTiempo}`);
-                    celdaTiempo.innerHTML = nuevoContenido;
-                    celdaTiempo.classList.add('puntuacion-cambiando');
-                    
-                    // Marcar como completo si es necesario
-                    if (equipo.completado || equipo.puntuacion_total === PUNTUACION_MAXIMA) {
-                        filaEquipo.classList.add('equipo-completo');
-                        
-                        // Reproducir sonido de victoria si completó todos los desafíos
-                        if (equipo.puntuacion_total === PUNTUACION_MAXIMA) {
-                            setTimeout(() => {
-                                audioVictoria.play().catch(e => {
-                                    console.log('Error reproduciendo sonido de victoria:', e);
-                                });
-                            }, 500);
-                        }
-                    }
-                    
-                    setTimeout(() => {
-                        celdaTiempo.classList.remove('puntuacion-cambiando');
-                    }, 2000);
-                    
-                    huboCambios = true;
-                }
+            // Reproducir sonidos para las banderas capturadas
+            if (puntuacionActual > puntuacionAnterior) {
+                console.log(`🔊 Reproduciendo sonidos para equipo ${equipo.nombre_equipo}`);
+                reproducirSonidoBanderas(equipoId, puntuacionAnterior, puntuacionActual);
             }
+            
+            // Actualizar la puntuación anterior
+            puntuacionesAnteriores.set(equipoId, puntuacionActual);
+            huboCambios = true;
         }
     });
     
-    // Si hubo cambios en tiempos, reordenar la tabla
-    if (huboCambios) {
-        console.log('Hubo cambios de tiempo, reordenando tabla...');
-        obtenerRankingActualizado().then(data => {
-            if (data.success) {
-                reordenarTablaCompleta(data.ranking);
-            }
-        });
-    }
+    return huboCambios;
 }
 
-// Función para monitorear nuevos equipos y cambios en puntuaciones automáticamente
-function iniciarMonitoreoEquipos() {
-    function verificarNuevosEquipos() {
-        fetch('obtener_nuevos_equipos.php?t=' + Date.now())
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const nuevosEquipos = data.nuevos_equipos || [];
-                    const totalEquipos = data.total_equipos || 0;
-                    
-                    // Actualizar contador de equipos
-                    if (totalEquiposElement) {
-                        totalEquiposElement.textContent = totalEquipos;
-                    }
-                    
-                    // Agregar nuevos equipos si los hay
-                    if (nuevosEquipos.length > 0) {
-                        nuevosEquipos.forEach(equipo => {
-                            if (!equiposActuales.has(equipo.id.toString())) {
-                                agregarEquipoDinamico(equipo);
-                            }
-                        });
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error al verificar equipos:', error);
-            });
-    }
-
-    function verificarCambiosPuntuaciones() {
-        fetch('obtener_actualizaciones_puntuaciones.php?t=' + Date.now())
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const equiposActualizados = data.equipos_actualizados || [];
-                    const rankingCompleto = data.ranking_completo || [];
-                    
-                    // Si hay equipos con puntuaciones actualizadas
-                    if (equiposActualizados.length > 0) {
-                        actualizarPuntuacionesYRanking(equiposActualizados, rankingCompleto);
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error al verificar puntuaciones:', error);
-            });
+// Función para actualizar el ranking completo
+function actualizarRankingCompleto(ranking) {
+    if (!ranking || ranking.length === 0) return;
+    
+    // Actualizar contador de equipos
+    if (totalEquiposElement) {
+        totalEquiposElement.textContent = ranking.length;
     }
     
-    // Verificar nuevos equipos cada 2 segundos
-    setInterval(verificarNuevosEquipos, 2000);
-    
-    // Verificar cambios en puntuaciones cada 3 segundos
-    setInterval(verificarCambiosPuntuaciones, 3000);
-    
-    // Verificar cambios en tiempos cada 2 segundos
-    setInterval(() => {
-        console.log('Ejecutando verificación de tiempo...');
-        verificarCambiosTiempo();
-    }, 3000);
-    
-    // Verificar inmediatamente al cargar
-    setTimeout(verificarNuevosEquipos, 1000);
-    setTimeout(verificarCambiosPuntuaciones, 1500);
-    setTimeout(() => {
-        console.log('Ejecutando verificación de tiempo...');
-        verificarCambiosTiempo();
-    }, 2000);
+    // Reordenar tabla completa
+    reordenarTablaCompleta(ranking);
 }
 
-// Función para agregar equipo dinámicamente
-function agregarEquipoDinamico(equipo) {
+// Función para reordenar completamente la tabla según el ranking
+function reordenarTablaCompleta(rankingCompleto) {
+    const tbody = document.getElementById('tabla-equipos');
+    const filasExistentes = Array.from(tbody.querySelectorAll('tr[data-equipo-id]'));
+    
+    // Limpiar tabla
+    tbody.innerHTML = '';
+    
+    // Agregar equipos en orden
+    rankingCompleto.forEach((equipo, index) => {
+        const equipoId = equipo.id.toString();
+        let filaExistente = filasExistentes.find(fila => fila.getAttribute('data-equipo-id') === equipoId);
+        
+        if (!filaExistente) {
+            filaExistente = crearFilaEquipo(equipo, index);
+            // Si es nuevo equipo, mostrar notificación
+            mostrarNotificacion(`¡Nuevo equipo: ${equipo.nombre_equipo}!`, 'success');
+        } else {
+            actualizarFilaEquipo(filaExistente, equipo, index);
+        }
+        
+        tbody.appendChild(filaExistente);
+        equiposActuales.set(equipoId, filaExistente);
+    });
+    
+    configurarEventosEliminacion();
+}
+
+// Función para crear una nueva fila de equipo
+function crearFilaEquipo(equipo, index) {
     const nuevaFila = document.createElement('tr');
-    nuevaFila.className = 'equipo-nuevo';
     nuevaFila.setAttribute('data-equipo-id', equipo.id);
     
-    const posicionTemporal = equiposActuales.size + 1;
+    let claseFila = '';
+    if (index === 0) claseFila = 'top-1';
+    else if (index === 1) claseFila = 'top-2';
+    else if (index === 2) claseFila = 'top-3';
+    
+    nuevaFila.className = `${claseFila} equipo-nuevo`;
     
     nuevaFila.innerHTML = `
         <td>
-            <strong class="fs-5">${posicionTemporal}°</strong>
+            <strong class="fs-5">${index + 1}°</strong>
+            ${index < 3 ? `
+                <br>
+                <span class="badge bg-${index === 0 ? 'warning' : (index === 1 ? 'secondary' : 'danger')} mt-1">
+                    ${index === 0 ? '🥇 ORO' : (index === 1 ? '🥈 PLATA' : '🥉 BRONCE')}
+                </span>
+            ` : ''}
         </td>
         <td>
             <strong>${escapeHtml(equipo.nombre_equipo)}</strong>
@@ -1824,17 +1391,7 @@ function agregarEquipoDinamico(equipo) {
         </td>
     `;
     
-    tablaEquipos.appendChild(nuevaFila);
-    equiposActuales.set(equipo.id.toString(), nuevaFila);
-    
-    if (totalEquiposElement) {
-        totalEquiposElement.textContent = equiposActuales.size;
-    }
-    
-    configurarEventosEliminacion();
-    
-    mostrarNotificacion(`¡Nuevo equipo registrado: ${equipo.nombre_equipo}!`);
-    
+    // Remover clase de nuevo después de 3 segundos
     setTimeout(() => {
         nuevaFila.classList.remove('equipo-nuevo');
         const badgeNuevo = nuevaFila.querySelector('.badge-nuevo');
@@ -1842,152 +1399,6 @@ function agregarEquipoDinamico(equipo) {
             badgeNuevo.remove();
         }
     }, 3000);
-}
-
-// Función para actualizar puntuaciones y reordenar ranking
-function actualizarPuntuacionesYRanking(equiposActualizados, rankingCompleto) {
-    let huboCambios = false;
-    
-    // Actualizar puntuaciones de equipos existentes
-    equiposActualizados.forEach(equipoActualizado => {
-        const equipoId = equipoActualizado.id.toString();
-        if (equiposActuales.has(equipoId)) {
-            const filaEquipo = equiposActuales.get(equipoId);
-            
-            const celdaPuntuacion = filaEquipo.querySelector('td:nth-child(4) strong');
-            const puntuacionActual = parseInt(celdaPuntuacion.textContent);
-            const nuevaPuntuacion = equipoActualizado.puntuacion_total;
-            
-            // Actualizar tiempo también si está disponible
-            const celdaTiempo = filaEquipo.querySelector('td:nth-child(5)');
-            const necesitaActualizarTiempo = equipoActualizado.tiempo_acumulado > 0;
-            
-            if (puntuacionActual !== nuevaPuntuacion || necesitaActualizarTiempo) {
-                // REPRODUCIR SONIDO si hay nueva bandera capturada
-                if (nuevaPuntuacion > puntuacionActual) {
-                    console.log(`Nueva bandera capturada: ${nuevaPuntuacion}`);
-                    reproducirSonidoBanderas(nuevaPuntuacion);
-                }
-                
-                // Actualizar puntuación
-                if (puntuacionActual !== nuevaPuntuacion) {
-                    celdaPuntuacion.textContent = nuevaPuntuacion;
-                    celdaPuntuacion.classList.add('puntuacion-cambiando');
-                }
-                
-                // Actualizar tiempo
-                if (necesitaActualizarTiempo) {
-                    celdaTiempo.innerHTML = `${formatearTiempo(equipoActualizado.tiempo_acumulado)}${equipoActualizado.completado ? '<br><small class="text-success">✅ Completado</small>' : ''}`;
-                    celdaTiempo.classList.add('puntuacion-cambiando');
-                }
-                
-                // Marcar como completo si llegó a 6 puntos
-                if (nuevaPuntuacion === PUNTUACION_MAXIMA || equipoActualizado.completado) {
-                    filaEquipo.classList.add('equipo-completo');
-                    
-                    // Verificar PODIO inmediatamente cuando alguien completa los 6 desafíos
-                    setTimeout(() => {
-                        verificarPodio();
-                    }, 1000);
-                }
-                
-                setTimeout(() => {
-                    celdaPuntuacion.classList.remove('puntuacion-cambiando');
-                    if (necesitaActualizarTiempo) {
-                        celdaTiempo.classList.remove('puntuacion-cambiando');
-                    }
-                }, 2000);
-                
-                huboCambios = true;
-            }
-        }
-    });
-    
-    // Si hubo cambios significativos, reordenar toda la tabla
-    if (huboCambios && rankingCompleto.length > 0) {
-        reordenarTablaCompleta(rankingCompleto);
-    }
-}
-
-// Función para reordenar completamente la tabla según el ranking
-function reordenarTablaCompleta(rankingCompleto) {
-    const tbody = document.getElementById('tabla-equipos');
-    const filasExistentes = Array.from(tbody.querySelectorAll('tr[data-equipo-id]'));
-    
-    tbody.innerHTML = '';
-    
-    rankingCompleto.forEach((equipo, index) => {
-        const equipoId = equipo.id.toString();
-        let filaExistente = filasExistentes.find(fila => fila.getAttribute('data-equipo-id') === equipoId);
-        
-        if (!filaExistente) {
-            filaExistente = crearFilaEquipo(equipo, index);
-        } else {
-            actualizarFilaEquipo(filaExistente, equipo, index);
-        }
-        
-        tbody.appendChild(filaExistente);
-        equiposActuales.set(equipoId, filaExistente);
-    });
-    
-    configurarEventosEliminacion();
-}
-
-// Función para crear una nueva fila de equipo
-function crearFilaEquipo(equipo, index) {
-    const nuevaFila = document.createElement('tr');
-    nuevaFila.setAttribute('data-equipo-id', equipo.id);
-    
-    let claseFila = '';
-    if (index === 0) claseFila = 'top-1';
-    else if (index === 1) claseFila = 'top-2';
-    else if (index === 2) claseFila = 'top-3';
-    
-    nuevaFila.className = claseFila;
-    
-    nuevaFila.innerHTML = `
-        <td>
-            <strong class="fs-5">${index + 1}°</strong>
-            ${index < 3 ? `
-                <br>
-                <span class="badge bg-${index === 0 ? 'warning' : (index === 1 ? 'secondary' : 'danger')} mt-1">
-                    ${index === 0 ? '🥇 ORO' : (index === 1 ? '🥈 PLATA' : '🥉 BRONCE')}
-                </span>
-            ` : ''}
-        </td>
-        <td>
-            <strong>${escapeHtml(equipo.nombre_equipo)}</strong>
-            ${equipo.inicio_tardio ? '<br><span class="badge bg-info status-badge mt-1" title="Equipo se unió después del inicio">TARDÍO</span>' : ''}
-        </td>
-        <td>
-            <code class="fs-5">${escapeHtml(equipo.codigo_equipo)}</code>
-        </td>
-        <td>
-            <strong class="fs-4 text-primary">${equipo.puntuacion_total}</strong>
-            <small class="text-muted">🚩</small>
-        </td>
-        <td>
-            ${equipo.tiempo_acumulado > 0 ? 
-                `${formatearTiempo(equipo.tiempo_acumulado)}${equipo.completado ? '<br><small class="text-success">✅ Completado</small>' : ''}` : 
-                '<span class="text-muted">--:--</span>'
-            }
-        </td>
-        <td>
-            <span class="badge ${equipo.estado == 1 ? 'badge-compitiendo' : 'badge-espera'} p-2">
-                ${equipo.estado == 1 ? '🏁 COMPITIENDO' : '⏳ EN ESPERA'}
-            </span>
-        </td>
-        <td class="text-center actions-column">
-            <button type="button" class="btn btn-danger btn-sm btn-eliminar-equipo" 
-                    data-bs-toggle="modal" 
-                    data-bs-target="#eliminarModal"
-                    data-equipo-id="${equipo.id}"
-                    data-equipo-nombre="${escapeHtml(equipo.nombre_equipo)}"
-                    title="Eliminar equipo">
-                🗑️ Eliminar
-            </button>
-        </td>
-    `;
     
     return nuevaFila;
 }
@@ -1995,7 +1406,14 @@ function crearFilaEquipo(equipo, index) {
 // Función para actualizar una fila existente de equipo
 function actualizarFilaEquipo(fila, equipo, index) {
     const celdaPosicion = fila.querySelector('td:nth-child(1) strong');
+    const posicionAnterior = parseInt(celdaPosicion.textContent);
     celdaPosicion.textContent = `${index + 1}°`;
+    
+    // Efecto visual si cambió la posición
+    if (posicionAnterior !== (index + 1)) {
+        fila.classList.add('fila-actualizada');
+        setTimeout(() => fila.classList.remove('fila-actualizada'), 2000);
+    }
     
     const badgePosicion = fila.querySelector('.badge');
     if (index < 3) {
@@ -2021,7 +1439,14 @@ function actualizarFilaEquipo(fila, equipo, index) {
     else if (index === 2) fila.classList.add('top-3');
     
     const celdaPuntuacion = fila.querySelector('td:nth-child(4) strong');
+    const puntuacionAnterior = parseInt(celdaPuntuacion.textContent);
     celdaPuntuacion.textContent = equipo.puntuacion_total;
+    
+    // Efecto visual si cambió la puntuación
+    if (puntuacionAnterior !== equipo.puntuacion_total) {
+        celdaPuntuacion.classList.add('puntuacion-cambiando');
+        setTimeout(() => celdaPuntuacion.classList.remove('puntuacion-cambiando'), 2000);
+    }
     
     // Actualizar celda de tiempo (5ta columna)
     const celdaTiempo = fila.querySelector('td:nth-child(5)');
@@ -2035,9 +1460,297 @@ function actualizarFilaEquipo(fila, equipo, index) {
     const celdaEstado = fila.querySelector('td:nth-child(6) span');
     celdaEstado.className = `badge ${equipo.estado == 1 ? 'badge-compitiendo' : 'badge-espera'} p-2`;
     celdaEstado.textContent = equipo.estado == 1 ? '🏁 COMPITIENDO' : '⏳ EN ESPERA';
+    
+    // Marcar como completo si llegó a 6 puntos
+    if (equipo.puntuacion_total === 6 || equipo.completado) {
+        fila.classList.add('equipo-completo');
+    } else {
+        fila.classList.remove('equipo-completo');
+    }
 }
 
-// ===== FUNCIONES UTILITARIAS =====
+// =============================================
+// SISTEMA DE RESULTADOS Y PODIOS - CORREGIDO
+// =============================================
+
+// Función para verificar si hay equipos que completaron los 6 desafíos
+function verificarPodioCompleto(ranking) {
+    if (!ranking || ranking.length === 0 || podioCompletoMostrado) return;
+    
+    // Filtrar equipos que completaron todos los desafíos
+    const equiposCompletos = ranking.filter(equipo => 
+        equipo.completado === true || equipo.puntuacion_total === PUNTUACION_MAXIMA
+    );
+    
+    if (equiposCompletos.length > 0) {
+        console.log('🏆 Equipos completaron todos los desafíos:', equiposCompletos.length);
+        mostrarPodioCompleto(equiposCompletos);
+        podioCompletoMostrado = true;
+    }
+}
+
+// Función para mostrar podio completo
+function mostrarPodioCompleto(equiposCompletos) {
+    if (!sonidoReproducido) {
+        try {
+            finishSound.currentTime = 0;
+            finishSound.play().catch(e => console.log('❌ Error reproduciendo sonido final:', e));
+            sonidoReproducido = true;
+        } catch (error) {
+            console.log('❌ Error con audio final:', error);
+        }
+    }
+    
+    const modal = new bootstrap.Modal(document.getElementById('podioCompletoModal'));
+    const podioList = document.getElementById('podioList');
+    
+    podioList.innerHTML = '';
+    
+    // Ordenar equipos por tiempo acumulado (más rápido primero)
+    const equiposOrdenados = equiposCompletos.sort((a, b) => a.tiempo_acumulado - b.tiempo_acumulado);
+    
+    // Mostrar los 3 primeros
+    equiposOrdenados.slice(0, 3).forEach((equipo, index) => {
+        const podioItem = document.createElement('div');
+        let clasePodio = '';
+        let emoji = '';
+        let textoPosicion = '';
+        
+        if (index === 0) {
+            clasePodio = 'primer-lugar';
+            emoji = '🥇';
+            textoPosicion = 'PRIMER LUGAR';
+        } else if (index === 1) {
+            clasePodio = 'segundo-lugar';
+            emoji = '🥈';
+            textoPosicion = 'SEGUNDO LUGAR';
+        } else {
+            clasePodio = 'tercer-lugar';
+            emoji = '🥉';
+            textoPosicion = 'TERCER LUGAR';
+        }
+        
+        podioItem.className = `podio-item ${clasePodio}`;
+        podioItem.innerHTML = `
+            <div class="text-center">
+                <div class="fs-1">${emoji}</div>
+                <h3 class="${index === 0 ? 'text-warning' : index === 1 ? 'text-secondary' : 'text-danger'}">
+                    ${textoPosicion}
+                </h3>
+                <h2 class="fw-bold">${escapeHtml(equipo.nombre_equipo)}</h2>
+                <h4 class="text-success">${equipo.puntuacion_total}/6 Puntos</h4>
+                <h5 class="text-info">Tiempo: ${formatearTiempo(equipo.tiempo_acumulado)}</h5>
+                <p class="text-muted">¡Completó todos los desafíos!</p>
+            </div>
+        `;
+        podioList.appendChild(podioItem);
+        
+        // Marcar equipo como ganador en la tabla
+        marcarEquipoComoGanador(equipo.id, index === 0 ? 'primer-lugar' : index === 1 ? 'segundo-lugar' : 'tercer-lugar');
+    });
+    
+    // Mostrar otros equipos que completaron
+    if (equiposOrdenados.length > 3) {
+        const otrosDiv = document.createElement('div');
+        otrosDiv.className = 'otros-equipos mt-4';
+        otrosDiv.innerHTML = `
+            <h5 class="text-center text-muted">También completaron todos los desafíos:</h5>
+            <div class="d-flex flex-wrap justify-content-center gap-2 mt-2">
+                ${equiposOrdenados.slice(3).map(equipo => 
+                    `<span class="badge bg-success">${escapeHtml(equipo.nombre_equipo)} (${formatearTiempo(equipo.tiempo_acumulado)})</span>`
+                ).join('')}
+            </div>
+        `;
+        podioList.appendChild(otrosDiv);
+        
+        // Marcar otros equipos como completos
+        equiposOrdenados.slice(3).forEach(equipo => {
+            marcarEquipoComoGanador(equipo.id, 'completo');
+        });
+    }
+    
+    crearConfeti();
+    modal.show();
+}
+
+// Función para determinar resultado cuando se acaba el tiempo - CORREGIDA
+function determinarResultadoTiempo(ranking) {
+    if (!ranking || ranking.length === 0) return null;
+    
+    const maxPuntuacion = ranking[0].puntuacion_total;
+    
+    // Si el máximo es 0, todos fallaron
+    if (maxPuntuacion === 0) {
+        return { tipo: 'todos_fallaron' };
+    }
+    
+    // Buscar equipos con la máxima puntuación
+    const equiposMaxPuntuacion = ranking.filter(equipo => equipo.puntuacion_total === maxPuntuacion);
+    
+    if (equiposMaxPuntuacion.length === 1) {
+        return { 
+            tipo: 'ganador_tiempo', 
+            ganador: equiposMaxPuntuacion[0],
+            puntuacion: maxPuntuacion
+        };
+    } else {
+        // En caso de empate en puntuación, desempatar por tiempo acumulado (menor tiempo gana)
+        const equiposOrdenadosPorTiempo = equiposMaxPuntuacion.sort((a, b) => {
+            return a.tiempo_acumulado - b.tiempo_acumulado;
+        });
+        
+        // El primer equipo tiene el menor tiempo
+        const ganador = equiposOrdenadosPorTiempo[0];
+        const tiempoGanador = ganador.tiempo_acumulado;
+        
+        // Verificar si hay empate EXACTO (mismo puntaje Y mismo tiempo)
+        const equiposEmpatadosExacto = equiposMaxPuntuacion.filter(equipo => 
+            equipo.tiempo_acumulado === tiempoGanador
+        );
+        
+        if (equiposEmpatadosExacto.length === 1) {
+            // Solo un equipo con el menor tiempo - GANA
+            return { 
+                tipo: 'ganador_tiempo', 
+                ganador: ganador,
+                puntuacion: maxPuntuacion
+            };
+        } else {
+            // Empate exacto: mismo puntaje Y mismo tiempo
+            return { 
+                tipo: 'empate_tiempo', 
+                ganadores: equiposEmpatadosExacto,
+                puntuacion: maxPuntuacion,
+                tiempo: tiempoGanador
+            };
+        }
+    }
+}
+
+// Función para mostrar resultado cuando se acaba el tiempo - CORREGIDA
+async function mostrarResultadoTiempo() {
+    if (resultadoTiempoMostrado) return;
+    
+    try {
+        const response = await fetch('obtener_ranking_actual.php?t=' + Date.now());
+        const data = await response.json();
+        
+        if (data.success) {
+            const ranking = data.ranking;
+            
+            if (!sonidoReproducido) {
+                try {
+                    finishSound.currentTime = 0;
+                    finishSound.play().catch(e => console.log('❌ Error reproduciendo sonido final:', e));
+                    sonidoReproducido = true;
+                } catch (error) {
+                    console.log('❌ Error con audio final:', error);
+                }
+            }
+            
+            const resultado = determinarResultadoTiempo(ranking);
+            
+            if (resultado) {
+                switch(resultado.tipo) {
+                    case 'ganador_tiempo':
+                        mostrarGanadorTiempo(resultado.ganador, resultado.puntuacion);
+                        resultadoTiempoMostrado = true;
+                        break;
+                        
+                    case 'empate_tiempo':
+                        mostrarEmpateTiempo(resultado.ganadores, resultado.puntuacion, resultado.tiempo);
+                        resultadoTiempoMostrado = true;
+                        break;
+                        
+                    case 'todos_fallaron':
+                        mostrarTodosFallaron();
+                        resultadoTiempoMostrado = true;
+                        break;
+                }
+            }
+        }
+    } catch (error) {
+        console.error('❌ Error al mostrar resultado tiempo:', error);
+    }
+}
+
+// Función para mostrar ganador por tiempo
+function mostrarGanadorTiempo(ganador, puntuacion) {
+    const modal = new bootstrap.Modal(document.getElementById('ganadorTiempoModal'));
+    document.getElementById('ganadorTiempoNombre').textContent = ganador.nombre_equipo;
+    document.getElementById('ganadorTiempoPuntos').textContent = `${puntuacion}/6 Puntos`;
+    
+    // Mostrar tiempo del ganador
+    const tiempoGanador = document.createElement('p');
+    tiempoGanador.className = 'text-light';
+    tiempoGanador.innerHTML = `<strong>Tiempo: ${formatearTiempo(ganador.tiempo_acumulado)}</strong>`;
+    document.querySelector('#ganadorTiempoModal .modal-body').appendChild(tiempoGanador);
+    
+    // Marcar equipo como ganador parcial
+    marcarEquipoComoGanador(ganador.id, 'ganador-parcial');
+    
+    crearConfeti();
+    modal.show();
+}
+
+// Función para mostrar empate por tiempo - CORREGIDA
+function mostrarEmpateTiempo(ganadores, puntuacion, tiempo) {
+    const modal = new bootstrap.Modal(document.getElementById('empateTiempoModal'));
+    const listaEmpate = document.getElementById('listaEmpateTiempo');
+    
+    listaEmpate.innerHTML = '';
+    
+    ganadores.forEach(equipo => {
+        const equipoDiv = document.createElement('div');
+        equipoDiv.className = 'equipo-empate mb-3 p-3 bg-light rounded';
+        equipoDiv.innerHTML = `
+            <h4 class="text-dark mb-1">${escapeHtml(equipo.nombre_equipo)}</h4>
+            <h5 class="text-warning">${puntuacion}/6 Puntos</h5>
+            <h6 class="text-info">Tiempo: ${formatearTiempo(equipo.tiempo_acumulado)}</h6>
+            <span class="badge bg-warning">EMPATE EXACTO</span>
+            <small class="d-block text-muted mt-1">Mismo puntaje y mismo tiempo</small>
+        `;
+        listaEmpate.appendChild(equipoDiv);
+        
+        // Marcar equipos empatados
+        marcarEquipoComoGanador(equipo.id, 'empate');
+    });
+    
+    document.getElementById('puntuacionEmpateTiempo').textContent = `${puntuacion}/6 Puntos`;
+    
+    // Configurar botón de desempate
+    document.getElementById('btnIniciarDesempateTiempo').onclick = function() {
+        modal.hide();
+        setTimeout(() => {
+            iniciarDesempate(ganadores);
+        }, 500);
+    };
+    
+    crearConfeti();
+    modal.show();
+}
+
+// Función para mostrar que todos fallaron
+function mostrarTodosFallaron() {
+    const modal = new bootstrap.Modal(document.getElementById('todosFallaronModal'));
+    modal.show();
+}
+
+// Función para iniciar desempate
+function iniciarDesempate(equipos) {
+    console.log('⚔️ Iniciando desempate para equipos:', equipos);
+    mostrarNotificacion('🏆 Ronda de desempate iniciada!', 'warning');
+    
+    // Aquí puedes implementar la lógica específica del desempate
+    // Por ejemplo, un desafío adicional o criterio de desempate
+    setTimeout(() => {
+        alert('🏆 Desempate: Se necesita un desafío adicional para determinar al ganador.');
+    }, 1000);
+}
+
+// =============================================
+// FUNCIONES UTILITARIAS
+// =============================================
 
 // Función para formatear segundos a MM:SS
 function formatearTiempo(segundos) {
@@ -2047,35 +1760,6 @@ function formatearTiempo(segundos) {
     const segundosRestantes = segundos % 60;
     
     return `${String(minutos).padStart(2, '0')}:${String(segundosRestantes).padStart(2, '0')}`;
-}
-
-// Función para marcar equipos ganadores en la tabla
-function marcarEquipoComoGanador(equipoId, tipo) {
-    const fila = document.querySelector(`tr[data-equipo-id="${equipoId}"]`);
-    if (fila) {
-        fila.classList.add('equipo-ganador');
-        
-        switch(tipo) {
-            case 'primer-lugar':
-                fila.classList.add('primer-lugar-tabla');
-                break;
-            case 'segundo-lugar':
-                fila.classList.add('segundo-lugar-tabla');
-                break;
-            case 'tercer-lugar':
-                fila.classList.add('tercer-lugar-tabla');
-                break;
-            case 'ganador-parcial':
-                fila.classList.add('ganador-parcial-tabla');
-                break;
-            case 'empate':
-                fila.classList.add('empate-tabla');
-                break;
-            case 'completo':
-                fila.classList.add('completo-tabla');
-                break;
-        }
-    }
 }
 
 // Función para escapar HTML (seguridad)
@@ -2091,7 +1775,7 @@ function escapeHtml(unsafe) {
 // Función para crear confeti
 function crearConfeti() {
     const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
-    for (let i = 0; i < 150; i) {
+    for (let i = 0; i < 150; i++) {
         setTimeout(() => {
             const confetti = document.createElement('div');
             confetti.className = 'confetti';
@@ -2134,42 +1818,100 @@ function mostrarNotificacion(mensaje, tipo = 'success') {
     }, 4000);
 }
 
-// Función para actualizar el temporizador con efectos visuales
-function actualizarTiempoGlobal() {
-    if (!tiempoElement) return;
-    
-    if (tiempoRestante <= 0) {
-        tiempoElement.textContent = '00:00';
-        tiempoElement.className = 'temporizador-grande temporizador-peligro';
-        mostrarResultadoTiempo();
-        return;
-    }
-    
-    tiempoRestante--;
-    
-    const minutos = Math.floor(tiempoRestante / 60);
-    const segundos = tiempoRestante % 60;
-    tiempoElement.textContent = `${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
-    
-    // Efectos visuales según el tiempo restante
-    if (tiempoRestante < 300) {
-        tiempoElement.className = 'temporizador-grande temporizador-advertencia';
-    }
-    
-    if (tiempoRestante < 60) {
-        tiempoElement.className = 'temporizador-grande temporizador-peligro';
+// Función para marcar equipos ganadores en la tabla
+function marcarEquipoComoGanador(equipoId, tipo) {
+    const fila = document.querySelector(`tr[data-equipo-id="${equipoId}"]`);
+    if (fila) {
+        fila.classList.add('equipo-ganador');
+        
+        // Remover clases anteriores
+        fila.classList.remove('primer-lugar-tabla', 'segundo-lugar-tabla', 'tercer-lugar-tabla', 
+                             'ganador-parcial-tabla', 'empate-tabla');
+        
+        switch(tipo) {
+            case 'primer-lugar':
+                fila.classList.add('primer-lugar-tabla');
+                break;
+            case 'segundo-lugar':
+                fila.classList.add('segundo-lugar-tabla');
+                break;
+            case 'tercer-lugar':
+                fila.classList.add('tercer-lugar-tabla');
+                break;
+            case 'ganador-parcial':
+                fila.classList.add('ganador-parcial-tabla');
+                break;
+            case 'empate':
+                fila.classList.add('empate-tabla');
+                break;
+            case 'completo':
+                fila.classList.add('equipo-completo');
+                break;
+        }
     }
 }
 
-// Iniciar el temporizador solo si el hackathon está activo
-<?php if ($hackathon_activo): ?>
-const temporizador = setInterval(actualizarTiempoGlobal, 1000);
+// =============================================
+// CONTROL DE CONFIGURACIÓN DE DURACIÓN
+// =============================================
 
-// Verificar inmediatamente si el tiempo ya se agotó
-if (tiempoRestante <= 0) {
-    mostrarResultadoTiempo();
+function configurarPanelConfiguracion() {
+    const btnToggleConfiguracion = document.getElementById('btnToggleConfiguracion');
+    const btnCerrarConfiguracion = document.getElementById('btnCerrarConfiguracion');
+    const panelConfiguracion = document.getElementById('panelConfiguracion');
+
+    // Función para mostrar/ocultar panel de configuración
+    function toggleConfiguracionDuracion() {
+        if (panelConfiguracion.style.display === 'none') {
+            panelConfiguracion.style.display = 'block';
+            if (btnToggleConfiguracion) {
+                btnToggleConfiguracion.innerHTML = '⚙️ Ocultar Configuración de Duración';
+            }
+        } else {
+            panelConfiguracion.style.display = 'none';
+            if (btnToggleConfiguracion) {
+                btnToggleConfiguracion.innerHTML = '⚙️ Mostrar Configuración de Duración';
+            }
+        }
+    }
+
+    // Configurar eventos
+    if (btnToggleConfiguracion) {
+        btnToggleConfiguracion.addEventListener('click', toggleConfiguracionDuracion);
+    }
+
+    if (btnCerrarConfiguracion) {
+        btnCerrarConfiguracion.addEventListener('click', function() {
+            panelConfiguracion.style.display = 'none';
+            if (btnToggleConfiguracion) {
+                btnToggleConfiguracion.innerHTML = '⚙️ Mostrar Configuración de Duración';
+            }
+        });
+    }
+
+    // Mostrar automáticamente si hay un error relacionado con la duración
+    <?php if (isset($_POST['actualizar_duracion']) && $mensaje_error): ?>
+        // Si hubo un error al actualizar la duración, mostrar el panel
+        setTimeout(() => {
+            if (panelConfiguracion) {
+                panelConfiguracion.style.display = 'block';
+                if (btnToggleConfiguracion) {
+                    btnToggleConfiguracion.innerHTML = '⚙️ Ocultar Configuración de Duración';
+                }
+            }
+        }, 500);
+    <?php endif; ?>
 }
-<?php endif; ?>
+
+// =============================================
+// INICIALIZACIÓN DEL SISTEMA
+// =============================================
+
+console.log('✅ Sistema de Hackathon inicializado correctamente');
+console.log('🔊 Sistema de sonidos listo');
+console.log('⏱️ Temporizador listo');
+console.log('📡 Monitoreo en tiempo real activo');
+console.log('🏆 Sistema de resultados configurado');
 </script>
 
 </body>
