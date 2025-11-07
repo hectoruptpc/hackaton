@@ -429,13 +429,9 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
             </div>
             
             <?php if ($hackathon_activo): ?>
-            <div class="alert alert-warning mb-0">
-                <strong>⚠️ Hackathon en progreso</strong> - El tiempo corre para todos los equipos registrados. 
-            </div>
+            
             <?php else: ?>
-            <div class="alert alert-info mb-0">
-                <strong>💡 Listo para comenzar</strong> - Cuando inicies el hackathon, todos los equipos existentes comenzarán simultáneamente.
-            </div>
+
             <?php endif; ?>
         </div>
     </div>
