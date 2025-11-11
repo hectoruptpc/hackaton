@@ -361,6 +361,41 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
+
+
+/* Busca esta sección en los estilos y agrega: */
+.badge-espera { background-color: #6c757d; }
+.badge-compitiendo { background-color: #198754; }
+.badge-finalizado { background-color: #0d6efd; }
+
+/* Agrega estos nuevos estilos: */
+.equipo-finalizado {
+    border-left: 4px solid #0d6efd !important;
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%) !important;
+}
+
+.equipo-completo {
+    border: 2px solid #28a745 !important;
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%) !important;
+    animation: pulse 2s infinite;
+    position: relative;
+}
+
+.equipo-completo::after {
+    content: "✅ COMPLETO";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8rem;
+    background: #28a745;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+
+
     </style>
 </head>
 <body>
@@ -594,12 +629,26 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <?php if ($equipo['estado'] == 1): ?>
-                                        <span class="badge badge-compitiendo p-2">🏁 COMPITIENDO</span>
-                                    <?php else: ?>
-                                        <span class="badge badge-espera p-2">⏳ EN ESPERA</span>
-                                    <?php endif; ?>
-                                </td>
+    <?php 
+    $estado_mostrar = '';
+    $clase_badge = '';
+    $texto_extra = '';
+    
+    if ($equipo['puntuacion_total'] == 6 || $equipo['completado']) {
+        $estado_mostrar = '✅ FINALIZADO';
+        $clase_badge = 'badge bg-success p-2';
+        $texto_extra = '<br><small class="text-success mt-1 d-block">🎯 6/6 Desafíos</small>';
+    } elseif ($equipo['estado'] == 1) {
+        $estado_mostrar = '🏁 COMPITIENDO';
+        $clase_badge = 'badge badge-compitiendo p-2';
+    } else {
+        $estado_mostrar = '⏳ EN ESPERA';
+        $clase_badge = 'badge badge-espera p-2';
+    }
+    ?>
+    <span class="<?php echo $clase_badge; ?>"><?php echo $estado_mostrar; ?></span>
+    <?php echo $texto_extra; ?>
+</td>
                                 <td class="text-center actions-column">
                                     <!-- Botón Eliminar -->
                                     <button type="button" class="btn btn-danger btn-sm btn-eliminar-equipo" 
@@ -1330,7 +1379,7 @@ function reordenarTablaCompleta(rankingCompleto) {
     configurarEventosEliminacion();
 }
 
-// Función para crear una nueva fila de equipo
+// Función para crear una nueva fila de equipo - ACTUALIZADA
 function crearFilaEquipo(equipo, index) {
     const nuevaFila = document.createElement('tr');
     nuevaFila.setAttribute('data-equipo-id', equipo.id);
@@ -1341,6 +1390,23 @@ function crearFilaEquipo(equipo, index) {
     else if (index === 2) claseFila = 'top-3';
     
     nuevaFila.className = `${claseFila} equipo-nuevo`;
+    
+    // Determinar estado - NUEVO CÓDIGO
+    let estadoTexto = '';
+    let claseBadge = '';
+    let textoExtra = '';
+    
+    if (equipo.puntuacion_total === 6 || equipo.completado) {
+        estadoTexto = '✅ FINALIZADO';
+        claseBadge = 'badge bg-success p-2';
+        textoExtra = '<br><small class="text-success mt-1 d-block">🎯 6/6 Desafíos</small>';
+    } else if (equipo.estado == 1) {
+        estadoTexto = '🏁 COMPITIENDO';
+        claseBadge = 'badge badge-compitiendo p-2';
+    } else {
+        estadoTexto = '⏳ EN ESPERA';
+        claseBadge = 'badge badge-espera p-2';
+    }
     
     nuevaFila.innerHTML = `
         <td>
@@ -1371,9 +1437,8 @@ function crearFilaEquipo(equipo, index) {
             }
         </td>
         <td>
-            <span class="badge ${equipo.estado == 1 ? 'badge-compitiendo' : 'badge-espera'} p-2">
-                ${equipo.estado == 1 ? '🏁 COMPITIENDO' : '⏳ EN ESPERA'}
-            </span>
+            <span class="${claseBadge}">${estadoTexto}</span>
+            ${textoExtra}
         </td>
         <td class="text-center actions-column">
             <button type="button" class="btn btn-danger btn-sm btn-eliminar-equipo" 
@@ -1387,6 +1452,11 @@ function crearFilaEquipo(equipo, index) {
         </td>
     `;
     
+    // Marcar como completo si llegó a 6 puntos
+    if (equipo.puntuacion_total === 6 || equipo.completado) {
+        nuevaFila.classList.add('equipo-completo');
+    }
+    
     // Remover clase de nuevo después de 3 segundos
     setTimeout(() => {
         nuevaFila.classList.remove('equipo-nuevo');
@@ -1399,7 +1469,7 @@ function crearFilaEquipo(equipo, index) {
     return nuevaFila;
 }
 
-// Función para actualizar una fila existente de equipo
+// Función para actualizar una fila existente de equipo - ACTUALIZADA
 function actualizarFilaEquipo(fila, equipo, index) {
     const celdaPosicion = fila.querySelector('td:nth-child(1) strong');
     const posicionAnterior = parseInt(celdaPosicion.textContent);
@@ -1452,10 +1522,29 @@ function actualizarFilaEquipo(fila, equipo, index) {
         celdaTiempo.innerHTML = '<span class="text-muted">--:--</span>';
     }
     
-    // Actualizar celda de estado (6ta columna)
-    const celdaEstado = fila.querySelector('td:nth-child(6) span');
-    celdaEstado.className = `badge ${equipo.estado == 1 ? 'badge-compitiendo' : 'badge-espera'} p-2`;
-    celdaEstado.textContent = equipo.estado == 1 ? '🏁 COMPITIENDO' : '⏳ EN ESPERA';
+    // Actualizar celda de estado (6ta columna) - MODIFICADO
+    const celdaEstado = fila.querySelector('td:nth-child(6)');
+    
+    let estadoTexto = '';
+    let claseBadge = '';
+    let textoExtra = '';
+    
+    if (equipo.puntuacion_total === 6 || equipo.completado) {
+        estadoTexto = '✅ FINALIZADO';
+        claseBadge = 'badge bg-success p-2';
+        textoExtra = '<br><small class="text-success mt-1 d-block">🎯 6/6 Desafíos</small>';
+    } else if (equipo.estado == 1) {
+        estadoTexto = '🏁 COMPITIENDO';
+        claseBadge = 'badge badge-compitiendo p-2';
+    } else {
+        estadoTexto = '⏳ EN ESPERA';
+        claseBadge = 'badge badge-espera p-2';
+    }
+    
+    celdaEstado.innerHTML = `
+        <span class="${claseBadge}">${estadoTexto}</span>
+        ${textoExtra}
+    `;
     
     // Marcar como completo si llegó a 6 puntos
     if (equipo.puntuacion_total === 6 || equipo.completado) {
@@ -1469,7 +1558,7 @@ function actualizarFilaEquipo(fila, equipo, index) {
 // SISTEMA DE RESULTADOS Y PODIOS - CORREGIDO
 // =============================================
 
-// Función para verificar si hay equipos que completaron los 6 desafíos
+// Función para verificar si hay equipos que completaron los 6 desafíos - ACTUALIZADA
 function verificarPodioCompleto(ranking) {
     if (!ranking || ranking.length === 0 || podioCompletoMostrado) return;
     
@@ -1480,6 +1569,21 @@ function verificarPodioCompleto(ranking) {
     
     if (equiposCompletos.length > 0) {
         console.log('🏆 Equipos completaron todos los desafíos:', equiposCompletos.length);
+        
+        // Marcar automáticamente como FINALIZADO en la interfaz
+        equiposCompletos.forEach(equipo => {
+            const fila = document.querySelector(`tr[data-equipo-id="${equipo.id}"]`);
+            if (fila) {
+                const celdaEstado = fila.querySelector('td:nth-child(6)');
+                celdaEstado.innerHTML = `
+                    <span class="badge bg-success p-2">✅ FINALIZADO</span>
+                    <br>
+                    <small class="text-success mt-1 d-block">🎯 6/6 Desafíos</small>
+                `;
+                fila.classList.add('equipo-completo');
+            }
+        });
+        
         mostrarPodioCompleto(equiposCompletos);
         podioCompletoMostrado = true;
     }
