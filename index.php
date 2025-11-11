@@ -868,15 +868,30 @@ function verifyFlag(challenge) {
     })
     .then(response => response.json())
     .then(data => {
+        console.log('Respuesta del servidor:', data); // Para debugging
+        
         if (data.success) {
             handleCorrectFlag(challenge, data.puntos);
+            
+            // Actualizar la puntuación en la sesión si viene en la respuesta
+            if (data.puntuacion_total) {
+                currentScore = data.puntuacion_total;
+                document.getElementById('score').textContent = `${currentScore} Puntos`;
+            }
         } else {
-            showResultModal('Bandera Incorrecta', data.message || 'Sigue buscando.', 'danger', true);
+            // MOSTRAR MODAL DE ERROR SOLO SI REALMENTE ES UN ERROR
+            if (data.message && !data.message.includes('ya fue completado')) {
+                showResultModal('Bandera Incorrecta', data.message, 'danger', true);
+            } else {
+                // Si ya estaba completado, solo mostrar mensaje en consola
+                console.log('Desafío ya completado:', data.message);
+            }
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showResultModal('Error', 'Error al verificar la bandera. Intenta nuevamente.', 'danger', true);
+        // Solo mostrar modal si es un error de red, no de lógica de negocio
+        showResultModal('Error de Conexión', 'Error al verificar la bandera. Intenta nuevamente.', 'danger', true);
     });
 }
 
@@ -932,13 +947,7 @@ function showResultModal(title, message, type, playErrorSound) {
 }
 
 function handleCorrectFlag(challenge, puntos) {
-    showResultModal(
-        '¡Bandera Correcta!', 
-        `Tu equipo ha ganado ${puntos} puntos.`, 
-        'success', 
-        false
-    );
-    
+    // Primero actualizar la interfaz inmediatamente
     currentScore += puntos;
     document.getElementById('score').textContent = `${currentScore} Puntos`;
     
@@ -971,6 +980,23 @@ function handleCorrectFlag(challenge, puntos) {
         button.classList.add('btn-success');
     }
     
+    // Mostrar modal de éxito SOLO si no es el sexto desafío
+    const completedCount = Object.keys(completedChallenges).length;
+    
+    if (completedCount === totalChallenges) {
+        // Si es el sexto desafío, NO mostrar el modal de éxito individual
+        // En su lugar, mostrar el modal de felicitaciones final
+        showFinalCongratulations();
+    } else {
+        // Para los primeros 5 desafíos, mostrar modal de éxito normal
+        showResultModal(
+            '¡Bandera Correcta!', 
+            `Tu equipo ha ganado ${puntos} puntos.`, 
+            'success', 
+            false
+        );
+    }
+    
     // Verificar si se completaron todos los desafíos
     checkAllChallengesCompleted();
 }
@@ -979,25 +1005,36 @@ function checkAllChallengesCompleted() {
     const completedCount = Object.keys(completedChallenges).length;
     
     if (completedCount === totalChallenges) {
-        // Calcular tiempo utilizado
-        const tiempoUtilizado = segundosTranscurridos;
-        const minutos = Math.floor(tiempoUtilizado / 60);
-        const segundos = tiempoUtilizado % 60;
-        const tiempoFormateado = `${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
-        
-        // Actualizar modal con información
-        document.getElementById('final-score').textContent = currentScore;
-        document.getElementById('time-used').textContent = tiempoFormateado;
-        
-        // Reproducir sonido de éxito
-        successSound.play();
-        
-        // Mostrar modal después de un breve delay
-        setTimeout(() => {
-            const congratsModal = new bootstrap.Modal(document.getElementById('congratsModal'));
-            congratsModal.show();
-        }, 1000);
+        showFinalCongratulations();
     }
+}
+
+function showFinalCongratulations() {
+    // Calcular tiempo utilizado
+    const tiempoUtilizado = segundosTranscurridos;
+    const minutos = Math.floor(tiempoUtilizado / 60);
+    const segundos = tiempoUtilizado % 60;
+    const tiempoFormateado = `${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
+    
+    // Actualizar modal con información
+    document.getElementById('final-score').textContent = currentScore;
+    
+    // Buscar el elemento time-used y actualizarlo si existe
+    const timeUsedElement = document.getElementById('time-used');
+    if (timeUsedElement) {
+        timeUsedElement.textContent = tiempoFormateado;
+    }
+    
+    // Reproducir sonido de éxito
+    if (successSound) {
+        successSound.play();
+    }
+    
+    // Mostrar modal después de un breve delay
+    setTimeout(() => {
+        const congratsModal = new bootstrap.Modal(document.getElementById('congratsModal'));
+        congratsModal.show();
+    }, 1000);
 }
 
 // ===== INICIALIZACIÓN =====

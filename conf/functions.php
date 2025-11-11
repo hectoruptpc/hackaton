@@ -119,29 +119,40 @@ function desafioCompletado($equipo_id, $desafio_id) {
 }
 
 /**
- * Marcar desafío como completado y sumar puntos
+ * Marcar desafío como completado y sumar puntos - VERSIÓN CORREGIDA
  */
 function completarDesafio($equipo_id, $desafio_id, $puntos) {
     global $db;
     
-    // Verificar si ya está completado
-    if (desafioCompletado($equipo_id, $desafio_id)) {
+    try {
+        $db->beginTransaction();
+        
+        // Registrar completado
+        $stmt = $db->prepare("INSERT INTO desafios_completados (equipo_id, desafio_id) VALUES (?, ?)");
+        if (!$stmt->execute([$equipo_id, $desafio_id])) {
+            throw new Exception("Error al registrar desafío completado");
+        }
+        
+        // Sumar puntos al equipo
+        $stmt = $db->prepare("UPDATE equipos SET puntuacion_total = puntuacion_total + ? WHERE id = ?");
+        if (!$stmt->execute([$puntos, $equipo_id])) {
+            throw new Exception("Error al actualizar puntuación");
+        }
+        
+        // Registrar tiempo acumulado
+        registrarTiempoDesafioCompletado($equipo_id, $desafio_id);
+        
+        // Actualizar contador de desafíos completados
+        actualizarDesafiosCompletados($equipo_id);
+        
+        $db->commit();
+        return true;
+        
+    } catch (Exception $e) {
+        $db->rollBack();
+        error_log("Error en completarDesafio: " . $e->getMessage());
         return false;
     }
-    
-    // Registrar completado
-    $stmt = $db->prepare("INSERT INTO desafios_completados (equipo_id, desafio_id) VALUES (?, ?)");
-    $stmt->execute([$equipo_id, $desafio_id]);
-    
-    // Registrar tiempo acumulado
-    registrarTiempoDesafioCompletado($equipo_id, $desafio_id);
-    
-    // Actualizar contador de desafíos completados
-    actualizarDesafiosCompletados($equipo_id);
-    
-    // Sumar puntos al equipo
-    $stmt = $db->prepare("UPDATE equipos SET puntuacion_total = puntuacion_total + ? WHERE id = ?");
-    return $stmt->execute([$puntos, $equipo_id]);
 }
 
 /**
@@ -563,14 +574,27 @@ function registrarTiempoDesafioCompletado($equipo_id, $desafio_id) {
 }
 
 /**
- * Marcar equipo como completado (cuando termina los 6 desafíos)
+ * Marcar equipo como completado (cuando termina los 6 desafíos) - VERSIÓN CORREGIDA
  */
 function marcarEquipoCompletado($equipo_id) {
     global $db;
     
-    $tiempo_finalizacion = date('Y-m-d H:i:s');
-    $stmt = $db->prepare("UPDATE equipos SET completado = TRUE, tiempo_finalizacion = ?, desafios_completados = 6 WHERE id = ?");
-    return $stmt->execute([$tiempo_finalizacion, $equipo_id]);
+    try {
+        $tiempo_finalizacion = date('Y-m-d H:i:s');
+        $stmt = $db->prepare("
+            UPDATE equipos 
+            SET completado = TRUE, 
+                tiempo_finalizacion = ?,
+                estado = 1,
+                desafios_completados = 6
+            WHERE id = ?
+        ");
+        return $stmt->execute([$tiempo_finalizacion, $equipo_id]);
+        
+    } catch (Exception $e) {
+        error_log("Error en marcarEquipoCompletado: " . $e->getMessage());
+        return false;
+    }
 }
 
 /**
@@ -604,27 +628,56 @@ function obtenerRankingEquiposConTiempo() {
 }
 
 /**
- * Actualizar desafíos completados
+ * Actualizar desafíos completados - VERSIÓN CORREGIDA
  */
 function actualizarDesafiosCompletados($equipo_id) {
     global $db;
     
-    $stmt = $db->prepare("
-        UPDATE equipos 
-        SET desafios_completados = (
-            SELECT COUNT(*) FROM desafios_completados WHERE equipo_id = ?
-        ) 
-        WHERE id = ?
-    ");
-    $stmt->execute([$equipo_id, $equipo_id]);
-    
-    // Verificar si completó todos los desafíos
-    $equipo = obtenerInfoEquipo($equipo_id);
-    if ($equipo['desafios_completados'] >= 6 && !$equipo['completado']) {
-        marcarEquipoCompletado($equipo_id);
+    try {
+        // Obtener el conteo actual de desafíos completados
+        $stmt = $db->prepare("
+            SELECT COUNT(*) as total_completados 
+            FROM desafios_completados 
+            WHERE equipo_id = ?
+        ");
+        $stmt->execute([$equipo_id]);
+        $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
+        $total_completados = $resultado['total_completados'];
+        
+        // Actualizar el contador en la tabla equipos
+        $stmt = $db->prepare("
+            UPDATE equipos 
+            SET desafios_completados = ? 
+            WHERE id = ?
+        ");
+        $stmt->execute([$total_completados, $equipo_id]);
+        
+        // Verificar si completó todos los desafíos (6) y aún no está marcado como completado
+        if ($total_completados >= 6) {
+            $stmt = $db->prepare("SELECT completado FROM equipos WHERE id = ?");
+            $stmt->execute([$equipo_id]);
+            $equipo = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$equipo['completado']) {
+                // Marcar como completado
+                $tiempo_finalizacion = date('Y-m-d H:i:s');
+                $stmt = $db->prepare("
+                    UPDATE equipos 
+                    SET completado = TRUE, 
+                        tiempo_finalizacion = ?,
+                        estado = 1  -- Mantener estado como activo pero marcado como completado
+                    WHERE id = ?
+                ");
+                $stmt->execute([$tiempo_finalizacion, $equipo_id]);
+            }
+        }
+        
+        return $total_completados;
+        
+    } catch (Exception $e) {
+        error_log("Error en actualizarDesafiosCompletados: " . $e->getMessage());
+        return 0;
     }
-    
-    return $equipo['desafios_completados'];
 }
 
 
