@@ -774,7 +774,7 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
 <!-- Modal Podio Completo (Cuando equipos completan los 6 desafíos) -->
 <div class="modal fade" id="podioCompletoModal" tabindex="-1" aria-labelledby="podioCompletoModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content" style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%);">
+        <div class="modal-content" style="background: linear-gradient(135deg, #01b7ffff 0%, #0075d4ff 50%, #005ac2ff 100%);">
             <div class="modal-header border-0">
                 <h2 class="modal-title text-center w-100 text-white" id="podioCompletoModalLabel">
                     🏆 PODIO OFICIAL 🏆
