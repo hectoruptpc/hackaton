@@ -189,6 +189,13 @@ if (!isset($_GET['p2'])) {
                                 </a>
                             </div>
 
+                            <div class="text-center mt-4">
+                                <a href="index.php" class="btn btn-finalizar">
+                                    <i class="fas fa-trophy me-2"></i>
+                                    Volver al Dashboard
+                                </a>
+                            </div>
+
                             <div class="text-center mt-3">
                                 <a href="nivel4.php?p1=FL" class="btn btn-outline-secondary btn-sm">
                                     <i class="fas fa-arrow-left me-2"></i>

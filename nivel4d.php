@@ -197,9 +197,9 @@ if (!isset($_GET['p4'])) {
                             </div>
 
                             <div class="text-center mt-3">
-                                <a href="nivel4c.php?p3={URL" class="btn btn-outline-secondary btn-sm">
+                                <a href="nivel4.php?p1=FL" class="btn btn-outline-secondary btn-sm">
                                     <i class="fas fa-arrow-left me-2"></i>
-                                    Anterior
+                                    Volver al inicio del desafio
                                 </a>
                             </div>
                         </div>

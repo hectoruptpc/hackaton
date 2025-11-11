@@ -188,6 +188,13 @@ if (!isset($_GET['p1'])) {
                                     Continuar
                                 </a>
                             </div>
+
+                            <div class="text-center mt-4">
+                                <a href="index.php" class="btn btn-finalizar">
+                                    <i class="fas fa-trophy me-2"></i>
+                                    Volver al Dashboard
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
