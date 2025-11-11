@@ -663,7 +663,7 @@ if (isset($_SESSION['cedula'])) {
                 <p class="lead">El equipo <strong><?php echo htmlspecialchars($_SESSION['nombre_equipo']); ?></strong> ha resuelto exitosamente los 6 desafíos de seguridad.</p>
                 <div class="alert alert-info">
                     <h5>Puntuación Final: <span id="final-score" class="text-success"><?php echo $_SESSION['puntuacion_equipo']; ?></span> puntos</h5>
-                    <p class="mb-0">Tiempo utilizado: <span id="time-used">--:--</span></p>
+                    
                 </div>
                 <p>Espera los resultados finales. ¡Buen trabajo equipo!</p>
             </div>
