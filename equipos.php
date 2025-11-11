@@ -821,12 +821,12 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
 
 <!-- Audio para el sonido de finalización -->
 <audio id="finishSound" preload="auto">
-    <source src="audios/aplausos.mp3" type="audio/mpeg">
+    <source src="audios/ganador.mp3" type="audio/mpeg">
 </audio>
 
 <!-- Audio para victoria -->
 <audio id="audioVictoria" preload="auto">
-    <source src="audios/aplausos.mp3" type="audio/mpeg">
+    <source src="audios/ganador.mp3" type="audio/mpeg">
 </audio>
 
 <!-- Audios para bandera 1 (en orden) -->
