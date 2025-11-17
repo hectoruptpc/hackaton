@@ -218,9 +218,9 @@ if (isset($_SESSION['cedula'])) {
                             
                             <h5 class="mt-4 mb-3">Miembros del Equipo <small class="text-muted">(Mínimo 3, máximo 4)</small></h5>
                             
-                            <!-- Tutor (Obligatorio) -->
+                            <!-- Capitan (Obligatorio) -->
                             <div class="member-form">
-                                <h6 class="text-primary">Tutor <span class="text-danger">*</span></h6>
+                                <h6 class="text-primary">Capitan <span class="text-danger">*</span></h6>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <input type="text" class="form-control" name="nombre_1" placeholder="Nombre completo" required>
