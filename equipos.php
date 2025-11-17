@@ -1042,6 +1042,105 @@ const totalEquiposElement = document.getElementById('total-equipos');
 const PUNTUACION_MAXIMA = 6;
 
 // =============================================
+// SISTEMA DE SINCRONIZACIÓN MEJORADO - Mismo método que puntaje
+// =============================================
+
+let ultimaVerificacionEstado = Date.now();
+let hackathonActivo = <?php echo $hackathon_activo ? 'true' : 'false'; ?>;
+let estadoSincronizado = false;
+
+// Función para verificar cambios en el estado del hackathon
+function verificarEstadoHackathon() {
+    fetch(`obtener_estado_hackathon.php?t=${Date.now()}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const estadoActual = data.estado.hackathon_iniciado;
+                
+                // Si el estado cambió
+                if (estadoActual !== hackathonActivo) {
+                    console.log(`🔄 Cambio de estado detectado: ${hackathonActivo} → ${estadoActual}`);
+                    
+                    if (estadoActual && !hackathonActivo) {
+                        // Hackathon fue iniciado desde otro dispositivo
+                        console.log('🚀 Hackathon iniciado desde otro dispositivo - Recargando...');
+                        mostrarNotificacionSincronizacion('¡Hackathon iniciado desde otro dispositivo!', 'success');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    } else if (!estadoActual && hackathonActivo) {
+                        // Hackathon fue reiniciado desde otro dispositivo
+                        console.log('🔄 Hackathon reiniciado desde otro dispositivo - Recargando...');
+                        mostrarNotificacionSincronizacion('¡Hackathon reiniciado desde otro dispositivo!', 'warning');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    }
+                    
+                    hackathonActivo = estadoActual;
+                }
+                
+                estadoSincronizado = true;
+            }
+        })
+        .catch(error => {
+            console.error('❌ Error verificando estado hackathon:', error);
+        });
+}
+
+// Función para notificar cambios de estado a otros dispositivos
+function notificarCambioEstado(accion) {
+    fetch(`actualizar_estado_hackathon.php?accion=${accion}&t=${Date.now()}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log(`📢 Estado ${accion} notificado a otros dispositivos`);
+            }
+        })
+        .catch(error => {
+            console.error('❌ Error notificando cambio:', error);
+        });
+}
+
+// Función para mostrar notificación de sincronización
+function mostrarNotificacionSincronizacion(mensaje, tipo = 'info') {
+    const notificacion = document.createElement('div');
+    notificacion.className = `alert alert-${tipo} alert-dismissible fade show notificacion-flotante`;
+    notificacion.style.zIndex = '10000';
+    notificacion.style.top = '80px';
+    
+    notificacion.innerHTML = `
+        <div class="d-flex align-items-center">
+            <span class="fs-5 me-2">${tipo === 'success' ? '🔄' : '⚠️'}</span>
+            <div>
+                <strong>Sincronización</strong>
+                <p class="mb-0">${mensaje}</p>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notificacion);
+    
+    setTimeout(() => {
+        if (notificacion.parentNode) {
+            notificacion.remove();
+        }
+    }, 4000);
+}
+
+// Iniciar verificación de estado
+function iniciarVerificacionEstado() {
+    console.log('📡 Iniciando verificación de estado del hackathon...');
+    
+    // Verificar cada 2 segundos (misma frecuencia que los equipos)
+    setInterval(verificarEstadoHackathon, 2000);
+    
+    // Verificar inmediatamente
+    setTimeout(verificarEstadoHackathon, 1000);
+}
+
+// =============================================
 // SISTEMA DE SONIDOS COMPLETO - CORREGIDO
 // =============================================
 
@@ -1255,16 +1354,16 @@ document.addEventListener('DOMContentLoaded', function() {
         if (audiosBanderas[bandera]) {
             audiosBanderas[bandera].forEach(audio => {
                 if (audio) {
-                    audio.volume = 0.7; // 70% de volumen para todos los audios
+                    audio.volume = 0.7;
                 }
             });
         }
     }
     if (audioVictoria) {
-        audioVictoria.volume = 0.8; // 80% de volumen para victoria
+        audioVictoria.volume = 0.8;
     }
     if (finishSound) {
-        finishSound.volume = 0.8; // 80% de volumen para finalización
+        finishSound.volume = 0.8;
     }
     
     // Iniciar temporizador solo si el hackathon está activo
@@ -1272,7 +1371,6 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('⏱️ Hackathon activo - Iniciando temporizador...');
     const temporizador = setInterval(actualizarTiempoGlobal, 1000);
 
-    // Verificar inmediatamente si el tiempo ya se agotó
     if (tiempoRestante <= 0) {
         console.log('⏰ Tiempo ya agotado - Mostrando resultado...');
         mostrarResultadoTiempo();
@@ -1286,6 +1384,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Configurar panel de configuración
     configurarPanelConfiguracion();
+    
+    // INICIAR VERIFICACIÓN DE ESTADO (NUEVO)
+    iniciarVerificacionEstado();
 });
 
 // Configurar eventos para botones de eliminar
@@ -2054,6 +2155,39 @@ console.log('🔊 Sistema de sonidos listo');
 console.log('⏱️ Temporizador listo');
 console.log('📡 Monitoreo en tiempo real activo');
 console.log('🏆 Sistema de resultados configurado');
+console.log('🔄 Sistema de sincronización activo');
+
+
+
+
+
+// =============================================
+// CONFIGURACIÓN DE FORMULARIOS PARA SINCRONIZACIÓN
+// =============================================
+
+// Configurar formulario de iniciar hackathon
+const formIniciar = document.querySelector('#iniciarModal form');
+if (formIniciar) {
+    formIniciar.addEventListener('submit', function() {
+        console.log('🚀 Notificando inicio de hackathon a otros dispositivos...');
+        notificarCambioEstado('iniciar');
+    });
+}
+
+// Configurar formulario de reiniciar hackathon  
+const formReiniciar = document.querySelector('#reiniciarModal form');
+if (formReiniciar) {
+    formReiniciar.addEventListener('submit', function() {
+        console.log('🔄 Notificando reinicio de hackathon a otros dispositivos...');
+        notificarCambioEstado('reiniciar');
+    });
+}
+
+
+
+
+
+
 </script>
 
 </body>

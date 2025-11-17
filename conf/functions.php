@@ -744,4 +744,27 @@ function formatearDuracionLegible($minutos) {
     }
 }
 
+/**
+ * Obtener el estado actual del hackathon para sincronización
+ */
+function obtenerEstadoHackathon() {
+    $config = obtenerConfiguracionHackathon();
+    if (!$config) {
+        return [
+            'hackathon_iniciado' => false,
+            'tiempo_inicio_global' => null,
+            'duracion_minutos' => 90,
+            'timestamp' => time()
+        ];
+    }
+    
+    return [
+        'hackathon_iniciado' => (bool)$config['hackathon_iniciado'],
+        'tiempo_inicio_global' => $config['tiempo_inicio_global'],
+        'duracion_minutos' => $config['duracion_minutos'],
+        'timestamp' => time(),
+        'tiempo_restante' => calcularTiempoRestanteGlobal()
+    ];
+}
+
 ?>
