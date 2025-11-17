@@ -221,10 +221,15 @@ function calcularTiempoTranscurrido($tiempo_inicio) {
 }
 
 /**
- * Mostrar alerta con JavaScript
+ * Mostrar modal de error en lugar de alerta JavaScript
  */
-function mostrarAlerta($mensaje) {
-    echo "<script>alert('" . addslashes($mensaje) . "');window.location='index.php';</script>";
+function mostrarAlerta($mensaje, $tipo = 'error') {
+    // En lugar de mostrar alert, guardamos el mensaje en sesión para mostrarlo en un modal
+    $_SESSION['modal_message'] = $mensaje;
+    $_SESSION['modal_type'] = $tipo;
+    
+    // Redirigir de vuelta al formulario
+    header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
 

@@ -32,7 +32,9 @@ if (isset($_SESSION['cedula'])) {
     $nombre_equipo = trim($_POST['nombre_equipo']);
     
     if (empty($nombre_equipo)) {
-        mostrarAlerta('El nombre del equipo es obligatorio.');
+        $_SESSION['form_errors'] = ['El nombre del equipo es obligatorio.'];
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
     }
     
     // Validar que haya al menos 3 miembros
@@ -44,36 +46,62 @@ if (isset($_SESSION['cedula'])) {
     }
     
     if ($miembros_minimos < 3) {
-        mostrarAlerta('Debes registrar al menos 3 miembros para el equipo.');
+        $_SESSION['form_errors'] = ['Debes registrar al menos 3 miembros para el equipo.'];
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
     }
     
     // Registrar el equipo
     $equipo_id = registrarEquipo($nombre_equipo);
     if (!$equipo_id) {
-        mostrarAlerta('Error al crear el equipo. El nombre puede estar en uso.');
+        $_SESSION['form_errors'] = ['Error al crear el equipo. El nombre puede estar en uso.'];
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
     }
     
     // Registrar los miembros
     $miembros_registrados = 0;
+    $errores_miembros = [];
+    
     for ($i = 1; $i <= 4; $i++) {
         $nombre = trim($_POST["nombre_$i"]);
         $cedula = trim($_POST["cedula_$i"]);
         
         if (!empty($nombre) && !empty($cedula)) {
             if (!validarCedula($cedula)) {
-                mostrarAlerta("La cédula del miembro $i solo debe contener números.");
+                $errores_miembros[] = "La cédula del miembro $i solo debe contener números.";
+                continue;
             }
             
             if (usuarioExiste($cedula)) {
-                mostrarAlerta("La cédula $cedula ya está registrada en otro equipo.");
+                $errores_miembros[] = "La cédula $cedula ya está registrada en otro equipo.";
+                continue;
             }
             
             if (!registrarParticipante($nombre, $cedula, $equipo_id)) {
-                mostrarAlerta("Error al registrar el miembro $i.");
+                $errores_miembros[] = "Error al registrar el miembro $i.";
+                continue;
             }
             
             $miembros_registrados++;
+        } else if (!empty($nombre) && empty($cedula)) {
+            $errores_miembros[] = `El miembro $i tiene nombre pero falta la cédula.`;
+        } else if (empty($nombre) && !empty($cedula)) {
+            $errores_miembros[] = `El miembro $i tiene cédula pero falta el nombre.`;
         }
+    }
+    
+    // Si hay errores en miembros, mostrar modal
+    if (!empty($errores_miembros)) {
+        $_SESSION['form_errors'] = $errores_miembros;
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
+    }
+    
+    if ($miembros_registrados < 3) {
+        $_SESSION['form_errors'] = ['Debes registrar al menos 3 miembros completos para el equipo.'];
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
     }
     
     // Iniciar sesión con el primer miembro registrado
@@ -83,7 +111,9 @@ if (isset($_SESSION['cedula'])) {
         header("Location: index.php");
         exit;
     } else {
-        mostrarAlerta('Error al iniciar sesión.');
+        $_SESSION['form_errors'] = ['Error al iniciar sesión.'];
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
     }
 
 // 3. Si viene del formulario de acceso individual
@@ -91,13 +121,17 @@ if (isset($_SESSION['cedula'])) {
     $cedula = trim($_POST['cedula_acceso']);
     
     if (!validarCedula($cedula)) {
-        mostrarAlerta('La cédula solo debe contener números.');
+        $_SESSION['access_errors'] = ['La cédula solo debe contener números.'];
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
     }
     
     // Verificar si el usuario existe
     $participante = usuarioExiste($cedula);
     if (!$participante) {
-        mostrarAlerta('No se encontró un equipo registrado con esta cédula.');
+        $_SESSION['access_errors'] = ['No se encontró un equipo registrado con esta cédula.'];
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
     }
     
     // Iniciar sesión
@@ -117,7 +151,9 @@ if (isset($_SESSION['cedula'])) {
         header("Location: equipos.php");
         exit;
     } else {
-        mostrarAlerta('Código administrativo incorrecto.');
+        $_SESSION['admin_errors'] = ['Código administrativo incorrecto.'];
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
     }
 
 // 5. Si no hay sesión, mostrar formulario de inicio
@@ -127,6 +163,16 @@ if (isset($_SESSION['cedula'])) {
         unset($_SESSION['equipo_temporal']);
         unset($_SESSION['nombre_equipo_temporal']);
     }
+    
+    // Verificar si hay mensajes de error para mostrar en modales
+    $form_errors = $_SESSION['form_errors'] ?? [];
+    $access_errors = $_SESSION['access_errors'] ?? [];
+    $admin_errors = $_SESSION['admin_errors'] ?? [];
+    
+    // Limpiar los errores después de obtenerlos
+    unset($_SESSION['form_errors']);
+    unset($_SESSION['access_errors']); 
+    unset($_SESSION['admin_errors']);
     ?>
     <!DOCTYPE html>
     <html lang="es">
@@ -313,73 +359,204 @@ if (isset($_SESSION['cedula'])) {
         </div>
     </div>
 
-    <script>
-    // Validación solo números para todas las cédulas
-    document.querySelectorAll('input[name^="cedula"]').forEach(input => {
-        input.addEventListener('input', function() {
-            this.value = this.value.replace(/\D/g, '');
-        });
-    });
 
-    // Validación para el formulario de acceso
-    document.getElementById('cedula_acceso').addEventListener('input', function() {
+
+
+<!-- Modal para errores generales -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="errorModalLabel">❌ Error</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                    <h4 id="errorModalMessage">Ha ocurrido un error</h4>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Entendido</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para advertencias -->
+<div class="modal fade" id="warningModal" tabindex="-1" aria-labelledby="warningModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="warningModalLabel">⚠️ Advertencia</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-exclamation-circle fa-3x text-warning mb-3"></i>
+                    <h4 id="warningModalMessage">Por favor corrige los siguientes problemas</h4>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Entendido</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para información -->
+<div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="infoModalLabel">ℹ️ Información</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-info-circle fa-3x text-info mb-3"></i>
+                    <h4 id="infoModalMessage">Información importante</h4>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-info" data-bs-dismiss="modal">Entendido</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Modales
+const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+const warningModal = new bootstrap.Modal(document.getElementById('warningModal'));
+const infoModal = new bootstrap.Modal(document.getElementById('infoModal'));
+
+// Función para mostrar modales
+function showModal(type, message) {
+    let modal, titleElement, messageElement;
+    
+    switch(type) {
+        case 'error':
+            modal = errorModal;
+            titleElement = document.getElementById('errorModalLabel');
+            messageElement = document.getElementById('errorModalMessage');
+            break;
+        case 'warning':
+            modal = warningModal;
+            titleElement = document.getElementById('warningModalLabel');
+            messageElement = document.getElementById('warningModalMessage');
+            break;
+        case 'info':
+            modal = infoModal;
+            titleElement = document.getElementById('infoModalLabel');
+            messageElement = document.getElementById('infoModalMessage');
+            break;
+    }
+    
+    if (messageElement) {
+        messageElement.textContent = message;
+    }
+    modal.show();
+}
+
+// Validación solo números para todas las cédulas
+document.querySelectorAll('input[name^="cedula"]').forEach(input => {
+    input.addEventListener('input', function() {
         this.value = this.value.replace(/\D/g, '');
     });
+});
 
-    // Validación del formulario de equipo
-    document.getElementById('team-form').addEventListener('submit', function(e) {
-        let miembrosCompletos = 0;
-        
-        for (let i = 1; i <= 4; i++) {
-            const nombre = document.querySelector(`input[name="nombre_${i}"]`).value.trim();
-            const cedula = document.querySelector(`input[name="cedula_${i}"]`).value.trim();
-            
-            if (nombre !== '' && cedula !== '') {
-                miembrosCompletos++;
-            } else if (nombre !== '' && cedula === '') {
-                alert(`El miembro ${i} tiene nombre pero falta la cédula.`);
-                e.preventDefault();
-                return;
-            } else if (nombre === '' && cedula !== '') {
-                alert(`El miembro ${i} tiene cédula pero falta el nombre.`);
-                e.preventDefault();
-                return;
-            }
-        }
-        
-        if (miembrosCompletos < 3) {
-            alert('Debes registrar al menos 3 miembros completos para el equipo.');
-            e.preventDefault();
-        }
-    });
+// Validación para el formulario de acceso
+document.getElementById('cedula_acceso').addEventListener('input', function() {
+    this.value = this.value.replace(/\D/g, '');
+});
 
-    // Toggle del formulario administrativo
-    document.getElementById('toggle-admin-btn').addEventListener('click', function() {
-        const adminForm = document.getElementById('admin-form');
-        const isHidden = adminForm.classList.contains('hidden');
+// Validación del formulario de equipo
+document.getElementById('team-form').addEventListener('submit', function(e) {
+    let miembrosCompletos = 0;
+    let errores = [];
+    
+    for (let i = 1; i <= 4; i++) {
+        const nombre = document.querySelector(`input[name="nombre_${i}"]`).value.trim();
+        const cedula = document.querySelector(`input[name="cedula_${i}"]`).value.trim();
         
-        if (isHidden) {
-            adminForm.classList.remove('hidden');
-            this.textContent = 'Ocultar Panel Administrativo';
-            this.classList.remove('btn-outline-warning');
-            this.classList.add('btn-warning');
-        } else {
-            adminForm.classList.add('hidden');
-            this.textContent = '¿Eres Administrador?';
-            this.classList.remove('btn-warning');
-            this.classList.add('btn-outline-warning');
+        if (nombre !== '' && cedula !== '') {
+            miembrosCompletos++;
+        } else if (nombre !== '' && cedula === '') {
+            errores.push(`El miembro ${i} tiene nombre pero falta la cédula.`);
+        } else if (nombre === '' && cedula !== '') {
+            errores.push(`El miembro ${i} tiene cédula pero falta el nombre.`);
         }
-    });
+    }
+    
+    if (errores.length > 0) {
+        e.preventDefault();
+        showModal('warning', errores.join('\n'));
+        return;
+    }
+    
+    if (miembrosCompletos < 3) {
+        e.preventDefault();
+        showModal('warning', 'Debes registrar al menos 3 miembros completos para el equipo.');
+        return;
+    }
+});
 
-    // Validación del formulario administrativo
-    document.getElementById('admin-form').addEventListener('submit', function(e) {
-        const codigo = document.getElementById('codigo_admin').value.trim();
-        if (codigo === '') {
-            alert('Por favor ingresa el código de administrador.');
-            e.preventDefault();
-        }
-    });
-    </script>
+// Toggle del formulario administrativo
+document.getElementById('toggle-admin-btn').addEventListener('click', function() {
+    const adminForm = document.getElementById('admin-form');
+    const isHidden = adminForm.classList.contains('hidden');
+    
+    if (isHidden) {
+        adminForm.classList.remove('hidden');
+        this.textContent = 'Ocultar Panel Administrativo';
+        this.classList.remove('btn-outline-warning');
+        this.classList.add('btn-warning');
+    } else {
+        adminForm.classList.add('hidden');
+        this.textContent = '¿Eres Administrador?';
+        this.classList.remove('btn-warning');
+        this.classList.add('btn-outline-warning');
+    }
+});
+
+// Validación del formulario administrativo
+document.getElementById('admin-form').addEventListener('submit', function(e) {
+    const codigo = document.getElementById('codigo_admin').value.trim();
+    if (codigo === '') {
+        e.preventDefault();
+        showModal('warning', 'Por favor ingresa el código de administrador.');
+    }
+});
+
+// Mostrar modales automáticamente si hay errores del servidor
+document.addEventListener('DOMContentLoaded', function() {
+    <?php if (!empty($form_errors)): ?>
+        showModal('error', '<?php echo implode("\\n", $form_errors); ?>');
+    <?php endif; ?>
+    
+    <?php if (!empty($access_errors)): ?>
+        showModal('error', '<?php echo implode("\\n", $access_errors); ?>');
+    <?php endif; ?>
+    
+    <?php if (!empty($admin_errors)): ?>
+        showModal('error', '<?php echo implode("\\n", $admin_errors); ?>');
+    <?php endif; ?>
+});
+</script>
+
+
+
+
     </body>
     </html>
     <?php
