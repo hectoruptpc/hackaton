@@ -223,24 +223,66 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
         }
 
         .equipo-completo {
-            border: 2px solid #28a745 !important;
-            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%) !important;
-            animation: pulse 2s infinite;
-            position: relative;
-        }
+    border: 2px solid #28a745 !important;
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%) !important;
+    animation: pulse-completo 2s infinite;
+    position: relative;
+    /* NUEVAS PROPIEDADES PARA EVITAR CORTE */
+    overflow: visible !important;
+    z-index: 10;
+    margin: 2px 0;
+    box-shadow: 0 0 20px rgba(40, 167, 69, 0.3);
+    transform-origin: center;
+}
 
-        .equipo-completo::after {
-            content: "✅ COMPLETO";
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 0.8rem;
-            background: #28a745;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
-        }
+.equipo-completo::after {
+    content: "✅ COMPLETO";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8rem;
+    background: #28a745;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    z-index: 11;
+    /* Asegurar que el badge no se corte */
+    white-space: nowrap;
+}
+
+/* ANIMACIÓN MEJORADA QUE NO SE CORTA */
+@keyframes pulse-completo {
+    0%, 100% { 
+        transform: scale(1);
+        box-shadow: 0 0 10px rgba(40, 167, 69, 0.3);
+    }
+    50% { 
+        transform: scale(1.02);
+        box-shadow: 0 0 25px rgba(40, 167, 69, 0.6);
+    }
+}
+
+/* Asegurar que la tabla permita el overflow */
+.table-responsive {
+    overflow: visible !important;
+}
+
+.table {
+    overflow: visible !important;
+}
+
+/* Asegurar que las filas tengan espacio para la animación */
+.table tbody tr {
+    position: relative;
+    overflow: visible !important;
+}
+
+/* Contenedor de la tabla con espacio para animaciones */
+.table-container {
+    overflow: visible !important;
+    position: relative;
+}
 
         /* Podio items */
         .podio-item {
