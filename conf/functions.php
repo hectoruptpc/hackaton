@@ -772,4 +772,29 @@ function obtenerEstadoHackathon() {
     ];
 }
 
+
+
+/**
+ * Obtener desafíos completados por un equipo
+ */
+function obtenerDesafiosCompletados($equipo_id) {
+    global $db;
+    $stmt = $db->prepare("
+        SELECT desafio_id, completado_en 
+        FROM desafios_completados 
+        WHERE equipo_id = ?
+    ");
+    $stmt->execute([$equipo_id]);
+    $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $completados = [];
+    foreach ($resultados as $row) {
+        $completados[$row['desafio_id']] = true;
+    }
+    return $completados;
+}
+
+
+
+
 ?>

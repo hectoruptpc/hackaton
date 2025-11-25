@@ -17,6 +17,9 @@ if (isset($_SESSION['cedula'])) {
     $hackathon_activo = hackathonEstaActivo();
     $info_equipo = obtenerTiempoInicioEquipo($_SESSION['equipo_id']);
     
+    // Obtener desafíos completados por el equipo
+    $desafiosCompletados = obtenerDesafiosCompletados($_SESSION['equipo_id']);
+    
     // Calcular tiempo transcurrido específico del equipo
     if ($hackathon_activo && $info_equipo['tiempo_inicio']) {
         $segundos_transcurridos = calcularTiempoTranscurrido($info_equipo['tiempo_inicio']);
@@ -693,7 +696,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 <!-- Desafío 1: Aplicación Web CTF -->
                 <div class="col-md-4 mb-4">
-                    <div class="card card-challenge shadow" id="challenge-ctf">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['ctf']) ? 'completed-challenge' : ''; ?>" id="challenge-ctf">
                         <div class="card-body">
                             <h5 class="card-title text-primary">1. Aplicación Web CTF</h5>
                             <h6 class="card-subtitle mb-2 text-muted">Web Hacking (1 🚩)</h6>
@@ -701,8 +704,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             
                             <a href="challenge_ctf.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
-                                <input type="text" class="form-control" id="flag-ctf" placeholder="Ingresa la bandera">
-                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="ctf">Verificar</button>
+                                <input type="text" class="form-control" id="flag-ctf" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['ctf']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="ctf"
+                                    <?php echo isset($desafiosCompletados['ctf']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['ctf']) ? 'Completado' : 'Verificar'; ?>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -710,7 +717,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 <!-- Desafío 2: Ingeniería Inversa -->
                 <div class="col-md-4 mb-4">
-                    <div class="card card-challenge shadow" id="challenge-re">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['re']) ? 'completed-challenge' : ''; ?>" id="challenge-re">
                         <div class="card-body">
                             <h5 class="card-title text-primary">2. Ingeniería Inversa</h5>
                             <h6 class="card-subtitle mb-2 text-muted">Análisis de Binarios (1 🚩)</h6>
@@ -718,8 +725,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             <p class="fw-bold">Archivo: <a href="reverse_challenge.zip">reverse_challenge.zip</a></p>
                             
                             <div class="mt-3">
-                                <input type="text" class="form-control" id="flag-re" placeholder="Ingresa la bandera">
-                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="re">Verificar</button>
+                                <input type="text" class="form-control" id="flag-re" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['re']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="re"
+                                    <?php echo isset($desafiosCompletados['re']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['re']) ? 'Completado' : 'Verificar'; ?>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -727,7 +738,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 <!-- Desafío 3: Criptografía -->
                 <div class="col-md-4 mb-4">
-                    <div class="card card-challenge shadow" id="challenge-crypto">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['crypto']) ? 'completed-challenge' : ''; ?>" id="challenge-crypto">
                         <div class="card-body">
                             <h5 class="card-title text-primary">3. Criptografía</h5>
                             <h6 class="card-subtitle mb-2 text-muted">Descifrado de Mensajes (1 🚩)</h6>
@@ -735,8 +746,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             <p class="fw-bold">Cifrado: RkxBR3tFTF9ERVNFTkNSSVBUQURPUl9NQVNURVJ9</p>
                             
                             <div class="mt-3">
-                                <input type="text" class="form-control" id="flag-crypto" placeholder="Ingresa la bandera">
-                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="crypto">Verificar</button>
+                                <input type="text" class="form-control" id="flag-crypto" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['crypto']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="crypto"
+                                    <?php echo isset($desafiosCompletados['crypto']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['crypto']) ? 'Completado' : 'Verificar'; ?>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -744,7 +759,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 <!-- Desafío 4: Puzzle de URL -->
                 <div class="col-md-4 mb-4">
-                    <div class="card card-challenge shadow" id="challenge-url">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['url']) ? 'completed-challenge' : ''; ?>" id="challenge-url">
                         <div class="card-body">
                             <h5 class="card-title text-primary">4. Puzzle de Redireccion</h5>
                             <h6 class="card-subtitle mb-2 text-muted">Parámetros Ocultos (1 🚩)</h6>
@@ -752,8 +767,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             
                             <a href="nivel4.php" class="btn btn-primary">Iniciar Desafío</a>
                             <div class="mt-3">
-                                <input type="text" class="form-control" id="flag-url" placeholder="Ingresa la bandera">
-                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="url">Verificar</button>
+                                <input type="text" class="form-control" id="flag-url" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['url']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="url"
+                                    <?php echo isset($desafiosCompletados['url']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['url']) ? 'Completado' : 'Verificar'; ?>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -761,7 +780,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 <!-- Desafío 5: Metadatos de Imagen -->
                 <div class="col-md-4 mb-4">
-                    <div class="card card-challenge shadow" id="challenge-meta">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['meta']) ? 'completed-challenge' : ''; ?>" id="challenge-meta">
                         <div class="card-body">
                             <h5 class="card-title text-primary">5. Análisis Forense</h5>
                             <h6 class="card-subtitle mb-2 text-muted">Metadatos EXIF (1 🚩)</h6>
@@ -769,8 +788,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             <p class="fw-bold">Imagen: <a href="mystery_image.jpeg" download>mystery_image.jpeg</a></p>
                             
                             <div class="mt-3">
-                                <input type="text" class="form-control" id="flag-meta" placeholder="Ingresa la bandera">
-                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="meta">Verificar</button>
+                                <input type="text" class="form-control" id="flag-meta" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['meta']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="meta"
+                                    <?php echo isset($desafiosCompletados['meta']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['meta']) ? 'Completado' : 'Verificar'; ?>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -778,7 +801,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 <!-- Desafío 6: Promoción Sospechosa -->
                 <div class="col-md-4 mb-4">
-                    <div class="card card-challenge shadow" id="challenge-promo">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['promo']) ? 'completed-challenge' : ''; ?>" id="challenge-promo">
                         <div class="card-body">
                             <h5 class="card-title text-primary">6. Promoción Sospechosa</h5>
                             <h6 class="card-subtitle mb-2 text-muted">Reconocimiento de Patrones (1 🚩)</h6>
@@ -786,8 +809,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             <p class="fw-bold">Imagen: <a href="promocion_sospechosa.jpg" download>promocion_sospechosa.jpg</a></p>
                             
                             <div class="mt-3">
-                                <input type="text" class="form-control" id="flag-promo" placeholder="Ingresa la bandera">
-                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="promo">Verificar</button>
+                                <input type="text" class="form-control" id="flag-promo" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['promo']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="promo"
+                                    <?php echo isset($desafiosCompletados['promo']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['promo']) ? 'Completado' : 'Verificar'; ?>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -859,8 +886,10 @@ const tiempoRestanteGlobal = <?php echo $tiempo_restante_global; ?>;
 let globalTimeLeft = tiempoRestanteGlobal;
 let currentScore = <?php echo $_SESSION['puntuacion_equipo']; ?>;
 let timers = {};
-let completedChallenges = {};
-let totalChallenges = 6; // Actualizado a 6 desafíos
+
+// Inicializar desafíos completados desde PHP
+let completedChallenges = <?php echo json_encode($desafiosCompletados); ?>;
+let totalChallenges = 6;
 
 // Elementos de audio
 const successSound = document.getElementById('successSound');
@@ -871,7 +900,7 @@ const resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
 
 // Calcular tiempo por desafío basado en el tiempo global restante
 const challengeDurations = {};
-const desafios = ['ctf', 're', 'crypto', 'url', 'meta', 'promo']; // Agregado 'promo'
+const desafios = ['ctf', 're', 'crypto', 'url', 'meta', 'promo'];
 desafios.forEach(desafio => {
     const tiempoDesafio = Math.min(15 * 60, globalTimeLeft);
     challengeDurations[desafio] = tiempoDesafio;
@@ -1124,6 +1153,11 @@ function showResultModal(title, message, type, playErrorSound) {
 }
 
 function handleCorrectFlag(challenge, puntos) {
+    // Si ya estaba completado, no hacer nada
+    if (completedChallenges[challenge]) {
+        return;
+    }
+    
     // Primero actualizar la interfaz inmediatamente
     currentScore += puntos;
     document.getElementById('score').textContent = `${currentScore} Puntos`;
