@@ -67,7 +67,7 @@ Credenciales válidas:
 <div class="container">
 <div class="login-container">
 <h2 class="text-center mb-4 text-primary">Sistema de Acceso de Empleados</h2>
-<p class="text-center"><em>Hemos tenido problemas de seguridad. ¿Puedes ingresar sin credenciales válidas?</em></p>
+<p class="text-center"><em>Hemos tenido problemas de seguridad. ¿Puedes encontrar las credenciales válidas?</em></p>
 
 <form action="challenge_ctf.php" method="POST">
 <div class="mb-3">
