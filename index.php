@@ -703,19 +703,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 <!-- Desafío 1: Login Inseguro -->
                 <div class="col-md-4 mb-4">
-                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['sql_injection']) ? 'completed-challenge' : ''; ?>" id="challenge-sql_injection">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['login_inseguro']) ? 'completed-challenge' : ''; ?>" id="challenge-login_inseguro">
                         <div class="card-body">
                             <h5 class="card-title text-primary">1. Login Inseguro</h5>
                             <h6 class="card-subtitle mb-2 text-muted">Login (1 🚩)</h6>
                             <p class="card-text">podras conseguir las credenciales de este codigo?.</p>
                             
-                            <a href="challenge_sql_injection.php" class="btn btn-primary">Acceder al Desafío</a>
+                            <a href="login_inseguro.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
-                                <input type="text" class="form-control" id="flag-sql_injection" placeholder="Ingresa la bandera" 
-                                    <?php echo isset($desafiosCompletados['sql_injection']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
-                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="sql_injection"
-                                    <?php echo isset($desafiosCompletados['sql_injection']) ? 'disabled' : ''; ?>>
-                                    <?php echo isset($desafiosCompletados['sql_injection']) ? 'Completado' : 'Verificar'; ?>
+                                <input type="text" class="form-control" id="flag-login_inseguro" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['login_inseguro']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="login_inseguro"
+                                    <?php echo isset($desafiosCompletados['login_inseguro']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['login_inseguro']) ? 'Completado' : 'Verificar'; ?>
                                 </button>
                             </div>
                         </div>

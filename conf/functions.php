@@ -245,8 +245,8 @@ function verificarBandera($bandera_usuario, $bandera_correcta) {
  */
 function obtenerConfiguracionDesafios() {
     return [
-        'ctf' => [
-            'flag' => 'FLAG{SQL_INYECCION_EXITOSA}',
+        'login_inseguro' => [
+            'flag' => 'FLAG{PIENSA_COMO_PROGRAMADOR}',
             'puntos' => 1,
             'tiempo' => 15 * 60
         ],
