@@ -2,6 +2,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 session_start();
+header('X-Secret-Flag: FLAG{http_header_secret}');
 require_once __DIR__ . '/conf/functions.php';
 
 // 1. Si ya está en sesión, calcula el tiempo y muestra dashboard
@@ -193,6 +194,7 @@ if (isset($_SESSION['cedula'])) {
     </head>
     <body>
     <div class="container mt-4">
+        <!-- FLAG{source_code_secret} -->
         <div class="text-center mb-3">
             <img src="img/img.jpg" alt="Logo Hackathon" style="max-width:800px;">
             <h1>Hackathon UPTPC 2026 - Segundo Evento</h1>
@@ -297,6 +299,10 @@ if (isset($_SESSION['cedula'])) {
                                 <input type="text" class="form-control form-control-lg" id="cedula_acceso" name="cedula_acceso" 
                                        required pattern="\d+" maxlength="20" placeholder="Ingresa tu cédula">
                                 <div class="form-text">Solo números, sin puntos ni espacios</div>
+                            </div>
+                            
+                            <div class="text-center mb-3">
+                                <small class="text-muted" onclick="alert('FLAG{login_clickable_secret}')" style="cursor: default;">¿Olvidaste tu contraseña?</small>
                             </div>
                             
                             <div id="access-alert-container" class="mb-3"></div>
@@ -592,6 +598,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </head>
 <body>
 <div class="container mt-4">
+    <!-- FLAG{html_comment_easy} -->
     <!-- Header con información del usuario y equipo -->
     <div class="alert alert-success mb-4">
         <div class="row align-items-center">
@@ -694,13 +701,13 @@ document.addEventListener('DOMContentLoaded', function() {
             <h2 class="mb-4 text-center">🎯 Desafíos Disponibles - Hackathon 2026</h2>
             <div class="row">
 
-                <!-- Desafío 1: SQL Injection -->
+                <!-- Desafío 1: Login Inseguro -->
                 <div class="col-md-4 mb-4">
                     <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['sql_injection']) ? 'completed-challenge' : ''; ?>" id="challenge-sql_injection">
                         <div class="card-body">
-                            <h5 class="card-title text-primary">1. SQL Injection</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Inyección SQL (1 🚩)</h6>
-                            <p class="card-text">Este formulario de login es vulnerable a inyección SQL. Encuentra la manera de acceder sin credenciales válidas.</p>
+                            <h5 class="card-title text-primary">1. Login Inseguro</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Login (1 🚩)</h6>
+                            <p class="card-text">podras conseguir las credenciales de este codigo?.</p>
                             
                             <a href="challenge_sql_injection.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
@@ -715,13 +722,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
 
-                <!-- Desafío 2: XSS Reflejado -->
+                <!-- Desafío 2: Criptografia -->
                 <div class="col-md-4 mb-4">
                     <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['xss_reflected']) ? 'completed-challenge' : ''; ?>" id="challenge-xss_reflected">
                         <div class="card-body">
-                            <h5 class="card-title text-primary">2. XSS Reflejado</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Cross-Site Scripting (1 🚩)</h6>
-                            <p class="card-text">Este campo de búsqueda refleja la entrada del usuario sin filtrar. Inyecta código JavaScript para ejecutar una alerta.</p>
+                            <h5 class="card-title text-primary">2. Criptografía</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Traversal de Directorios (2 🚩)</h6>
+                            <p class="card-text">Descubre el mensaje encriptado para conseguir la bandera.</p>
                             
                             <a href="challenge_xss_reflected.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
@@ -736,34 +743,34 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
 
-                <!-- Desafío 3: Directory Traversal -->
+                <!-- Desafío 3: Buffer Overflow-->
                 <div class="col-md-4 mb-4">
                     <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['directory_traversal']) ? 'completed-challenge' : ''; ?>" id="challenge-directory_traversal">
                         <div class="card-body">
-                            <h5 class="card-title text-primary">3. Directory Traversal</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Path Traversal (1 🚩)</h6>
-                            <p class="card-text">Esta página permite leer archivos del servidor. Usa secuencias de directorio para acceder a archivos sensibles como /etc/passwd.</p>
+                            <h5 class="card-title text-primary">3. Buffer Overflow</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Desbordamiento de Búfer (3 🚩)</h6>
+                            <p class="card-text">Descubre como romper el sistema para conseguir la bandera.</p>
                             
-                            <a href="challenge_directory_traversal.php" class="btn btn-primary">Acceder al Desafío</a>
+                            <a href="challenge_buffer_overflow.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
-                                <input type="text" class="form-control" id="flag-directory_traversal" placeholder="Ingresa la bandera" 
-                                    <?php echo isset($desafiosCompletados['directory_traversal']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
-                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="directory_traversal"
-                                    <?php echo isset($desafiosCompletados['directory_traversal']) ? 'disabled' : ''; ?>>
-                                    <?php echo isset($desafiosCompletados['directory_traversal']) ? 'Completado' : 'Verificar'; ?>
+                                <input type="text" class="form-control" id="flag-buffer_overflow" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['buffer_overflow']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="buffer_overflow"
+                                    <?php echo isset($desafiosCompletados['buffer_overflow']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['buffer_overflow']) ? 'Completado' : 'Verificar'; ?>
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Desafío 4: Command Injection -->
+                <!-- Desafío 4: Análisis de URL -->
                 <div class="col-md-4 mb-4">
                     <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['command_injection']) ? 'completed-challenge' : ''; ?>" id="challenge-command_injection">
                         <div class="card-body">
-                            <h5 class="card-title text-primary">4. Command Injection</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Inyección de Comandos (1 🚩)</h6>
-                            <p class="card-text">Esta aplicación ejecuta comandos del sistema. Encuentra la manera de inyectar comandos adicionales para leer archivos sensibles.</p>
+                            <h5 class="card-title text-primary">4. Análisis de URL</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Análisis de Red (3 🚩)</h6>
+                            <p class="card-text">Pasa de url en url hasta descubrir la vulnerabilidad.</p>
                             
                             <a href="challenge_command_injection.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
@@ -778,13 +785,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
 
-                <!-- Desafío 5: File Upload Vulnerability -->
+                <!-- Desafío 5: API Vulnerable -->
                 <div class="col-md-4 mb-4">
                     <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['file_upload']) ? 'completed-challenge' : ''; ?>" id="challenge-file_upload">
                         <div class="card-body">
-                            <h5 class="card-title text-primary">5. File Upload Bypass</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Subida de Archivos (1 🚩)</h6>
-                            <p class="card-text">Este formulario de subida filtra archivos por extensión. Encuentra la manera de subir un archivo PHP malicioso que se ejecute.</p>
+                            <h5 class="card-title text-primary">5. API REST Vulnerable</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">API Hacking (3 🚩)</h6>
+                            <p class="card-text">¡WAOS! Esta API no valida tokens correctamente. Usa herramientas como Postman o curl para acceder a endpoints sin autenticación.</p>
                             
                             <a href="challenge_file_upload.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
@@ -799,13 +806,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
 
-                <!-- Desafío 6: Broken Authentication -->
+                <!-- Desafío 6: Esteganografía -->
                 <div class="col-md-4 mb-4">
                     <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['broken_auth']) ? 'completed-challenge' : ''; ?>" id="challenge-broken_auth">
                         <div class="card-body">
-                            <h5 class="card-title text-primary">6. Broken Authentication</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Autenticación Débil (1 🚩)</h6>
-                            <p class="card-text">El sistema de login tiene fallos de autenticación. Encuentra la manera de acceder a cuentas de otros usuarios.</p>
+                            <h5 class="card-title text-primary">6. Esteganografía</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Ocultación de Datos (3 🚩)</h6>
+                            <p class="card-text">que se oculta detras de lo que ven tus ojos?</p>
                             
                             <a href="challenge_broken_auth.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
@@ -820,15 +827,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
 
-                <!-- Desafío 7: IDOR -->
+                <!-- Desafío 7: Login Clickable -->
                 <div class="col-md-4 mb-4">
                     <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['idor']) ? 'completed-challenge' : ''; ?>" id="challenge-idor">
                         <div class="card-body">
-                            <h5 class="card-title text-primary">7. IDOR</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Insecure Direct Object References (1 🚩)</h6>
-                            <p class="card-text">Esta aplicación permite acceder a recursos de otros usuarios cambiando parámetros en la URL. Encuentra información privada de otros usuarios.</p>
+                            <h5 class="card-title text-primary">7. Login Clickable</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Elemento Oculto (1 🚩)</h6>
+                            <p class="card-text">UPS! se me a ido una vulnerabilidad en el index.php tendras la astucia de encontrarlo?.</p>
                             
-                            <a href="challenge_idor.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
                                 <input type="text" class="form-control" id="flag-idor" placeholder="Ingresa la bandera" 
                                     <?php echo isset($desafiosCompletados['idor']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
@@ -841,13 +847,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
 
-                <!-- Desafío 8: CSRF -->
+                <!-- Desafío 8: XXE -->
                 <div class="col-md-4 mb-4">
                     <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['csrf']) ? 'completed-challenge' : ''; ?>" id="challenge-csrf">
                         <div class="card-body">
-                            <h5 class="card-title text-primary">8. CSRF</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Cross-Site Request Forgery (1 🚩)</h6>
-                            <p class="card-text">Esta aplicación es vulnerable a CSRF. Crea una página HTML maliciosa que cambie la contraseña del usuario sin su consentimiento.</p>
+                            <h5 class="card-title text-primary">8. XXE</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">XML External Entity (3 🚩)</h6>
+                            <p class="card-text">Esta aplicación procesa XML sin validar. Inyecta entidades externas para leer archivos del servidor como /etc/passwd usando &xxe;.</p>
                             
                             <a href="challenge_csrf.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
@@ -862,13 +868,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
 
-                <!-- Desafío 9: XXE -->
+                <!-- Desafío 9: Session Hijacking -->
                 <div class="col-md-4 mb-4">
                     <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['xxe']) ? 'completed-challenge' : ''; ?>" id="challenge-xxe">
                         <div class="card-body">
-                            <h5 class="card-title text-primary">9. XXE</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">XML External Entity (1 🚩)</h6>
-                            <p class="card-text">Esta aplicación procesa XML sin validar. Inyecta entidades externas para leer archivos del servidor como /etc/passwd.</p>
+                            <h5 class="card-title text-primary">9. Session Hijacking</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Análisis de Cookies (4 🚩)</h6>
+                            <p class="card-text">¡Increíble! Las sesiones se transmiten sin HTTPS. Usa herramientas de red para capturar y reutilizar cookies de sesión.</p>
                             
                             <a href="challenge_xxe.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
@@ -883,15 +889,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
 
-                <!-- Desafío 10: Race Condition -->
+                <!-- Desafío 10: Cookie Manipulation -->
                 <div class="col-md-4 mb-4">
                     <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['race_condition']) ? 'completed-challenge' : ''; ?>" id="challenge-race_condition">
                         <div class="card-body">
-                            <h5 class="card-title text-primary">10. Race Condition</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Condición de Carrera (1 🚩)</h6>
-                            <p class="card-text">Esta aplicación tiene una condición de carrera en el sistema de transferencias. Encuentra la manera de obtener más puntos de los que tienes.</p>
+                            <h5 class="card-title text-primary">10. Cookie Manipulation</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Manipulación de Cookies (3 🚩)</h6>
+                            <p class="card-text">¡Piensa en el lado cliente! Las aplicaciones almacenan información en cookies. Usa las herramientas del navegador para modificar cookies y escalar privilegios.</p>
                             
-                            <a href="challenge_race_condition.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
                                 <input type="text" class="form-control" id="flag-race_condition" placeholder="Ingresa la bandera" 
                                     <?php echo isset($desafiosCompletados['race_condition']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
@@ -948,7 +953,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <i class="fas fa-trophy fa-4x text-warning mb-3"></i>
                     <h3>¡HAS COMPLETADO TODOS LOS DESAFÍOS DEL HACKATHON 2026!</h3>
                 </div>
-                <p class="lead">El equipo <strong><?php echo htmlspecialchars($_SESSION['nombre_equipo']); ?></strong> ha resuelto exitosamente los 10 desafíos de hacking ético del Hackathon 2026.</p>
+                <p class="lead">El equipo <strong><?php echo htmlspecialchars($_SESSION['nombre_equipo']); ?></strong> ha resuelto exitosamente los 10 desafíos variados de hacking ético del Hackathon 2026.</p>
                 <div class="alert alert-info">
                     <h5>Puntuación Final: <span id="final-score" class="text-success"><?php echo $_SESSION['puntuacion_equipo']; ?></span> puntos</h5>
                     
