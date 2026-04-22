@@ -250,29 +250,49 @@ function obtenerConfiguracionDesafios() {
             'puntos' => 1,
             'tiempo' => 15 * 60
         ],
-        're' => [
-            'flag' => 'FLAG{REVERSE_IS_FUN}',
+        'xss_reflected' => [
+            'flag' => 'FLAG{CRYPTO_MASTER}',
+            'puntos' => 2,
+            'tiempo' => 15 * 60
+        ],
+        'buffer_overflow' => [
+            'flag' => 'FLAG{BUFFER_OVERFLOW_EXPLOIT}',
+            'puntos' => 3,
+            'tiempo' => 15 * 60
+        ],
+        'command_injection' => [
+            'flag' => 'FLAG{URL_ANALYSIS_MASTER}',
+            'puntos' => 3,
+            'tiempo' => 15 * 60
+        ],
+        'file_upload' => [
+            'flag' => 'FLAG{API_HACKED}',
+            'puntos' => 3,
+            'tiempo' => 15 * 60
+        ],
+        'broken_auth' => [
+            'flag' => 'FLAG{STEGANOGRAPHY_SECRET}',
+            'puntos' => 3,
+            'tiempo' => 15 * 60
+        ],
+        'idor' => [
+            'flag' => 'FLAG{login_clickable_secret}',
             'puntos' => 1,
             'tiempo' => 15 * 60
         ],
-        'crypto' => [
-            'flag' => 'FLAG{EL_DESENCRIPTADOR_MASTER}',
-            'puntos' => 1,
+        'csrf' => [
+            'flag' => 'FLAG{XXE_MASTER}',
+            'puntos' => 3,
             'tiempo' => 15 * 60
         ],
-        'url' => [
-            'flag' => 'FLAG{URL_HACK}',
-            'puntos' => 1,
+        'xxe' => [
+            'flag' => 'FLAG{SESSION_HIJACKED}',
+            'puntos' => 4,
             'tiempo' => 15 * 60
         ],
-        'meta' => [
-            'flag' => 'FLAG{SOY_EINSTEIN_SIUUU}',
-            'puntos' => 1,
-            'tiempo' => 15 * 60
-        ],
-        'promo' => [
-            'flag' => 'FLAG{SALDO_INSUFICIENTE}',
-            'puntos' => 1,
+        'race_condition' => [
+            'flag' => 'FLAG{COOKIE_MANIPULATED}',
+            'puntos' => 3,
             'tiempo' => 15 * 60
         ]
     ];
