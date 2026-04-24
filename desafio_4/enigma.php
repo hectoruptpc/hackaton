@@ -12,7 +12,7 @@ session_start();
 </head>
 <body>
 <div class="acertijo">
-    <h2>🧩 El Acertijo del Silencio</h2>
+    <h2>🧩 El Acertijo</h2>
     <p>"Cuanto más tienes, menos se ve.<br>
     Cuanto menos tienes, más se aprecia.<br>
     ¿Qué es?"</p>
