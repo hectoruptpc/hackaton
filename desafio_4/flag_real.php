@@ -42,7 +42,7 @@ session_start();
 </head>
 <body>
 <div class="flag">
-    🏆 FLAG { 3l_c4m1n0_v3rd4d3r0_tuv0_qu3_p3ns4r } 🏆
+    🏆 FLAG{URL_ANALYSIS_MASTER} 🏆
 </div>
 <p>✅ ¡FELICIDADES! Has encontrado la ruta REAL.</p>
 <p>Los demás caminos eran señuelos para perder tiempo.</p>
