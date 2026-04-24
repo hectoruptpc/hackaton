@@ -3,22 +3,32 @@ session_start();
 ?>
 <!DOCTYPE html>
 <html>
-<head><title>💻 Shell remota</title>
-<style>body{background:#0a0f0f;color:#0f0;text-align:center;padding-top:80px;}</style>
+<head>
+    <title>🔐 Clave de Seguridad</title>
+    <style>
+        body{background:#0a0a1a;color:#aaf;text-align:center;padding-top:80px;font-family:monospace;}
+        .caja{background:#0a0f1a;display:inline-block;padding:40px;border-radius:15px;border:1px solid #55f;}
+        input,button{background:#0a0a1a;border:1px solid #55f;color:#aaf;padding:10px;margin-top:15px;}
+    </style>
 </head>
 <body>
-<h2>💻 SHELL REMOTA</h2>
-<p>Conexión establecida con 10.0.0.45<br>Escribe un comando:</p>
-<input type="text" id="cmd" placeholder="ls -la">
-<button onclick="validar()">$></button>
-<p id="msg"></p>
+<div class="caja">
+    <h2>🔐 CLAVE DE SEGURIDAD</h2>
+    <p>Ingresa la contraseña de administrador:</p>
+    <input type="text" id="clave" placeholder="contraseña">
+    <button onclick="validar()">🔓 VERIFICAR</button>
+    <p id="msg"></p>
+</div>
 <script>
     function validar() {
-        let c = document.getElementById("cmd").value.trim().toLowerCase();
-        if(c === "sudo su" || c === "su root") {
+        let c = document.getElementById("clave").value.trim().toLowerCase();
+        
+        // CUALQUIER contraseña que pongan es "correcta" (para avanzar en la trampa)
+        if(c.length > 0) {
             window.location.href = "ejecutando_comando.php";
-        } else {
-            document.getElementById("msg").innerHTML = "Comando no reconocido.";
+        }
+        else {
+            document.getElementById("msg").innerHTML = "❌ Ingresa algo.";
         }
     }
 </script>
