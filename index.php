@@ -814,7 +814,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <h6 class="card-subtitle mb-2 text-muted">Ocultación de Datos (1 🚩)</h6>
                             <p class="card-text">que se oculta detras de lo que ven tus ojos?</p>
                             
-                            <a href="challenge_broken_auth.php" class="btn btn-primary">Acceder al Desafío</a>
+                            <a href="estego_inicio.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
                                 <input type="text" class="form-control" id="flag-broken_auth" placeholder="Ingresa la bandera" 
                                     <?php echo isset($desafiosCompletados['broken_auth']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
