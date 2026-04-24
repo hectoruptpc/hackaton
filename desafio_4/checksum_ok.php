@@ -1,0 +1,26 @@
+<?php
+session_start();
+?>
+<!DOCTYPE html>
+<html>
+<head><title>✅ Checksum OK</title>
+<style>body{background:#1a2a1a;color:#9f9;text-align:center;padding-top:80px;}</style>
+</head>
+<body>
+<h2>✅ CHECKSUM VERIFICADO</h2>
+<p>Integridad de datos: 100%<br>Token de acceso: <strong>F3-8A-2C-99-D1</strong></p>
+<input type="text" id="token">
+<button onclick="validar()">🔐</button>
+<p id="msg"></p>
+<script>
+    function validar() {
+        let t = document.getElementById("token").value.trim().toUpperCase();
+        if(t === "F3-8A-2C-99-D1" || t === "F38A2C99D1") {
+            window.location.href = "particion_maestra.php";
+        } else {
+            document.getElementById("msg").innerHTML = "❌ Token inválido.";
+        }
+    }
+</script>
+</body>
+</html>

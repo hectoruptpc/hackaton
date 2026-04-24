@@ -772,7 +772,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <h6 class="card-subtitle mb-2 text-muted">Análisis de Red (1 🚩)</h6>
                             <p class="card-text">Pasa de url en url hasta descubrir la vulnerabilidad.</p>
                             
-                            <a href="challenge_command_injection.php" class="btn btn-primary">Acceder al Desafío</a>
+                            <a href="desafio_4/inicio.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
                                 <input type="text" class="form-control" id="flag-command_injection" placeholder="Ingresa la bandera" 
                                     <?php echo isset($desafiosCompletados['command_injection']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
