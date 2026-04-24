@@ -13,22 +13,22 @@ session_start();
 <body>
 <div class="oraculo">
     <h2>🔮 El Oráculo</h2>
-    <p><i>"Soy el principio del fin,<br>
-    y el fin del tiempo y el espacio.<br>
-    Soy el final de cada carrera,<br>
-    y siempre estoy al empezar."</i></p>
-    <p>¿Qué letra soy?</p>
-    <input type="text" id="letra" maxlength="1" style="width:50px;">
+    <p><i>"Qué es lo que es tuyo,<br>
+    pero otros lo usan más que tú?"</i></p>
+    <input type="text" id="respuesta" placeholder="tu respuesta">
     <button onclick="validar()">🔮</button>
     <p id="msg"></p>
 </div>
 <script>
     function validar() {
-        let l = document.getElementById("letra").value.trim().toLowerCase();
-        if(l === "z" || l === "omega") {
+        let r = document.getElementById("respuesta").value.trim().toLowerCase();
+        
+        // TRAMPA: respuestas comunes pero incorrectas
+        if(r === "dinero" || r === "mi casa" || r === "casa" || r === "mi coche" || r === "coche") {
             window.location.href = "shell_remota.php";
         }
-        else if(l === "e") {
+        // RESPUESTA CORRECTA
+        else if(r === "nombre" || r === "mi nombre") {
             window.location.href = "ultimo_nivel.php";
         }
         else {
