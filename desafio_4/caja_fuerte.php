@@ -5,7 +5,7 @@ session_start();
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>🗝️ La caja fuerte</title>
+    <title>🗝️ Caja Fuerte - Versión Espejo</title>
     <style>
         body {
             background: #0a1117;
@@ -21,30 +21,48 @@ session_start();
             border-radius: 20px;
             border: 3px solid #8a8a5a;
         }
+        .reloj {
+            margin-top: 20px;
+            font-size: 11px;
+            color: #4a6a6a;
+        }
     </style>
 </head>
 <body>
 <div class="safe">
-    <h2>🔒 CÓDIGO DE LA CAFUERTE</h2>
-    <p>"El año en que cayó el muro de Berlín."</p>
-    <p>Pista: Un número de 4 dígitos.</p>
-    <input type="text" id="codigo" placeholder="ej: 1991">
+    <h2>🔒 CAJA FUERTE-Versión Espejo</h2>
+    
+    <p>El año en que cayó el muro de Berlín.</p>
+    <p>🔢 Código: 4 dígitos</p>
+    <input type="text" id="codigo" placeholder="????">
     <button onclick="abrir()">🔓 ABRIR</button>
     <p id="mensaje"></p>
-    <div style="font-size:12px; margin-top:20px;">⚠️ Si pones 1995 irás a otro camino...</div>
+    <div class="reloj">
+        ⏰ Tienes 3 intentos.
+    </div>
 </div>
 
 <script>
+    let intentos = 0;
+    
     function abrir() {
         let code = document.getElementById("codigo").value;
-        if(code === "1995") {
+        
+        // TRAMPA: el año correcto escrito normal (1989)
+        if(code === "1989") {
             window.location.href = "puerto_seguro.php";
         }
-        else if(code === "1989") {
+        // RESPUESTA CORRECTA: el año al revés (9891)
+        else if(code === "9891") {
             window.location.href = "enigma.php";
         }
         else {
-            document.getElementById("mensaje").innerHTML = "❌ Código incorrecto.";
+            intentos++;
+            document.getElementById("mensaje").innerHTML = "❌ Código incorrecto. Intento " + intentos + "/3";
+            if(intentos >= 3) {
+                document.getElementById("mensaje").innerHTML = "🔒 Caja bloqueada. Reinicia el desafío.";
+                document.getElementById("codigo").disabled = true;
+            }
         }
     }
 </script>
