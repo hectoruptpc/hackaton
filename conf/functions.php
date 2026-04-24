@@ -250,29 +250,29 @@ function obtenerConfiguracionDesafios() {
             'puntos' => 1,
             'tiempo' => 15 * 60
         ],
-        'xss_reflected' => [
+        'crypto' => [
             'flag' => 'FLAG{CRYPTO_MASTER}',
-            'puntos' => 2,
+            'puntos' => 1,
             'tiempo' => 15 * 60
         ],
         'buffer_overflow' => [
             'flag' => 'FLAG{BUFFER_OVERFLOW_EXPLOIT}',
-            'puntos' => 3,
+            'puntos' => 1,
             'tiempo' => 15 * 60
         ],
         'command_injection' => [
             'flag' => 'FLAG{URL_ANALYSIS_MASTER}',
-            'puntos' => 3,
+            'puntos' => 1,
             'tiempo' => 15 * 60
         ],
         'file_upload' => [
             'flag' => 'FLAG{API_HACKED}',
-            'puntos' => 3,
+            'puntos' => 1,
             'tiempo' => 15 * 60
         ],
         'broken_auth' => [
             'flag' => 'FLAG{STEGANOGRAPHY_SECRET}',
-            'puntos' => 3,
+            'puntos' => 1,
             'tiempo' => 15 * 60
         ],
         'idor' => [
@@ -282,17 +282,17 @@ function obtenerConfiguracionDesafios() {
         ],
         'csrf' => [
             'flag' => 'FLAG{XXE_MASTER}',
-            'puntos' => 3,
+            'puntos' => 1,
             'tiempo' => 15 * 60
         ],
         'xxe' => [
             'flag' => 'FLAG{SESSION_HIJACKED}',
-            'puntos' => 4,
+            'puntos' => 1,
             'tiempo' => 15 * 60
         ],
         'race_condition' => [
             'flag' => 'FLAG{COOKIE_MANIPULATED}',
-            'puntos' => 3,
+            'puntos' => 1,
             'tiempo' => 15 * 60
         ]
     ];
