@@ -42,28 +42,37 @@ session_start();
             font-size: 11px;
             color: #6a5a5a;
         }
+        .pista {
+            font-size: 11px;
+            color: #4a6a6a;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
 <div class="enigama">
     <h2>🔐 Nivel 1: El mensaje oculto</h2>
     <p>Has encontrado un pergamino con esto escrito:</p>
-    <div class="cifrado">23 5 18 4 15</div>
+    <div class="cifrado">15 4 14 21 13</div>
     <p>A=1, B=2, C=3... ¿Qué palabra es?</p>
     <input type="text" id="respuesta" placeholder="palabra en minúsculas">
     <button onclick="comprobar()">🔓 DESCIFRAR</button>
     <p id="error" style="color:#f66;"></p>
-    <div class="advertencia">
-        ⚠️ Si escribes "weirdo" irás a otro camino...
+    
+    <div class="pista">
+        💡 Pista: A veces lo que ves no es lo que parece...
     </div>
 </div>
 
 <script>
     function comprobar() {
         let val = document.getElementById("respuesta").value.trim().toLowerCase();
-        if(val === "weirdo") {
+        
+        // TRAMPA: la traducción directa
+        if(val === "odnum") {
             window.location.href = "acceso_concedido.php";
         } 
+        // RESPUESTA CORRECTA: la palabra al revés
         else if(val === "mundo") {
             window.location.href = "caja_fuerte.php";
         } 
