@@ -125,6 +125,15 @@ session_start();
             resize: vertical;
         }
 
+        .info-panel input {
+            width: 100%;
+            background: #000;
+            border: 1px solid #333;
+            color: #0f0;
+            padding: 10px;
+            font-family: monospace;
+        }
+
         .btn-verificar {
             background: linear-gradient(95deg, #2a0000, #4a0000);
             border: 1px solid #8b0000;
@@ -141,6 +150,25 @@ session_start();
             background: linear-gradient(95deg, #4a0000, #6a0000);
             box-shadow: 0 0 15px #8b0000;
             letter-spacing: 2px;
+        }
+
+        .btn-volver {
+            background: linear-gradient(95deg, #1a1a2a, #2a2a3a);
+            border: 1px solid #555;
+            color: #aaa;
+            padding: 12px 30px;
+            font-family: monospace;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .btn-volver:hover {
+            background: linear-gradient(95deg, #2a2a3a, #3a3a4a);
+            color: #fff;
+            border-color: #777;
         }
 
         .resultado {
@@ -216,10 +244,14 @@ session_start();
 
         <div class="info-panel">
             <label>🔓 INGRESA EL MENSAJE DESCIFRADO:</label>
-            <input type="text" id="mensaje" placeholder="Escribe aquí lo que encontraste..." style="width:100%; background:#000; border:1px solid #333; color:#0f0; padding:10px;">
+            <input type="text" id="mensaje" placeholder="Escribe aquí lo que encontraste...">
         </div>
 
         <button class="btn-verificar" onclick="verificarMensaje()">🔎 VERIFICAR Y REPORTAR</button>
+        
+        <!-- BOTÓN PARA VOLVER ATRÁS -->
+        <button class="btn-volver" onclick="window.location.href='index.php'">← VOLVER AL HACKATHON</button>
+        
         <div id="resultado"></div>
 
         
@@ -240,21 +272,19 @@ session_start();
         
         if (mensaje === correcto || mensaje === correcto2 || mensaje === "el ataque será al amanecer") {
             resultadoDiv.innerHTML = `
-                <div style="background:#0a2a0a; border:1px solid #0f0; border-radius:5px; padding:15px; margin-top:15px;">
+                <div class="resultado exito">
                     🎉 <strong>ACCESO CONCEDIDO</strong> 🎉<br><br>
-                    <span style="color:#ff0;">🏆 FLAG{LSB_STEGANOGRAPHY_MASTER} 🏆</span><br><br>
+                    <span style="color:#ff0;">🏆 FLAG{STEGANOGRAPHY_SECRET} 🏆</span><br><br>
                     Has completado la misión. Reporta este código a tu superior.
                 </div>
             `;
-            resultadoDiv.style.display = "block";
         } else {
             resultadoDiv.innerHTML = `
-                <div style="background:#2a0a0a; border:1px solid #f00; border-radius:5px; padding:15px; margin-top:15px;">
+                <div class="resultado error">
                     ❌ <strong>ACCESO DENEGADO</strong> ❌<br><br>
                     Mensaje incorrecto. Revisa la imagen con herramientas de esteganografía.
                 </div>
             `;
-            resultadoDiv.style.display = "block";
         }
     }
 </script>
