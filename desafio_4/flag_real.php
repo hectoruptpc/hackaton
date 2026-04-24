@@ -51,9 +51,9 @@ session_start();
 <div class="solutions">
     <strong>📋 RESPUESTAS CORRECTAS (para ti, organizador):</strong><br>
     Nivel 1: mundo<br>
-    Nivel 2: 1989<br>
+    Nivel 2: 9891<br>
     Nivel 3: silencio<br>
-    Nivel 4: e<br>
+    Nivel 4: nombre<br>
     Nivel 5: caso / caso404
 </div>
 <div style="text-align:center;margin:20px 0;"><a href="../index.php" style="background:#4a5568;color:#fff;padding:10px 20px;text-decoration:none;border-radius:5px;">⬅ Volver al Inicio</a></div>
