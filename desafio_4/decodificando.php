@@ -8,7 +8,7 @@ session_start();
 </head>
 <body>
 <h2>📟 DECODIFICANDO BASE64</h2>
-<p>Texto codificado: <strong>ZmxhZ19mYWxzYV9jb250cmFzZW5h</strong></p>
+<p>Texto codificado: <strong>Y2FzaSBsbyBsb2dyYXM=</strong></p>
 <p>Decodifica a texto plano:</p>
 <input type="text" id="b64">
 <button onclick="validar()">🔓</button>
@@ -16,7 +16,7 @@ session_start();
 <script>
     function validar() {
         let b = document.getElementById("b64").value.trim().toLowerCase();
-        if(b === "flag_falsa_contraseña") {
+        if(b === "casi lo logras") {
             window.location.href = "llave_privada.php";
         } else {
             document.getElementById("msg").innerHTML = "❌ Decodificación fallida.";

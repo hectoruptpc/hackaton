@@ -8,7 +8,7 @@ session_start();
 </head>
 <body>
 <h2>🔓 DESENCRIPTANDO ARCHIVO</h2>
-<p>Archivo: flag.enc<br>Algoritmo: AES-256-CBC<br>IV: 7B3A5F2C8D1E4F6A</p>
+<p>Archivo: flag.enc<br>Algoritmo: AES-256-CBC<br>Clave: 7B3A5F2C8D1E4F6A</p>
 <p>Ingresa la clave de desencriptación:</p>
 <input type="text" id="clave">
 <button onclick="validar()">🔐</button>
@@ -16,7 +16,7 @@ session_start();
 <script>
     function validar() {
         let c = document.getElementById("clave").value.trim().toLowerCase();
-        if(c === "aes_secret_key_2024") {
+        if(c === "7B3A5F2C8D1E4F6A".toLowerCase()) {
             window.location.href = "bitcoin_miner.php";
         } else {
             document.getElementById("msg").innerHTML = "❌ Clave incorrecta.";
