@@ -13,5 +13,6 @@ body{background:#1a1a0a;color:#fa0;text-align:center;padding-top:100px;}
 <h2>⏰ TIEMPO DE SESIÓN EXPIRADO</h2>
 <p>Has estado demasiado tiempo en caminos incorrectos.<br>Reinicia el desafío.</p>
 <a href="inicio.php">🔄 Reiniciar</a>
+<div style="text-align:center;margin:20px 0;"><a href="../index.php" style="background:#4a5568;color:#fff;padding:10px 20px;text-decoration:none;border-radius:5px;">⬅ Volver al Inicio</a></div>
 </body>
 </html>

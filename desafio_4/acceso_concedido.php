@@ -20,5 +20,6 @@ $_SESSION['ruta_activa'] = 'secundaria1';
     <div class="progreso">[▓▓▓▓▓░░░░░] 50%</div>
     <a href="verificando_credenciales.php">➡️ Continuar →</a>
 </div>
+<div style="text-align:center;margin:20px 0;"><a href="../index.php" style="background:#4a5568;color:#fff;padding:10px 20px;text-decoration:none;border-radius:5px;">⬅ Volver al Inicio</a></div>
 </body>
 </html>

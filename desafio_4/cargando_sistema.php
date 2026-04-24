@@ -23,5 +23,6 @@ if($_SESSION['loop_count'] > 3) {
 <h2>🌀 Cargando sistema...</h2>
 <p>Intento <?php echo $_SESSION['loop_count']; ?>/3</p>
 <p>Por favor espera...</p>
+<div style="text-align:center;margin:20px 0;"><a href="../index.php" style="background:#4a5568;color:#fff;padding:10px 20px;text-decoration:none;border-radius:5px;">⬅ Volver al Inicio</a></div>
 </body>
 </html>
