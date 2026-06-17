@@ -3,28 +3,24 @@
 // crypto.php - Desafío de Encriptación Épica para Hackathon
 // ============================================================
 
-// ------------------------------------------------------------
-// >>> ¡PEGA AQUÍ TU TEXTO ENCRIPTADO LARGUÍSIMO! <<<
-// ------------------------------------------------------------
-$secret_encrypted_text = "Vm0wd2QyVkZOVWRXV0doVFYwZG9XRll3Wkc5WFJsbDNXa2M1VjFadGVGWlZNbmhQVmpKS1NHVkdiR0ZXVjJoeVZtcEJlRmRIVmtsaVJtUk9ZV3RhU1ZadGNFZFpWMDE0V2toV2FWSnRVbkJXTUZwSFRURmFkRTFVVWxSTmJFcElWbTAxUzJGc1NuVlJhemxXWWxob1YxcFZXbUZrUlRGVlZXeHdWMkpJUWxsV1ZFa3hWREZzVjFOdVVsWmlSa3BvVm1wT1UyRkdiSEZTYlVacVRWWmFlVmRyV2xOVWJGcFpVV3BXVjFJemFHaFhWbHBhWlZaT2NtRkdXbWxTTW1oWFZtMTBWMlF5VW5OVmJsSnNVakJhY1ZSV1pGTk5SbFowWlVoa1YwMXJWalpWVjNoelZqRmFSbUo2UWxwbGExcDZWbXBHVDJSV1VuTmhSMnhYVFcxb2RsWnRNWGRVTVVWNFVsaG9WbUpyTlZSV2EyUTBWV3hhVjFWWVpGQlZWREE1";
+// Incluir la lógica de funciones
+require_once 'conf/functions.php';
 
-// Si se envía una respuesta por POST
-$user_answer = isset($_POST['answer']) ? trim($_POST['answer']) : '';
+// Obtener el texto encriptado desde el backend
+$secret_encrypted_text = getEncryptedText();
+
+// Inicializar variables de feedback
 $feedback = '';
 $feedback_class = '';
 
+// Procesar la respuesta del formulario
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Normalizamos para comparar (eliminar espacios extra, mayúsculas/minúsculas)
-    $normalized_user = strtolower(preg_replace('/\s+/', '', $user_answer));
-    $normalized_correct = strtolower(preg_replace('/\s+/', '', "H4CK4TH0N_3P1C_D3CRYPT10N")); // Cambia esto por tu flag real
+    $user_answer = isset($_POST['answer']) ? trim($_POST['answer']) : '';
     
-    if ($normalized_user === $normalized_correct) {
-        $feedback = "✅ ¡ACCESO CONCEDIDO! Has descifrado el mensaje. FLAG{CRYPTO_MASTER} ✅";
-        $feedback_class = "success";
-    } else {
-        $feedback = "❌ ACCESO DENEGADO. Sigue intentando, el cifrado es largo pero no imposible. ❌";
-        $feedback_class = "error";
-    }
+    // Validar usando la función del backend
+    $result = validateHackathonAnswer($user_answer);
+    $feedback = $result['feedback'];
+    $feedback_class = $result['class'];
 }
 ?>
 
@@ -54,7 +50,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             overflow-x: auto;
         }
 
-        /* Grid de líneas estilo Matrix */
         body::before {
             content: "";
             position: fixed;
@@ -70,7 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             z-index: 0;
         }
 
-        /* Efecto glitch en el título */
         @keyframes glitch {
             0% { text-shadow: -2px 0 red, 2px 0 blue; transform: skew(0.5deg); }
             25% { text-shadow: 2px 0 red, -2px 0 blue; transform: skew(-0.5deg); }
@@ -122,7 +116,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             letter-spacing: 2px;
         }
 
-        /* Tarjeta del texto cifrado */
         .crypto-box {
             background: #010a12;
             border-left: 6px solid #ff00aa;
@@ -181,7 +174,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             line-height: 1.4;
         }
 
-        /* Formulario */
         .hack-form {
             background: #07121e80;
             border-radius: 28px;
@@ -271,7 +263,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #ff99bb;
         }
 
-        /* Hint épico */
         .hint {
             text-align: center;
             font-size: 0.8rem;
@@ -290,7 +281,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #338877;
         }
 
-        /* Scrollbar personalizada */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -317,17 +307,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <h1>⚡ DESAFIO::ENCRIPTACION ⚡</h1>
     <div class="sub">[ 2do HACKATHON ] // NIVEL: SUPER ENCRIPTACIÓN</div>
 
-    <!-- Caja con el texto cifrado (el enorme) -->
     <div class="crypto-box">
         <div class="crypto-label">
             <span>🔒 SECURE_ENCRYPTION_BLOB</span>
             <span>[ data_length: <?php echo number_format(strlen($secret_encrypted_text)); ?> bytes ]</span>
         </div>
         <pre id="encryptedData"><?php echo htmlspecialchars($secret_encrypted_text); ?></pre>
-        
     </div>
 
-    <!-- Formulario para descifrar -->
     <div class="hack-form">
         <form method="POST" action="">
             <label>
@@ -357,16 +344,85 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </footer>
 </div>
 
-<!-- Sonido mental hacker? solo vibe -->
+<!-- MENSAJE DE CONSOLA OFUSCADO -->
 <script>
-    // pequeño efecto copilot: consola épica
-    console.log("%c🔥 HACKATON MODE ACTIVATED 🔥", "color: #0ff; font-size: 18px; font-family: monospace;");
-    console.log("%cEl texto encriptado es LARGUÍSIMO... pero tiene solución.", "color: #f0f;");
-    // Auto ajuste visual si es muy largo
-    const preBlock = document.getElementById('encryptedData');
-    if(preBlock && preBlock.innerText.length > 3000) {
-        preBlock.style.maxHeight = "400px";
-    }
+// Mensaje épico directamente en el script (no ofuscado para que funcione bien)
+console.clear();
+
+// Muro de texto enorme
+console.log(
+'%c' + 
+`
+╔══════════════════════════════════════════════════════════════════╗
+║                                                                  ║
+║   🎯  ¡B U E N   I N T E N T O ,   H A C K E R !  🎯           ║
+║                                                                  ║
+║   ┌──────────────────────────────────────────────────────────┐   ║
+║   │                                                          │   ║
+║   │   😂 ¿CREÍAS QUE AQUÍ IBAS A ENCONTRAR LA FLAG? 😂      │   ║
+║   │                                                          │   ║
+║   │   JAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJA   │   ║
+║   │                                                          │   ║
+║   │   La flag está en el BACKEND, no en el frontend.        │   ║
+║   │   Sigue intentando, pero no por aquí, CAMPEÓN.          │   ║
+║   │                                                          │   ║
+║   │   😘  Saludos desde el equipo de Robotica  😘         │   ║
+║   │                                                          │   ║
+║   └──────────────────────────────────────────────────────────┘   ║
+║                                                                  ║
+║   💀  EL VERDADERO HACKER USA SU CEREBRO, NO LA CONSOLA  💀    ║
+║                                                                  ║
+╚══════════════════════════════════════════════════════════════════╝
+`,
+'color: #ff00ff; font-size: 14px; font-weight: bold; font-family: monospace;'
+);
+
+// Mensajes adicionales con diferentes colores
+console.log('%c🔍🔍🔍  ¿BUSCANDO PISTAS?  🔍🔍🔍', 'color: #00ffcc; font-size: 24px; font-weight: bold; background: #000; padding: 10px; border: 3px solid #ff00ff;');
+console.log('%c🚫  NO HAY NADA QUE VER AQUÍ, SIGUE TU CAMINO  🚫', 'color: #ff0000; font-size: 20px; font-weight: bold; background: #1a0000; padding: 10px;');
+console.log('%c🤣  TE CREÍSTE MUY LISTO, ¿VERDAD?  🤣', 'color: #ffff00; font-size: 18px; font-weight: bold; text-shadow: 2px 2px 4px #ff0000;');
+console.log('%c⚠️  PISTA FALSA: La flag es "H4CK3R_M4ST3R_2026" (es broma, no es esa)  ⚠️', 'color: #ff8800; font-size: 16px; font-style: italic; background: #222; padding: 5px;');
+
+// ASCII Art
+console.log(
+'%c  _   _   _   _   _   _   _   _   _   _   _   _   _  \n' +
+' / \\ / \\ / \\ / \\ / \\ / \\ / \\ / \\ / \\ / \\ / \\ / \\ / \\ \n' +
+'( N O   E N C O N T R A R Á S   N A D A )\n' +
+' \\_/ \\_/ \\_/ \\_/ \\_/ \\_/ \\_/ \\_/ \\_/ \\_/ \\_/ \\_/ \\_/ \n',
+'color: #00ff00; font-size: 18px; font-weight: bold;'
+);
+
+console.log('%c[SYSTEM] >> Acceso denegado. No eres bienvenido aquí. << [SYSTEM]', 'color: #ff4444; font-size: 16px; background: #330000; padding: 8px; border: 2px solid #ff0000;');
+
+// Falso conteo de descarga
+setTimeout(() => {
+    console.log('%c⏳  DESCARGANDO FLAG... 0%  ⏳', 'color: #00ccff; font-size: 16px;');
+}, 500);
+setTimeout(() => {
+    console.log('%c⏳  DESCARGANDO FLAG... 25%  ⏳', 'color: #00ccff; font-size: 16px;');
+}, 1000);
+setTimeout(() => {
+    console.log('%c⏳  DESCARGANDO FLAG... 50%  ⏳', 'color: #00ccff; font-size: 16px;');
+}, 1500);
+setTimeout(() => {
+    console.log('%c⏳  DESCARGANDO FLAG... 75%  ⏳', 'color: #00ccff; font-size: 16px;');
+}, 2000);
+setTimeout(() => {
+    console.log('%c⛔  ERROR: FLAG PROTEGIDA POR EL BACKEND  ⛔', 'color: #ff0000; font-size: 22px; font-weight: bold; background: #400000; padding: 15px; border: 4px solid #ff0000;');
+}, 2500);
+setTimeout(() => {
+    console.log('%c🏆  ¡SIGUE INTENTANDO, CAMPEÓN! LA VICTORIA ES PARA LOS PERSISTENTES  🏆', 'color: #ffd700; font-size: 20px; font-weight: bold; background: #1a1a00; padding: 10px; border: 3px solid #ffd700;');
+}, 3000);
+
+// Mensaje final
+console.log('%c❌  Las variables están protegidas en el backend  ❌', 'color: #ff0066; font-size: 18px; font-weight: bold;');
+console.log('%c😎  No pierdas tu tiempo aquí, ve a resolver el reto  😎', 'color: #00ff99; font-size: 20px; font-weight: bold; background: #002211; padding: 10px; border: 2px solid #00ff99;');
+
+// Ajuste visual para textos muy largos
+const preBlock = document.getElementById('encryptedData');
+if(preBlock && preBlock.innerText.length > 3000) {
+    preBlock.style.maxHeight = "400px";
+}
 </script>
 </body>
 </html>

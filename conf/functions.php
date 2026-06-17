@@ -817,4 +817,72 @@ function obtenerDesafiosCompletados($equipo_id) {
 
 
 
+
+// ============================================================
+// functions.php - Lógica de Validación para Hackathon
+// ============================================================
+
+/**
+ * Valida la respuesta del usuario contra la flag correcta
+ * 
+ * @param string $user_answer La respuesta ingresada por el usuario
+ * @return array Array con 'feedback' y 'class' para mostrar el resultado
+ */
+function validateHackathonAnswer($user_answer) {
+    // Flag correcta (definida aquí y no expuesta al frontend)
+    $correct_flag = "H4CK4TH0N_3P1C_D3CRYPT10N";
+    
+    // Normalizar para comparación (sin espacios, minúsculas)
+    $normalized_user = strtolower(preg_replace('/\s+/', '', $user_answer));
+    $normalized_correct = strtolower(preg_replace('/\s+/', '', $correct_flag));
+    
+    if ($normalized_user === $normalized_correct) {
+        return [
+            'feedback' => '✅ ¡ACCESO CONCEDIDO! Has descifrado el mensaje. FLAG{CRYPTO_MASTER} ✅',
+            'class' => 'success'
+        ];
+    } else {
+        return [
+            'feedback' => '❌ ACCESO DENEGADO. Sigue intentando, el cifrado es largo pero no imposible. ❌',
+            'class' => 'error'
+        ];
+    }
+}
+
+/**
+ * Obtiene el texto encriptado (para mantenerlo en el backend)
+ * 
+ * @return string El texto encriptado
+ */
+function getEncryptedText() {
+    return "Vm0wd2QyVkZOVWRXV0doVFYwZG9XRll3Wkc5WFJsbDNXa2M1VjFadGVGWlZNbmhQVmpKS1NHVkdiR0ZXVjJoeVZtcEJlRmRIVmtsaVJtUk9ZV3RhU1ZadGNFZFpWMDE0V2toV2FWSnRVbkJXTUZwSFRURmFkRTFVVWxSTmJFcElWbTAxUzJGc1NuVlJhemxXWWxob1YxcFZXbUZrUlRGVlZXeHdWMkpJUWxsV1ZFa3hWREZzVjFOdVVsWmlSa3BvVm1wT1UyRkdiSEZTYlVacVRWWmFlVmRyV2xOVWJGcFpVV3BXVjFJemFHaFhWbHBhWlZaT2NtRkdXbWxTTW1oWFZtMTBWMlF5VW5OVmJsSnNVakJhY1ZSV1pGTk5SbFowWlVoa1YwMXJWalpWVjNoelZqRmFSbUo2UWxwbGExcDZWbXBHVDJSV1VuTmhSMnhYVFcxb2RsWnRNWGRVTVVWNFVsaG9WbUpyTlZSV2EyUTBWV3hhVjFWWVpGQlZWREE1";
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ?>

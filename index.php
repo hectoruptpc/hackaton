@@ -791,9 +791,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="card-body">
                             <h5 class="card-title text-primary">5. API REST Vulnerable</h5>
                             <h6 class="card-subtitle mb-2 text-muted">API Hacking (1 🚩)</h6>
-                            <p class="card-text">¡WAOS! Esta API no valida tokens correctamente. Usa herramientas como Postman o curl para acceder a endpoints sin autenticación.</p>
+                            <p class="card-text">¡WAOS! Esta API no valida tokens correctamente.</p>
                             
-                            <a href="challenge_file_upload.php" class="btn btn-primary">Acceder al Desafío</a>
+                            <a href="api_lab.html" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
                                 <input type="text" class="form-control" id="flag-file_upload" placeholder="Ingresa la bandera" 
                                     <?php echo isset($desafiosCompletados['file_upload']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
