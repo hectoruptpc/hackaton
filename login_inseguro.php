@@ -1,34 +1,19 @@
 <?php
-// La bandera que deben obtener e ingresar en la página principal es: FLAG{SQL_INYECCION_EXITOSA}
-$flag_oculta = "FLAG{SQL_INYECCION_EXITOSA}";
+// ============================================================
+// login_inseguro.php - Desafío de Login
+// ============================================================
+
+// Incluir la lógica de funciones
+require_once 'conf/functions.php';
+
 $mensaje = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $usuario = $_POST['usuario'];
     $contrasena = $_POST['contrasena'];
-
-    // VULNERABILIDAD SIMULADA: Se asume que este string se pasaría
-    // directamente a una consulta SQL sin sanitización (vulnerable a SQLi).
-
-    $payload_evasion_simple = "' OR '1'='1' --";
-    $payload_evasion_doble = "' or 1=1 --";
-    $payload_evasion_comilla = "' OR '1'='1";
-
-    if (
-        strpos($usuario, "OR '1'='1'") !== false ||
-        strpos($usuario, "or 1=1") !== false ||
-        strpos($contrasena, "OR '1'='1'") !== false ||
-        strpos($contrasena, "or 1=1") !== false
-    ) {
-        // Ataque exitoso, muestra la bandera.
-        $mensaje = "<div class='alert alert-success mt-4'><strong>¡ACCESO CONCEDIDO!</strong> Has demostrado una vulnerabilidad crítica. La bandera es: <code>" . $flag_oculta . "</code></div>";
-    } elseif ($usuario == "admin" && $contrasena == "passwordsegura") {
-        // Credenciales legítimas
-        $mensaje = "<div class='alert alert-info mt-4'>Hemos sido vulnerados. Flag oculta: FLAG{PIENSA_COMO_PROGRAMADOR}</div>";
-    } else {
-        // Fallo de login normal
-        $mensaje = "<div class='alert alert-danger mt-4'>Error: Credenciales inválidas.</div>";
-    }
+    
+    // Procesar el login usando la función del backend
+    $mensaje = procesarLogin($usuario, $contrasena);
 }
 ?>
 
@@ -37,7 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Desafío: Login Inseguro</title>
+<title>Desafío: Login</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
 body { background-color: #f8f9fa; }
@@ -54,20 +39,17 @@ body { background-color: #f8f9fa; }
 <body>
 <!-- 
 ==============================================
-INFORMACIÓN PARA EL DESAFÍO DEL LOGIN INSEGURO
+CREDENCIALES PARA EL DESAFÍO
 ==============================================
-Credenciales válidas:
-- Usuario: admin
-- Contraseña: passwordsegura
-
-
+Usuario: admin
+Contraseña: passwordsegura
 ==============================================
 -->
 
 <div class="container">
 <div class="login-container">
-<h2 class="text-center mb-4 text-primary">Sistema de Acceso de Empleados</h2>
-<p class="text-center"><em>Hemos tenido problemas de seguridad. ¿Puedes encontrar las credenciales válidas?</em></p>
+<h2 class="text-center mb-4 text-primary">Sistema de Acceso</h2>
+<p class="text-center"><em>Encuentra las credenciales para acceder</em></p>
 
 <form action="login_inseguro.php" method="POST">
 <div class="mb-3">
@@ -86,7 +68,6 @@ Credenciales válidas:
 <div class="mt-4 text-center">
 <a href="index.php" class="btn btn-sm btn-outline-secondary">Volver al Dashboard</a>
 </div>
-
 
 </div>
 </div>

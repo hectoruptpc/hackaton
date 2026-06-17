@@ -246,7 +246,7 @@ function verificarBandera($bandera_usuario, $bandera_correcta) {
 function obtenerConfiguracionDesafios() {
     return [
         'login_inseguro' => [
-            'flag' => 'FLAG{PIENSA_COMO_PROGRAMADOR}',
+            'flag' => 'FLAG{INSPECCIONA_EL_CODIGO}',
             'puntos' => 1,
             'tiempo' => 15 * 60
         ],
@@ -864,6 +864,26 @@ function getEncryptedText() {
 
 
 
+
+// ============================================================
+// functions.php - Lógica del Desafío Login
+// ============================================================
+
+/**
+ * Procesa el login del usuario
+ * 
+ * @param string $usuario Usuario ingresado
+ * @param string $contrasena Contraseña ingresada
+ * @return string Mensaje HTML con el resultado
+ */
+function procesarLogin($usuario, $contrasena) {
+    // Credenciales válidas (visibles en el HTML)
+    if ($usuario == "admin" && $contrasena == "passwordsegura") {
+        return "<div class='alert alert-success mt-4'><strong>¡ACCESO CONCEDIDO!</strong> La bandera es: <code>FLAG{INSPECCIONA_EL_CODIGO}</code></div>";
+    } else {
+        return "<div class='alert alert-danger mt-4'>Error: Credenciales inválidas.</div>";
+    }
+}
 
 
 
