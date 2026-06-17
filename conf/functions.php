@@ -890,6 +890,50 @@ function procesarLogin($usuario, $contrasena) {
 
 
 
+// ============================================================
+// functions.php - Funciones para el Desafío de Buffer Overflow
+// ============================================================
+
+/**
+ * Procesa el input del usuario para el desafío de Buffer Overflow
+ * 
+ * @param string $input Datos ingresados por el usuario
+ * @return array Resultado con mensaje y estado
+ */
+function procesarBufferOverflow($input) {
+    $flag = "FLAG{BUFFER_OVERFLOW_EXPLOIT}";
+    $buffer_size = 64;
+    $input_length = strlen($input);
+    $mensaje = "";
+    $show_input = true;
+    
+    if ($input_length > $buffer_size) {
+        // Se ha desbordado! Verificar si contiene el "payload" para ejecutar flag_secreta
+        $overflow_bytes = $input_length - $buffer_size;
+        
+        // Buscar la dirección simulada de flag_secreta en los bytes extra
+        $flag_hex = "f1e2d3c4";
+        $flag_pattern = "FLAG_SECRETA";
+        
+        if (strpos($input, $flag_pattern) !== false || substr($input, -8) === $flag_hex) {
+            $mensaje = '<div class="alert alert-success">🎉 ¡EXPLOIT EXITOSO! Has sobrescrito el registro de retorno.<br>
+                        <strong>' . $flag . '</strong></div>';
+            $show_input = false;
+        } else {
+            $mensaje = '<div class="alert alert-warning">⚠️ Desbordamiento detectado! Se han escrito ' . $overflow_bytes . 
+                       ' bytes extra. Pero no lograste ejecutar flag_secreta(). Sigue intentando.</div>';
+        }
+    } else {
+        $mensaje = '<div class="alert alert-info">📝 Datos ingresados (' . $input_length . '/' . $buffer_size . 
+                   ' bytes): ' . htmlspecialchars($input) . '<br>El programa terminó normalmente. No hubo overflow.</div>';
+    }
+    
+    return [
+        'mensaje' => $mensaje,
+        'show_input' => $show_input
+    ];
+}
+
 
 
 

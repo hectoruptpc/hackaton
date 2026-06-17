@@ -2,7 +2,8 @@
 // challenge_buffer_overflow.php - Desafío Buffer Overflow estilo CTF
 
 session_start();
-$flag = "FLAG{BUFFER_OVERFLOW_EXPLOIT}";
+require_once 'conf/functions.php';
+
 $mensaje = "";
 $show_input = true;
 
@@ -10,33 +11,14 @@ $show_input = true;
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['input_data'])) {
     $input = $_POST['input_data'];
     
-    // SIMULACIÓN DE BUFFER OVERFLOW
-    // En C, un buffer de 64 bytes se desborda con más de 64 caracteres
-    $buffer_size = 64;
-    $input_length = strlen($input);
+    // Procesar usando la función del backend
+    $resultado = procesarBufferOverflow($input);
+    $mensaje = $resultado['mensaje'];
+    $show_input = $resultado['show_input'];
     
-    if ($input_length > $buffer_size) {
-        // Se ha desbordado! Verificar si contiene el "payload" para ejecutar flag_secreta
-        $overflow_bytes = $input_length - $buffer_size;
-        
-        // Buscar la dirección simulada de flag_secreta en los bytes extra
-        // En un exploit real, los últimos 4 bytes sobrescriben EIP con la dirección de flag_secreta
-        $flag_hex = "f1e2d3c4"; // Dirección hexadecimal simulada
-        $flag_pattern = "FLAG_SECRETA"; // Palabra mágica que activa la flag
-        
-        if (strpos($input, $flag_pattern) !== false || substr($input, -8) === $flag_hex) {
-            $mensaje = '<div class="alert alert-success">🎉 ¡EXPLOIT EXITOSO! Has sobrescrito el registro de retorno.<br>
-                        <strong>' . $flag . '</strong></div>';
-            $show_input = false;
-            // Marcar como completado en sesión
-            $_SESSION['buffer_overflow_completed'] = true;
-        } else {
-            $mensaje = '<div class="alert alert-warning">⚠️ Desbordamiento detectado! Se han escrito ' . $overflow_bytes . 
-                       ' bytes extra. Pero no lograste ejecutar flag_secreta(). Sigue intentando.</div>';
-        }
-    } else {
-        $mensaje = '<div class="alert alert-info">📝 Datos ingresados (' . $input_length . '/' . $buffer_size . 
-                   ' bytes): ' . htmlspecialchars($input) . '<br>El programa terminó normalmente. No hubo overflow.</div>';
+    // Marcar como completado en sesión
+    if (strpos($mensaje, 'EXPLOIT EXITOSO') !== false) {
+        $_SESSION['buffer_overflow_completed'] = true;
     }
 }
 ?>
@@ -76,13 +58,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['input_data'])) {
             padding: 10px;
             font-size: 12px;
         }
-        input {
+        textarea {
             background: #001100;
             border: 1px solid #0f0;
             color: #0f0;
             font-family: 'Courier New', monospace;
         }
-        input:focus {
+        textarea:focus {
             background: #002200;
             color: #fff;
             border-color: #0f0;
@@ -104,6 +86,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['input_data'])) {
             border: 1px solid #333;
             padding: 15px;
             border-radius: 8px;
+        }
+        .text-muted {
+            color: #0a0 !important;
         }
     </style>
 </head>
@@ -161,7 +146,7 @@ Solo personal autorizado puede ingresar.
                             <li>Offset hasta EIP: 64 bytes (buffer) + 4 bytes (EBP) = <strong class="text-warning">68 bytes</strong></li>
                             <li>Necesitas enviar 68 bytes basura + la dirección de flag_secreta()</li>
                             <li>Dirección simulada de flag_secreta: <code class="text-success">f1e2d3c4</code> o escribe la palabra mágica <code class="text-success">FLAG_SECRETA</code></li>
-                            <li>Payload ejemplo: <code class="text-info">A"x68 + FLAG_SECRETA</code></li>
+                            <li>Payload ejemplo: <code class="text-info">"A" x 68 + FLAG_SECRETA</code></li>
                         </ul>
                     </div>
 
