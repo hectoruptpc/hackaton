@@ -381,7 +381,7 @@ console.log(
 console.log('%c🔍🔍🔍  ¿BUSCANDO PISTAS?  🔍🔍🔍', 'color: #00ffcc; font-size: 24px; font-weight: bold; background: #000; padding: 10px; border: 3px solid #ff00ff;');
 console.log('%c🚫  NO HAY NADA QUE VER AQUÍ, SIGUE TU CAMINO  🚫', 'color: #ff0000; font-size: 20px; font-weight: bold; background: #1a0000; padding: 10px;');
 console.log('%c🤣  TE CREÍSTE MUY LISTO, ¿VERDAD?  🤣', 'color: #ffff00; font-size: 18px; font-weight: bold; text-shadow: 2px 2px 4px #ff0000;');
-console.log('%c⚠️  PISTA FALSA: La flag es "H4CK3R_M4ST3R_2026" (es broma, no es esa)  ⚠️', 'color: #ff8800; font-size: 16px; font-style: italic; background: #222; padding: 5px;');
+console.log('%c⚠️  PISTA: La flag es "H4CK3R_M4ST3R_2026" (es broma, no es esa)  ⚠️', 'color: #ff8800; font-size: 16px; font-style: italic; background: #222; padding: 5px;');
 
 // ASCII Art
 console.log(
