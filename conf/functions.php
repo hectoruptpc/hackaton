@@ -981,6 +981,102 @@ function verificarEsteganografia($mensaje) {
 
 
 
+// ============================================================
+// functions.php - Funciones del Desafío de Patrón Biométrico con Sistema de Bloqueo
+// ============================================================
+
+
+/**
+ * Verifica el patrón biométrico ingresado con sistema de bloqueo
+ */
+function verificarPatronBiometrico($patron) {
+    $patron_correcto = "5-2-1-4-5-6-9-8-5";
+    $patron_limpio = trim($patron);
+    
+    // Inicializar contador si no existe
+    if (!isset($_SESSION['intentos_biometricos'])) {
+        $_SESSION['intentos_biometricos'] = 0;
+    }
+    
+    // Verificar bloqueo
+    if (isset($_SESSION['bloqueado_hasta']) && time() < $_SESSION['bloqueado_hasta']) {
+        $tiempo_restante = $_SESSION['bloqueado_hasta'] - time();
+        return [
+            'exito' => false,
+            'bloqueado' => true,
+            'tiempo_restante' => $tiempo_restante,
+            'mensaje' => '⏰ SISTEMA BLOQUEADO. Espera ' . $tiempo_restante . ' segundos.'
+        ];
+    }
+    
+    // Si expiró el bloqueo
+    if (isset($_SESSION['bloqueado_hasta']) && time() >= $_SESSION['bloqueado_hasta']) {
+        unset($_SESSION['bloqueado_hasta']);
+        $_SESSION['intentos_biometricos'] = 0;
+    }
+    
+    // Verificar patrón
+    if ($patron_limpio === $patron_correcto) {
+        $_SESSION['intentos_biometricos'] = 0;
+        return [
+            'exito' => true,
+            'bloqueado' => false,
+            'mensaje' => '🎉 <strong>¡ACCESO BIOMÉTRICO CONCEDIDO!</strong> 🎉<br><br>' .
+                        '<span style="color:#ff0; font-size:1.3rem;">🏆 FLAG{BIOMETRIC_PATTERN_MASTER} 🏆</span>'
+        ];
+    } else {
+        $_SESSION['intentos_biometricos']++;
+        
+        if ($_SESSION['intentos_biometricos'] >= 3) {
+            $_SESSION['bloqueado_hasta'] = time() + 60;
+            $_SESSION['intentos_biometricos'] = 0;
+            return [
+                'exito' => false,
+                'bloqueado' => true,
+                'tiempo_restante' => 60,
+                'mensaje' => '⚠️ DEMASIADOS INTENTOS.<br>🔒 Sistema bloqueado 60 segundos.'
+            ];
+        }
+        
+        return [
+            'exito' => false,
+            'bloqueado' => false,
+            'intentos' => $_SESSION['intentos_biometricos'],
+            'mensaje' => '❌ Patrón incorrecto. Intentos: ' . $_SESSION['intentos_biometricos'] . '/3'
+        ];
+    }
+}
+
+/**
+ * Obtiene el estado actual del bloqueo biométrico
+ */
+function obtenerEstadoBiometrico() {
+    $estado = [
+        'intentos' => isset($_SESSION['intentos_biometricos']) ? $_SESSION['intentos_biometricos'] : 0,
+        'bloqueado' => false,
+        'tiempo_restante' => 0
+    ];
+    
+    if (isset($_SESSION['bloqueado_hasta']) && time() < $_SESSION['bloqueado_hasta']) {
+        $estado['bloqueado'] = true;
+        $estado['tiempo_restante'] = $_SESSION['bloqueado_hasta'] - time();
+    }
+    
+    return $estado;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

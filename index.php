@@ -847,21 +847,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
 
-                <!-- Desafío 8: CSRF -->
+                <!-- Desafío 8: BIOMETRICO -->
                 <div class="col-md-4 mb-4">
-                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['csrf']) ? 'completed-challenge' : ''; ?>" id="challenge-csrf">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['biometrico']) ? 'completed-challenge' : ''; ?>" id="challenge-biometrico">
                         <div class="card-body">
-                            <h5 class="card-title text-primary">8. CSRF</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Cross-Site Request Forgery (1 🚩)</h6>
-                            <p class="card-text">Esta aplicación no valida tokens CSRF. Envía solicitudes desde otros sitios para realizar acciones no autorizadas.</p>
+                            <h5 class="card-title text-primary">8. BIOMETRICO</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Autenticación Biométrica (1 🚩)</h6>
+                            <p class="card-text">Para acceder a los archivos clasificados, deberás replicar el patrón correcto en la cuadrícula 3x3.</p>
                             
-                            <a href="challenge_csrf.php" class="btn btn-primary">Acceder al Desafío</a>
+                            <a href="biometrico/biometrico.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
-                                <input type="text" class="form-control" id="flag-csrf" placeholder="Ingresa la bandera" 
-                                    <?php echo isset($desafiosCompletados['csrf']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
-                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="csrf"
-                                    <?php echo isset($desafiosCompletados['csrf']) ? 'disabled' : ''; ?>>
-                                    <?php echo isset($desafiosCompletados['csrf']) ? 'Completado' : 'Verificar'; ?>
+                                <input type="text" class="form-control" id="flag-biometrico" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['biometrico']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="biometrico"
+                                    <?php echo isset($desafiosCompletados['biometrico']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['biometrico']) ? 'Completado' : 'Verificar'; ?>
                                 </button>
                             </div>
                         </div>
