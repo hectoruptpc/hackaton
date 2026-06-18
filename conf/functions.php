@@ -280,8 +280,8 @@ function obtenerConfiguracionDesafios() {
             'puntos' => 1,
             'tiempo' => 15 * 60
         ],
-        'csrf' => [
-            'flag' => 'FLAG{XXE_MASTER}',
+        'biometrico' => [
+            'flag' => 'FLAG{BIOMETRIC_PATTERN_MASTER}',
             'puntos' => 1,
             'tiempo' => 15 * 60
         ],
