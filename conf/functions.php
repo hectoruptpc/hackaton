@@ -939,6 +939,48 @@ function procesarBufferOverflow($input) {
 
 
 
+// ============================================================
+// functions.php - Añadir función para Esteganografía
+// ============================================================
+
+
+/**
+ * Verifica el mensaje descifrado de esteganografía
+ * 
+ * @param string $mensaje El mensaje ingresado por el usuario
+ * @return array Resultado con éxito y mensaje
+ */
+function verificarEsteganografia($mensaje) {
+    // El mensaje correcto (SOLO en el backend)
+    $mensaje_correcto = "el ataque sera al amanecer";
+    $mensaje_correcto2 = "elataqueseraalamanecer";
+    $mensaje_correcto3 = "el ataque será al amanecer";
+    
+    // Limpiar entrada
+    $mensaje_limpio = strtolower(trim($mensaje));
+    
+    // Verificar si coincide con alguno de los mensajes correctos
+    if ($mensaje_limpio === $mensaje_correcto || 
+        $mensaje_limpio === $mensaje_correcto2 || 
+        $mensaje_limpio === $mensaje_correcto3) {
+        return [
+            'exito' => true,
+            'mensaje' => '🎉 <strong>ACCESO CONCEDIDO</strong> 🎉<br><br>' .
+                        '<span style="color:#ff0;">🏆 FLAG{STEGANOGRAPHY_SECRET} 🏆</span><br><br>' .
+                        'Has completado la misión. Reporta este código a tu superior.'
+        ];
+    } else {
+        return [
+            'exito' => false,
+            'mensaje' => '❌ <strong>ACCESO DENEGADO</strong> ❌<br><br>' .
+                        'Mensaje incorrecto. Revisa la imagen con herramientas de esteganografía.'
+        ];
+    }
+}
+
+
+
+
 
 
 

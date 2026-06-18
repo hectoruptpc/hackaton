@@ -1,5 +1,17 @@
 <?php
 session_start();
+require_once 'conf/functions.php';
+
+$resultado_html = '';
+$mostrar_resultado = false;
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mensaje'])) {
+    $mensaje = $_POST['mensaje'];
+    $resultado = verificarEsteganografia($mensaje);
+    
+    $resultado_html = $resultado['mensaje'];
+    $mostrar_resultado = true;
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -176,7 +188,6 @@ session_start();
             padding: 15px;
             text-align: center;
             border-radius: 5px;
-            display: none;
         }
 
         .resultado.exito {
@@ -191,6 +202,10 @@ session_start();
             border: 1px solid #f00;
             color: #f66;
             display: block;
+        }
+
+        .resultado.oculto {
+            display: none;
         }
 
         .pistas {
@@ -244,49 +259,63 @@ session_start();
 
         <div class="info-panel">
             <label>🔓 INGRESA EL MENSAJE DESCIFRADO:</label>
-            <input type="text" id="mensaje" placeholder="Escribe aquí lo que encontraste...">
+            <form method="POST" action="">
+                <input type="text" id="mensaje" name="mensaje" placeholder="Escribe aquí lo que encontraste...">
+                <button type="submit" class="btn-verificar" style="margin-top:10px;">🔎 VERIFICAR Y REPORTAR</button>
+            </form>
         </div>
-
-        <button class="btn-verificar" onclick="verificarMensaje()">🔎 VERIFICAR Y REPORTAR</button>
         
         <!-- BOTÓN PARA VOLVER ATRÁS -->
         <button class="btn-volver" onclick="window.location.href='index.php'">← VOLVER AL HACKATHON</button>
         
-        <div id="resultado"></div>
-
-        
+        <?php if ($mostrar_resultado): ?>
+            <div id="resultado" class="resultado <?php echo strpos($resultado_html, 'ACCESO CONCEDIDO') !== false ? 'exito' : 'error'; ?>">
+                <?php echo $resultado_html; ?>
+            </div>
+        <?php endif; ?>
     </div>
     <footer>
         Gobierno de los Hacker | Todos los derechos reservados | Este documento es clasificado
     </footer>
 </div>
 
+<!-- 
+    ============================================================
+    MENSAJE DE CONSOLA - Para burlarse de los curiosos
+    ============================================================
+-->
 <script>
-    function verificarMensaje() {
-        let mensaje = document.getElementById("mensaje").value.trim().toLowerCase();
-        let resultadoDiv = document.getElementById("resultado");
-        
-        // El mensaje correcto (lo que debe salir de la esteganografía)
-        let correcto = "el ataque sera al amanecer";
-        let correcto2 = "elataqueseraalamanecer";
-        
-        if (mensaje === correcto || mensaje === correcto2 || mensaje === "el ataque será al amanecer") {
-            resultadoDiv.innerHTML = `
-                <div class="resultado exito">
-                    🎉 <strong>ACCESO CONCEDIDO</strong> 🎉<br><br>
-                    <span style="color:#ff0;">🏆 FLAG{STEGANOGRAPHY_SECRET} 🏆</span><br><br>
-                    Has completado la misión. Reporta este código a tu superior.
-                </div>
-            `;
-        } else {
-            resultadoDiv.innerHTML = `
-                <div class="resultado error">
-                    ❌ <strong>ACCESO DENEGADO</strong> ❌<br><br>
-                    Mensaje incorrecto. Revisa la imagen con herramientas de esteganografía.
-                </div>
-            `;
-        }
-    }
+console.clear();
+
+console.log(
+'%c' + 
+`
+╔══════════════════════════════════════════════════════════════════╗
+║                                                                  ║
+║   🎯  ¡B U E N   I N T E N T O ,   A G E N T E !  🎯           ║
+║                                                                  ║
+║   ┌──────────────────────────────────────────────────────────┐   ║
+║   │                                                          │   ║
+║   │   😂 ¿CREÍAS QUE AQUÍ IBAS A ENCONTRAR LA FLAG? 😂      │   ║
+║   │                                                          │   ║
+║   │   La flag está en el BACKEND, no en el frontend.        │   ║
+║   │   Para obtenerla, descifra el mensaje correcto.         │   ║
+║   │                                                          │   ║
+║   │   😘  Suerte, agente. Lo vas a necesitar.  😘          │   ║
+║   │                                                          │   ║
+║   └──────────────────────────────────────────────────────────┘   ║
+║                                                                  ║
+║   💀  EL VERDADERO AGENTE USA SU CEREBRO, NO LA CONSOLA  💀    ║
+║                                                                  ║
+╚══════════════════════════════════════════════════════════════════╝
+`,
+'color: #ff00ff; font-size: 14px; font-weight: bold; font-family: monospace;'
+);
+
+console.log('%c🔍🔍🔍  ¿BUSCANDO PISTAS?  🔍🔍🔍', 'color: #00ffcc; font-size: 24px; font-weight: bold; background: #000; padding: 10px; border: 3px solid #ff00ff;');
+console.log('%c🚫  NO HAY NADA QUE VER AQUÍ, REVISA LA IMAGEN  🚫', 'color: #ff0000; font-size: 20px; font-weight: bold; background: #1a0000; padding: 10px;');
+console.log('%c🤣  TE CREÍSTE MUY LISTO, ¿VERDAD?  🤣', 'color: #ffff00; font-size: 18px; font-weight: bold; text-shadow: 2px 2px 4px #ff0000;');
+console.log('%c😎  No pierdas tu tiempo aquí, analiza la imagen  😎', 'color: #00ff99; font-size: 20px; font-weight: bold; background: #002211; padding: 10px; border: 2px solid #00ff99;');
 </script>
 </body>
 </html>
