@@ -59,7 +59,7 @@ session_start();
 <div class="terminal">
     <span class="glitch">>_ SISTEMA DE ARCHIVOS CONFIDENCIALES_</span>
     <hr>
-    <p>🔍 <strong>Expediente: CASO 404</strong></p>
+    <p>🔍 <strong>CASO404: Expediente:</strong></p>
     <p>Un informante dejó este mensaje antes de desaparecer:</p>
     <blockquote style="border-left: 3px solid #0ff; padding-left: 15px;">
         "El archivo no está donde debería.<br>
