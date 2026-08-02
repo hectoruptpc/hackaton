@@ -2,6 +2,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 session_start();
+header('X-Secret-Flag: FLAG{http_header_secret}');
 require_once __DIR__ . '/conf/functions.php';
 
 // 1. Si ya está en sesión, calcula el tiempo y muestra dashboard
@@ -16,6 +17,9 @@ if (isset($_SESSION['cedula'])) {
     $config_hackathon = obtenerConfiguracionHackathon();
     $hackathon_activo = hackathonEstaActivo();
     $info_equipo = obtenerTiempoInicioEquipo($_SESSION['equipo_id']);
+    
+    // Obtener desafíos completados por el equipo
+    $desafiosCompletados = obtenerDesafiosCompletados($_SESSION['equipo_id']);
     
     // Calcular tiempo transcurrido específico del equipo
     if ($hackathon_activo && $info_equipo['tiempo_inicio']) {
@@ -32,7 +36,9 @@ if (isset($_SESSION['cedula'])) {
     $nombre_equipo = trim($_POST['nombre_equipo']);
     
     if (empty($nombre_equipo)) {
-        mostrarAlerta('El nombre del equipo es obligatorio.');
+        $_SESSION['form_errors'] = ['El nombre del equipo es obligatorio.'];
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
     }
     
     // Validar que haya al menos 3 miembros
@@ -44,36 +50,62 @@ if (isset($_SESSION['cedula'])) {
     }
     
     if ($miembros_minimos < 3) {
-        mostrarAlerta('Debes registrar al menos 3 miembros para el equipo.');
+        $_SESSION['form_errors'] = ['Debes registrar al menos 3 miembros para el equipo.'];
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
     }
     
     // Registrar el equipo
     $equipo_id = registrarEquipo($nombre_equipo);
     if (!$equipo_id) {
-        mostrarAlerta('Error al crear el equipo. El nombre puede estar en uso.');
+        $_SESSION['form_errors'] = ['Error al crear el equipo. El nombre puede estar en uso.'];
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
     }
     
     // Registrar los miembros
     $miembros_registrados = 0;
+    $errores_miembros = [];
+    
     for ($i = 1; $i <= 4; $i++) {
         $nombre = trim($_POST["nombre_$i"]);
         $cedula = trim($_POST["cedula_$i"]);
         
         if (!empty($nombre) && !empty($cedula)) {
             if (!validarCedula($cedula)) {
-                mostrarAlerta("La cédula del miembro $i solo debe contener números.");
+                $errores_miembros[] = "La cédula del miembro $i solo debe contener números.";
+                continue;
             }
             
             if (usuarioExiste($cedula)) {
-                mostrarAlerta("La cédula $cedula ya está registrada en otro equipo.");
+                $errores_miembros[] = "La cédula $cedula ya está registrada en otro equipo.";
+                continue;
             }
             
             if (!registrarParticipante($nombre, $cedula, $equipo_id)) {
-                mostrarAlerta("Error al registrar el miembro $i.");
+                $errores_miembros[] = "Error al registrar el miembro $i.";
+                continue;
             }
             
             $miembros_registrados++;
+        } else if (!empty($nombre) && empty($cedula)) {
+            $errores_miembros[] = `El miembro $i tiene nombre pero falta la cédula.`;
+        } else if (empty($nombre) && !empty($cedula)) {
+            $errores_miembros[] = `El miembro $i tiene cédula pero falta el nombre.`;
         }
+    }
+    
+    // Si hay errores en miembros, mostrar modal
+    if (!empty($errores_miembros)) {
+        $_SESSION['form_errors'] = $errores_miembros;
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
+    }
+    
+    if ($miembros_registrados < 3) {
+        $_SESSION['form_errors'] = ['Debes registrar al menos 3 miembros completos para el equipo.'];
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
     }
     
     // Iniciar sesión con el primer miembro registrado
@@ -83,7 +115,9 @@ if (isset($_SESSION['cedula'])) {
         header("Location: index.php");
         exit;
     } else {
-        mostrarAlerta('Error al iniciar sesión.');
+        $_SESSION['form_errors'] = ['Error al iniciar sesión.'];
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
     }
 
 // 3. Si viene del formulario de acceso individual
@@ -91,13 +125,17 @@ if (isset($_SESSION['cedula'])) {
     $cedula = trim($_POST['cedula_acceso']);
     
     if (!validarCedula($cedula)) {
-        mostrarAlerta('La cédula solo debe contener números.');
+        $_SESSION['access_errors'] = ['La cédula solo debe contener números.'];
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
     }
     
     // Verificar si el usuario existe
     $participante = usuarioExiste($cedula);
     if (!$participante) {
-        mostrarAlerta('No se encontró un equipo registrado con esta cédula.');
+        $_SESSION['access_errors'] = ['No se encontró un equipo registrado con esta cédula.'];
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
     }
     
     // Iniciar sesión
@@ -117,7 +155,9 @@ if (isset($_SESSION['cedula'])) {
         header("Location: equipos.php");
         exit;
     } else {
-        mostrarAlerta('Código administrativo incorrecto.');
+        $_SESSION['admin_errors'] = ['Código administrativo incorrecto.'];
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
     }
 
 // 5. Si no hay sesión, mostrar formulario de inicio
@@ -127,6 +167,16 @@ if (isset($_SESSION['cedula'])) {
         unset($_SESSION['equipo_temporal']);
         unset($_SESSION['nombre_equipo_temporal']);
     }
+    
+    // Verificar si hay mensajes de error para mostrar en modales
+    $form_errors = $_SESSION['form_errors'] ?? [];
+    $access_errors = $_SESSION['access_errors'] ?? [];
+    $admin_errors = $_SESSION['admin_errors'] ?? [];
+    
+    // Limpiar los errores después de obtenerlos
+    unset($_SESSION['form_errors']);
+    unset($_SESSION['access_errors']); 
+    unset($_SESSION['admin_errors']);
     ?>
     <!DOCTYPE html>
     <html lang="es">
@@ -144,9 +194,10 @@ if (isset($_SESSION['cedula'])) {
     </head>
     <body>
     <div class="container mt-4">
+        <!-- FLAG{source_code_secret} -->
         <div class="text-center mb-3">
             <img src="img/img.jpg" alt="Logo Hackathon" style="max-width:800px;">
-            <h1>Hackathon UPTPC</h1>
+            <h1>Hackathon UPTPC 2026 - Segundo Evento</h1>
         </div>
         
         <div class="hero-section text-center mb-5">
@@ -172,9 +223,9 @@ if (isset($_SESSION['cedula'])) {
                             
                             <h5 class="mt-4 mb-3">Miembros del Equipo <small class="text-muted">(Mínimo 3, máximo 4)</small></h5>
                             
-                            <!-- Tutor (Obligatorio) -->
+                            <!-- Capitan (Obligatorio) -->
                             <div class="member-form">
-                                <h6 class="text-primary">Tutor <span class="text-danger">*</span></h6>
+                                <h6 class="text-primary">Capitan <span class="text-danger">*</span></h6>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <input type="text" class="form-control" name="nombre_1" placeholder="Nombre completo" required>
@@ -250,6 +301,10 @@ if (isset($_SESSION['cedula'])) {
                                 <div class="form-text">Solo números, sin puntos ni espacios</div>
                             </div>
                             
+                            <div class="text-center mb-3">
+                                <small class="text-muted" onclick="alert('FLAG{login_clickable_secret}')" style="cursor: default;">¿Olvidaste tu contraseña?</small>
+                            </div>
+                            
                             <div id="access-alert-container" class="mb-3"></div>
                             <button type="submit" class="btn btn-primary btn-lg w-100">Acceder a Mi Equipo</button>
                         </form>
@@ -313,73 +368,204 @@ if (isset($_SESSION['cedula'])) {
         </div>
     </div>
 
-    <script>
-    // Validación solo números para todas las cédulas
-    document.querySelectorAll('input[name^="cedula"]').forEach(input => {
-        input.addEventListener('input', function() {
-            this.value = this.value.replace(/\D/g, '');
-        });
-    });
 
-    // Validación para el formulario de acceso
-    document.getElementById('cedula_acceso').addEventListener('input', function() {
+
+
+<!-- Modal para errores generales -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="errorModalLabel">❌ Error</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                    <h4 id="errorModalMessage">Ha ocurrido un error</h4>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Entendido</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para advertencias -->
+<div class="modal fade" id="warningModal" tabindex="-1" aria-labelledby="warningModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="warningModalLabel">⚠️ Advertencia</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-exclamation-circle fa-3x text-warning mb-3"></i>
+                    <h4 id="warningModalMessage">Por favor corrige los siguientes problemas</h4>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Entendido</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para información -->
+<div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="infoModalLabel">ℹ️ Información</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-info-circle fa-3x text-info mb-3"></i>
+                    <h4 id="infoModalMessage">Información importante</h4>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-info" data-bs-dismiss="modal">Entendido</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Modales
+const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+const warningModal = new bootstrap.Modal(document.getElementById('warningModal'));
+const infoModal = new bootstrap.Modal(document.getElementById('infoModal'));
+
+// Función para mostrar modales
+function showModal(type, message) {
+    let modal, titleElement, messageElement;
+    
+    switch(type) {
+        case 'error':
+            modal = errorModal;
+            titleElement = document.getElementById('errorModalLabel');
+            messageElement = document.getElementById('errorModalMessage');
+            break;
+        case 'warning':
+            modal = warningModal;
+            titleElement = document.getElementById('warningModalLabel');
+            messageElement = document.getElementById('warningModalMessage');
+            break;
+        case 'info':
+            modal = infoModal;
+            titleElement = document.getElementById('infoModalLabel');
+            messageElement = document.getElementById('infoModalMessage');
+            break;
+    }
+    
+    if (messageElement) {
+        messageElement.textContent = message;
+    }
+    modal.show();
+}
+
+// Validación solo números para todas las cédulas
+document.querySelectorAll('input[name^="cedula"]').forEach(input => {
+    input.addEventListener('input', function() {
         this.value = this.value.replace(/\D/g, '');
     });
+});
 
-    // Validación del formulario de equipo
-    document.getElementById('team-form').addEventListener('submit', function(e) {
-        let miembrosCompletos = 0;
-        
-        for (let i = 1; i <= 4; i++) {
-            const nombre = document.querySelector(`input[name="nombre_${i}"]`).value.trim();
-            const cedula = document.querySelector(`input[name="cedula_${i}"]`).value.trim();
-            
-            if (nombre !== '' && cedula !== '') {
-                miembrosCompletos++;
-            } else if (nombre !== '' && cedula === '') {
-                alert(`El miembro ${i} tiene nombre pero falta la cédula.`);
-                e.preventDefault();
-                return;
-            } else if (nombre === '' && cedula !== '') {
-                alert(`El miembro ${i} tiene cédula pero falta el nombre.`);
-                e.preventDefault();
-                return;
-            }
-        }
-        
-        if (miembrosCompletos < 3) {
-            alert('Debes registrar al menos 3 miembros completos para el equipo.');
-            e.preventDefault();
-        }
-    });
+// Validación para el formulario de acceso
+document.getElementById('cedula_acceso').addEventListener('input', function() {
+    this.value = this.value.replace(/\D/g, '');
+});
 
-    // Toggle del formulario administrativo
-    document.getElementById('toggle-admin-btn').addEventListener('click', function() {
-        const adminForm = document.getElementById('admin-form');
-        const isHidden = adminForm.classList.contains('hidden');
+// Validación del formulario de equipo
+document.getElementById('team-form').addEventListener('submit', function(e) {
+    let miembrosCompletos = 0;
+    let errores = [];
+    
+    for (let i = 1; i <= 4; i++) {
+        const nombre = document.querySelector(`input[name="nombre_${i}"]`).value.trim();
+        const cedula = document.querySelector(`input[name="cedula_${i}"]`).value.trim();
         
-        if (isHidden) {
-            adminForm.classList.remove('hidden');
-            this.textContent = 'Ocultar Panel Administrativo';
-            this.classList.remove('btn-outline-warning');
-            this.classList.add('btn-warning');
-        } else {
-            adminForm.classList.add('hidden');
-            this.textContent = '¿Eres Administrador?';
-            this.classList.remove('btn-warning');
-            this.classList.add('btn-outline-warning');
+        if (nombre !== '' && cedula !== '') {
+            miembrosCompletos++;
+        } else if (nombre !== '' && cedula === '') {
+            errores.push(`El miembro ${i} tiene nombre pero falta la cédula.`);
+        } else if (nombre === '' && cedula !== '') {
+            errores.push(`El miembro ${i} tiene cédula pero falta el nombre.`);
         }
-    });
+    }
+    
+    if (errores.length > 0) {
+        e.preventDefault();
+        showModal('warning', errores.join('\n'));
+        return;
+    }
+    
+    if (miembrosCompletos < 3) {
+        e.preventDefault();
+        showModal('warning', 'Debes registrar al menos 3 miembros completos para el equipo.');
+        return;
+    }
+});
 
-    // Validación del formulario administrativo
-    document.getElementById('admin-form').addEventListener('submit', function(e) {
-        const codigo = document.getElementById('codigo_admin').value.trim();
-        if (codigo === '') {
-            alert('Por favor ingresa el código de administrador.');
-            e.preventDefault();
-        }
-    });
-    </script>
+// Toggle del formulario administrativo
+document.getElementById('toggle-admin-btn').addEventListener('click', function() {
+    const adminForm = document.getElementById('admin-form');
+    const isHidden = adminForm.classList.contains('hidden');
+    
+    if (isHidden) {
+        adminForm.classList.remove('hidden');
+        this.textContent = 'Ocultar Panel Administrativo';
+        this.classList.remove('btn-outline-warning');
+        this.classList.add('btn-warning');
+    } else {
+        adminForm.classList.add('hidden');
+        this.textContent = '¿Eres Administrador?';
+        this.classList.remove('btn-warning');
+        this.classList.add('btn-outline-warning');
+    }
+});
+
+// Validación del formulario administrativo
+document.getElementById('admin-form').addEventListener('submit', function(e) {
+    const codigo = document.getElementById('codigo_admin').value.trim();
+    if (codigo === '') {
+        e.preventDefault();
+        showModal('warning', 'Por favor ingresa el código de administrador.');
+    }
+});
+
+// Mostrar modales automáticamente si hay errores del servidor
+document.addEventListener('DOMContentLoaded', function() {
+    <?php if (!empty($form_errors)): ?>
+        showModal('error', '<?php echo implode("\\n", $form_errors); ?>');
+    <?php endif; ?>
+    
+    <?php if (!empty($access_errors)): ?>
+        showModal('error', '<?php echo implode("\\n", $access_errors); ?>');
+    <?php endif; ?>
+    
+    <?php if (!empty($admin_errors)): ?>
+        showModal('error', '<?php echo implode("\\n", $admin_errors); ?>');
+    <?php endif; ?>
+});
+</script>
+
+
+
+
     </body>
     </html>
     <?php
@@ -412,6 +598,7 @@ if (isset($_SESSION['cedula'])) {
 </head>
 <body>
 <div class="container mt-4">
+    <!-- FLAG{html_comment_easy} -->
     <!-- Header con información del usuario y equipo -->
     <div class="alert alert-success mb-4">
         <div class="row align-items-center">
@@ -429,7 +616,7 @@ if (isset($_SESSION['cedula'])) {
 
     <div class="text-center mb-3">
         <img src="img/img.jpg" alt="Logo Hackathon" style="max-width:800px;">
-        <h1>Hackathon UPTPC</h1>
+        <h1>Hackathon UPTPC 2026 - Segundo Evento</h1>
     </div>
 
     <!-- Información del equipo -->
@@ -504,113 +691,219 @@ if (isset($_SESSION['cedula'])) {
     ?>
         <!-- Mensaje de espera (visible cuando estado = 0) -->
         <div id="mensaje-espera" class="alert alert-info text-center mb-4">
-            <h3>⏳ Esperando inicio del Hackathon</h3>
+            <h3>⏳ Esperando inicio del Hackathon 2026</h3>
             <p class="mb-0">Tu equipo está registrado y listo para competir. El administrador iniciará el hackathon pronto.</p>
             <p class="mt-2"><small>Esta página se actualizará automáticamente cuando comience la competencia.</small></p>
         </div>
     <?php else: ?>
         <!-- Sección de niveles (visible cuando estado = 1) -->
         <div id="niveles-section">
-            <h2 class="mb-4 text-center">🎯 Desafíos Disponibles</h2>
+            <h2 class="mb-4 text-center">🎯 Desafíos Disponibles - Hackathon 2026</h2>
             <div class="row">
 
-                <!-- Desafío 1: Aplicación Web CTF -->
+                <!-- Desafío 1: Login Inseguro -->
                 <div class="col-md-4 mb-4">
-                    <div class="card card-challenge shadow" id="challenge-ctf">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['login_inseguro']) ? 'completed-challenge' : ''; ?>" id="challenge-login_inseguro">
                         <div class="card-body">
-                            <h5 class="card-title text-primary">1. Aplicación Web CTF</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Web Hacking (1 🚩)</h6>
-                            <p class="card-text">Encuentra una vulnerabilidad en este formulario de inicio de sesión.</p>
+                            <h5 class="card-title text-primary">1. Login Inseguro</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Login (1 🚩)</h6>
+                            <p class="card-text">podras conseguir las credenciales de este codigo?.</p>
                             
-                            <a href="challenge_ctf.php" class="btn btn-primary">Acceder al Desafío</a>
+                            <a href="login_inseguro.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
-                                <input type="text" class="form-control" id="flag-ctf" placeholder="Ingresa la bandera">
-                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="ctf">Verificar</button>
+                                <input type="text" class="form-control" id="flag-login_inseguro" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['login_inseguro']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="login_inseguro"
+                                    <?php echo isset($desafiosCompletados['login_inseguro']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['login_inseguro']) ? 'Completado' : 'Verificar'; ?>
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Desafío 2: Ingeniería Inversa -->
+                <!-- Desafío 2: Criptografia -->
                 <div class="col-md-4 mb-4">
-                    <div class="card card-challenge shadow" id="challenge-re">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['crypto']) ? 'completed-challenge' : ''; ?>" id="challenge-crypto">
                         <div class="card-body">
-                            <h5 class="card-title text-primary">2. Ingeniería Inversa</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Análisis de Binarios (1 🚩)</h6>
-                            <p class="card-text">Descarga el archivo binario y realiza ingeniería inversa para obtener la contraseña oculta.</p>
-                            <p class="fw-bold">Archivo: <a href="reverse_challenge.zip">reverse_challenge.zip</a></p>
+                            <h5 class="card-title text-primary">2. Criptografía</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Criptografía (1 🚩)</h6>
+                            <p class="card-text">Descubre el mensaje encriptado para conseguir la bandera.</p>
                             
+                            <a href="crypto.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
-                                <input type="text" class="form-control" id="flag-re" placeholder="Ingresa la bandera">
-                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="re">Verificar</button>
+                                <input type="text" class="form-control" id="flag-crypto" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['crypto']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="crypto"
+                                    <?php echo isset($desafiosCompletados['crypto']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['crypto']) ? 'Completado' : 'Verificar'; ?>
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Desafío 3: Criptografía -->
+                <!-- Desafío 3: Buffer Overflow-->
                 <div class="col-md-4 mb-4">
-                    <div class="card card-challenge shadow" id="challenge-crypto">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['buffer_overflow']) ? 'completed-challenge' : ''; ?>" id="challenge-buffer_overflow">
                         <div class="card-body">
-                            <h5 class="card-title text-primary">3. Criptografía</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Descifrado de Mensajes (1 🚩)</h6>
-                            <p class="card-text">Descifra el mensaje oculto. haz lo posible para identificar que cifrado es y desencriptarlo.</p>
-                            <p class="fw-bold">Cifrado: RkxBR3tFTF9ERVNFTkNSSVBUQURPUl9NQVNURVJ9</p>
+                            <h5 class="card-title text-primary">3. Buffer Overflow</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Desbordamiento de Búfer (1 🚩)</h6>
+                            <p class="card-text">Descubre como romper el sistema para conseguir la bandera.</p>
                             
+                            <a href="challenge_buffer_overflow.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
-                                <input type="text" class="form-control" id="flag-crypto" placeholder="Ingresa la bandera">
-                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="crypto">Verificar</button>
+                                <input type="text" class="form-control" id="flag-buffer_overflow" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['buffer_overflow']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="buffer_overflow"
+                                    <?php echo isset($desafiosCompletados['buffer_overflow']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['buffer_overflow']) ? 'Completado' : 'Verificar'; ?>
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Desafío 4: Puzzle de URL -->
+                <!-- Desafío 4: Análisis de URL -->
                 <div class="col-md-4 mb-4">
-                    <div class="card card-challenge shadow" id="challenge-url">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['command_injection']) ? 'completed-challenge' : ''; ?>" id="challenge-command_injection">
                         <div class="card-body">
-                            <h5 class="card-title text-primary">4. Puzzle de Redireccion</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Parámetros Ocultos (1 🚩)</h6>
-                            <p class="card-text">Encuentra la vulnerabilidad en las redirecciones para encontrar la bandera.</p>
+                            <h5 class="card-title text-primary">4. Análisis de URL</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Análisis de Red (1 🚩)</h6>
+                            <p class="card-text">Pasa de url en url hasta descubrir la vulnerabilidad.</p>
                             
-                            <a href="nivel4.php" class="btn btn-primary">Iniciar Desafío</a>
+                            <a href="desafio_4/inicio.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
-                                <input type="text" class="form-control" id="flag-url" placeholder="Ingresa la bandera">
-                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="url">Verificar</button>
+                                <input type="text" class="form-control" id="flag-command_injection" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['command_injection']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="command_injection"
+                                    <?php echo isset($desafiosCompletados['command_injection']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['command_injection']) ? 'Completado' : 'Verificar'; ?>
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Desafío 5: Metadatos de Imagen -->
+                <!-- Desafío 5: API Vulnerable -->
                 <div class="col-md-4 mb-4">
-                    <div class="card card-challenge shadow" id="challenge-meta">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['file_upload']) ? 'completed-challenge' : ''; ?>" id="challenge-file_upload">
                         <div class="card-body">
-                            <h5 class="card-title text-primary">5. Análisis Forense</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Metadatos EXIF (1 🚩)</h6>
-                            <p class="card-text">Descarga la imagen y analiza sus metadatos EXIF para encontrar la bandera oculta.</p>
-                            <p class="fw-bold">Imagen: <a href="mystery_image.jpeg" download>mystery_image.jpeg</a></p>
+                            <h5 class="card-title text-primary">5. API REST Vulnerable</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">API Hacking (1 🚩)</h6>
+                            <p class="card-text">¡WAOS! Esta API no valida tokens correctamente.</p>
                             
+                            <a href="api_lab.html" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
-                                <input type="text" class="form-control" id="flag-meta" placeholder="Ingresa la bandera">
-                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="meta">Verificar</button>
+                                <input type="text" class="form-control" id="flag-file_upload" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['file_upload']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="file_upload"
+                                    <?php echo isset($desafiosCompletados['file_upload']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['file_upload']) ? 'Completado' : 'Verificar'; ?>
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Desafío 6: Promoción Sospechosa -->
+                <!-- Desafío 6: Esteganografía -->
                 <div class="col-md-4 mb-4">
-                    <div class="card card-challenge shadow" id="challenge-promo">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['broken_auth']) ? 'completed-challenge' : ''; ?>" id="challenge-broken_auth">
                         <div class="card-body">
-                            <h5 class="card-title text-primary">6. Promoción Sospechosa</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Reconocimiento de Patrones (1 🚩)</h6>
-                            <p class="card-text">El departamento de marketing creó esta imagen promocional, pero contiene información sensible escondida.</p>
-                            <p class="fw-bold">Imagen: <a href="promocion_sospechosa.jpg" download>promocion_sospechosa.jpg</a></p>
+                            <h5 class="card-title text-primary">6. Esteganografía</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Ocultación de Datos (1 🚩)</h6>
+                            <p class="card-text">que se oculta detras de lo que ven tus ojos?</p>
+                            
+                            <a href="estego_inicio.php" class="btn btn-primary">Acceder al Desafío</a>
+                            <div class="mt-3">
+                                <input type="text" class="form-control" id="flag-broken_auth" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['broken_auth']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="broken_auth"
+                                    <?php echo isset($desafiosCompletados['broken_auth']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['broken_auth']) ? 'Completado' : 'Verificar'; ?>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Desafío 7: Login Clickable -->
+                <div class="col-md-4 mb-4">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['idor']) ? 'completed-challenge' : ''; ?>" id="challenge-idor">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">7. Astucia</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Elemento Oculto (1 🚩)</h6>
+                            <p class="card-text">UPS! se me a ido una vulnerabilidad en el index.php tendras la astucia de encontrarlo?.</p>
                             
                             <div class="mt-3">
-                                <input type="text" class="form-control" id="flag-promo" placeholder="Ingresa la bandera">
-                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="promo">Verificar</button>
+                                <input type="text" class="form-control" id="flag-idor" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['idor']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="idor"
+                                    <?php echo isset($desafiosCompletados['idor']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['idor']) ? 'Completado' : 'Verificar'; ?>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Desafío 8: BIOMETRICO -->
+                <div class="col-md-4 mb-4">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['biometrico']) ? 'completed-challenge' : ''; ?>" id="challenge-biometrico">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">8. BIOMETRICO</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Autenticación Biométrica (1 🚩)</h6>
+                            <p class="card-text">Para acceder a los archivos clasificados, deberás replicar el patrón correcto en la cuadrícula 3x3.</p>
+                            
+                            <a href="biometrico/biometrico.php" class="btn btn-primary">Acceder al Desafío</a>
+                            <div class="mt-3">
+                                <input type="text" class="form-control" id="flag-biometrico" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['biometrico']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="biometrico"
+                                    <?php echo isset($desafiosCompletados['biometrico']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['biometrico']) ? 'Completado' : 'Verificar'; ?>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Desafío 9: XXE -->
+                <div class="col-md-4 mb-4">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['xxe']) ? 'completed-challenge' : ''; ?>" id="challenge-xxe">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">9. XXE</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">XML External Entity (1 🚩)</h6>
+                            <p class="card-text">Esta aplicación procesa XML sin validar. Inyecta entidades externas para leer archivos del servidor como /etc/passwd usando &xxe;.</p>
+                            
+                            <a href="challenge_xxe.php" class="btn btn-primary">Acceder al Desafío</a>
+                            <div class="mt-3">
+                                <input type="text" class="form-control" id="flag-xxe" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['xxe']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="xxe"
+                                    <?php echo isset($desafiosCompletados['xxe']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['xxe']) ? 'Completado' : 'Verificar'; ?>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Desafío 10: Cookie Manipulation -->
+                <div class="col-md-4 mb-4">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['race_condition']) ? 'completed-challenge' : ''; ?>" id="challenge-race_condition">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">10. Cookie Manipulation</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Manipulación de Cookies (1 🚩)</h6>
+                            <p class="card-text">¡Piensa en el lado cliente! Las aplicaciones almacenan información en cookies. Usa las herramientas del navegador para modificar cookies y escalar privilegios.</p>
+                            
+                            <div class="mt-3">
+                                <input type="text" class="form-control" id="flag-race_condition" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['race_condition']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="race_condition"
+                                    <?php echo isset($desafiosCompletados['race_condition']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['race_condition']) ? 'Completado' : 'Verificar'; ?>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -658,12 +951,12 @@ if (isset($_SESSION['cedula'])) {
             <div class="modal-body text-center">
                 <div class="mb-4">
                     <i class="fas fa-trophy fa-4x text-warning mb-3"></i>
-                    <h3>¡HAS COMPLETADO TODOS LOS DESAFÍOS!</h3>
+                    <h3>¡HAS COMPLETADO TODOS LOS DESAFÍOS DEL HACKATHON 2026!</h3>
                 </div>
-                <p class="lead">El equipo <strong><?php echo htmlspecialchars($_SESSION['nombre_equipo']); ?></strong> ha resuelto exitosamente los 6 desafíos de seguridad.</p>
+                <p class="lead">El equipo <strong><?php echo htmlspecialchars($_SESSION['nombre_equipo']); ?></strong> ha resuelto exitosamente los 10 desafíos variados de hacking ético del Hackathon 2026.</p>
                 <div class="alert alert-info">
                     <h5>Puntuación Final: <span id="final-score" class="text-success"><?php echo $_SESSION['puntuacion_equipo']; ?></span> puntos</h5>
-                    <p class="mb-0">Tiempo utilizado: <span id="time-used">--:--</span></p>
+                    
                 </div>
                 <p>Espera los resultados finales. ¡Buen trabajo equipo!</p>
             </div>
@@ -682,8 +975,10 @@ const tiempoRestanteGlobal = <?php echo $tiempo_restante_global; ?>;
 let globalTimeLeft = tiempoRestanteGlobal;
 let currentScore = <?php echo $_SESSION['puntuacion_equipo']; ?>;
 let timers = {};
-let completedChallenges = {};
-let totalChallenges = 6; // Actualizado a 6 desafíos
+
+// Inicializar desafíos completados desde PHP
+let completedChallenges = <?php echo json_encode($desafiosCompletados); ?>;
+let totalChallenges = 10;
 
 // Elementos de audio
 const successSound = document.getElementById('successSound');
@@ -694,7 +989,7 @@ const resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
 
 // Calcular tiempo por desafío basado en el tiempo global restante
 const challengeDurations = {};
-const desafios = ['ctf', 're', 'crypto', 'url', 'meta', 'promo']; // Agregado 'promo'
+const desafios = ['login_inseguro', 'crypto', 'buffer_overflow', 'command_injection', 'file_upload', 'broken_auth', 'idor', 'csrf', 'xxe', 'race_condition'];
 desafios.forEach(desafio => {
     const tiempoDesafio = Math.min(15 * 60, globalTimeLeft);
     challengeDurations[desafio] = tiempoDesafio;
@@ -868,15 +1163,30 @@ function verifyFlag(challenge) {
     })
     .then(response => response.json())
     .then(data => {
+        console.log('Respuesta del servidor:', data); // Para debugging
+        
         if (data.success) {
             handleCorrectFlag(challenge, data.puntos);
+            
+            // Actualizar la puntuación en la sesión si viene en la respuesta
+            if (data.puntuacion_total) {
+                currentScore = data.puntuacion_total;
+                document.getElementById('score').textContent = `${currentScore} Puntos`;
+            }
         } else {
-            showResultModal('Bandera Incorrecta', data.message || 'Sigue buscando.', 'danger', true);
+            // MOSTRAR MODAL DE ERROR SOLO SI REALMENTE ES UN ERROR
+            if (data.message && !data.message.includes('ya fue completado')) {
+                showResultModal('Bandera Incorrecta', data.message, 'danger', true);
+            } else {
+                // Si ya estaba completado, solo mostrar mensaje en consola
+                console.log('Desafío ya completado:', data.message);
+            }
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showResultModal('Error', 'Error al verificar la bandera. Intenta nuevamente.', 'danger', true);
+        // Solo mostrar modal si es un error de red, no de lógica de negocio
+        showResultModal('Error de Conexión', 'Error al verificar la bandera. Intenta nuevamente.', 'danger', true);
     });
 }
 
@@ -932,13 +1242,12 @@ function showResultModal(title, message, type, playErrorSound) {
 }
 
 function handleCorrectFlag(challenge, puntos) {
-    showResultModal(
-        '¡Bandera Correcta!', 
-        `Tu equipo ha ganado ${puntos} puntos.`, 
-        'success', 
-        false
-    );
+    // Si ya estaba completado, no hacer nada
+    if (completedChallenges[challenge]) {
+        return;
+    }
     
+    // Primero actualizar la interfaz inmediatamente
     currentScore += puntos;
     document.getElementById('score').textContent = `${currentScore} Puntos`;
     
@@ -971,6 +1280,23 @@ function handleCorrectFlag(challenge, puntos) {
         button.classList.add('btn-success');
     }
     
+    // Mostrar modal de éxito SOLO si no es el sexto desafío
+    const completedCount = Object.keys(completedChallenges).length;
+    
+    if (completedCount === totalChallenges) {
+        // Si es el sexto desafío, NO mostrar el modal de éxito individual
+        // En su lugar, mostrar el modal de felicitaciones final
+        showFinalCongratulations();
+    } else {
+        // Para los primeros 5 desafíos, mostrar modal de éxito normal
+        showResultModal(
+            '¡Bandera Correcta!', 
+            `Tu equipo ha ganado ${puntos} puntos.`, 
+            'success', 
+            false
+        );
+    }
+    
     // Verificar si se completaron todos los desafíos
     checkAllChallengesCompleted();
 }
@@ -979,25 +1305,36 @@ function checkAllChallengesCompleted() {
     const completedCount = Object.keys(completedChallenges).length;
     
     if (completedCount === totalChallenges) {
-        // Calcular tiempo utilizado
-        const tiempoUtilizado = segundosTranscurridos;
-        const minutos = Math.floor(tiempoUtilizado / 60);
-        const segundos = tiempoUtilizado % 60;
-        const tiempoFormateado = `${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
-        
-        // Actualizar modal con información
-        document.getElementById('final-score').textContent = currentScore;
-        document.getElementById('time-used').textContent = tiempoFormateado;
-        
-        // Reproducir sonido de éxito
-        successSound.play();
-        
-        // Mostrar modal después de un breve delay
-        setTimeout(() => {
-            const congratsModal = new bootstrap.Modal(document.getElementById('congratsModal'));
-            congratsModal.show();
-        }, 1000);
+        showFinalCongratulations();
     }
+}
+
+function showFinalCongratulations() {
+    // Calcular tiempo utilizado
+    const tiempoUtilizado = segundosTranscurridos;
+    const minutos = Math.floor(tiempoUtilizado / 60);
+    const segundos = tiempoUtilizado % 60;
+    const tiempoFormateado = `${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
+    
+    // Actualizar modal con información
+    document.getElementById('final-score').textContent = currentScore;
+    
+    // Buscar el elemento time-used y actualizarlo si existe
+    const timeUsedElement = document.getElementById('time-used');
+    if (timeUsedElement) {
+        timeUsedElement.textContent = tiempoFormateado;
+    }
+    
+    // Reproducir sonido de éxito
+    if (successSound) {
+        successSound.play();
+    }
+    
+    // Mostrar modal después de un breve delay
+    setTimeout(() => {
+        const congratsModal = new bootstrap.Modal(document.getElementById('congratsModal'));
+        congratsModal.show();
+    }, 1000);
 }
 
 // ===== INICIALIZACIÓN =====

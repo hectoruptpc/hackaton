@@ -119,29 +119,40 @@ function desafioCompletado($equipo_id, $desafio_id) {
 }
 
 /**
- * Marcar desafío como completado y sumar puntos
+ * Marcar desafío como completado y sumar puntos - VERSIÓN CORREGIDA
  */
 function completarDesafio($equipo_id, $desafio_id, $puntos) {
     global $db;
     
-    // Verificar si ya está completado
-    if (desafioCompletado($equipo_id, $desafio_id)) {
+    try {
+        $db->beginTransaction();
+        
+        // Registrar completado
+        $stmt = $db->prepare("INSERT INTO desafios_completados (equipo_id, desafio_id) VALUES (?, ?)");
+        if (!$stmt->execute([$equipo_id, $desafio_id])) {
+            throw new Exception("Error al registrar desafío completado");
+        }
+        
+        // Sumar puntos al equipo
+        $stmt = $db->prepare("UPDATE equipos SET puntuacion_total = puntuacion_total + ? WHERE id = ?");
+        if (!$stmt->execute([$puntos, $equipo_id])) {
+            throw new Exception("Error al actualizar puntuación");
+        }
+        
+        // Registrar tiempo acumulado
+        registrarTiempoDesafioCompletado($equipo_id, $desafio_id);
+        
+        // Actualizar contador de desafíos completados
+        actualizarDesafiosCompletados($equipo_id);
+        
+        $db->commit();
+        return true;
+        
+    } catch (Exception $e) {
+        $db->rollBack();
+        error_log("Error en completarDesafio: " . $e->getMessage());
         return false;
     }
-    
-    // Registrar completado
-    $stmt = $db->prepare("INSERT INTO desafios_completados (equipo_id, desafio_id) VALUES (?, ?)");
-    $stmt->execute([$equipo_id, $desafio_id]);
-    
-    // Registrar tiempo acumulado
-    registrarTiempoDesafioCompletado($equipo_id, $desafio_id);
-    
-    // Actualizar contador de desafíos completados
-    actualizarDesafiosCompletados($equipo_id);
-    
-    // Sumar puntos al equipo
-    $stmt = $db->prepare("UPDATE equipos SET puntuacion_total = puntuacion_total + ? WHERE id = ?");
-    return $stmt->execute([$puntos, $equipo_id]);
 }
 
 /**
@@ -210,10 +221,15 @@ function calcularTiempoTranscurrido($tiempo_inicio) {
 }
 
 /**
- * Mostrar alerta con JavaScript
+ * Mostrar modal de error en lugar de alerta JavaScript
  */
-function mostrarAlerta($mensaje) {
-    echo "<script>alert('" . addslashes($mensaje) . "');window.location='index.php';</script>";
+function mostrarAlerta($mensaje, $tipo = 'error') {
+    // En lugar de mostrar alert, guardamos el mensaje en sesión para mostrarlo en un modal
+    $_SESSION['modal_message'] = $mensaje;
+    $_SESSION['modal_type'] = $tipo;
+    
+    // Redirigir de vuelta al formulario
+    header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
 
@@ -229,33 +245,53 @@ function verificarBandera($bandera_usuario, $bandera_correcta) {
  */
 function obtenerConfiguracionDesafios() {
     return [
-        'ctf' => [
-            'flag' => 'FLAG{SQL_INYECCION_EXITOSA}',
-            'puntos' => 1,
-            'tiempo' => 15 * 60
-        ],
-        're' => [
-            'flag' => 'FLAG{REVERSE_IS_FUN}',
+        'login_inseguro' => [
+            'flag' => 'FLAG{INSPECCIONA_EL_CODIGO}',
             'puntos' => 1,
             'tiempo' => 15 * 60
         ],
         'crypto' => [
-            'flag' => 'FLAG{EL_DESENCRIPTADOR_MASTER}',
+            'flag' => 'FLAG{CRYPTO_MASTER}',
             'puntos' => 1,
             'tiempo' => 15 * 60
         ],
-        'url' => [
-            'flag' => 'FLAG{URL_HACK}',
+        'buffer_overflow' => [
+            'flag' => 'FLAG{BUFFER_OVERFLOW_EXPLOIT}',
             'puntos' => 1,
             'tiempo' => 15 * 60
         ],
-        'meta' => [
-            'flag' => 'FLAG{SOY_EINSTEIN_SIUUU}',
+        'command_injection' => [
+            'flag' => 'FLAG{URL_ANALYSIS_MASTER}',
             'puntos' => 1,
             'tiempo' => 15 * 60
         ],
-        'promo' => [
-            'flag' => 'FLAG{SALDO_INSUFICIENTE}',
+        'file_upload' => [
+            'flag' => 'FLAG{API_HACKED}',
+            'puntos' => 1,
+            'tiempo' => 15 * 60
+        ],
+        'broken_auth' => [
+            'flag' => 'FLAG{STEGANOGRAPHY_SECRET}',
+            'puntos' => 1,
+            'tiempo' => 15 * 60
+        ],
+        'idor' => [
+            'flag' => 'FLAG{login_clickable_secret}',
+            'puntos' => 1,
+            'tiempo' => 15 * 60
+        ],
+        'biometrico' => [
+            'flag' => 'FLAG{BIOMETRIC_PATTERN_MASTER}',
+            'puntos' => 1,
+            'tiempo' => 15 * 60
+        ],
+        'xxe' => [
+            'flag' => 'FLAG{SESSION_HIJACKED}',
+            'puntos' => 1,
+            'tiempo' => 15 * 60
+        ],
+        'race_condition' => [
+            'flag' => 'FLAG{COOKIE_MANIPULATED}',
             'puntos' => 1,
             'tiempo' => 15 * 60
         ]
@@ -563,14 +599,27 @@ function registrarTiempoDesafioCompletado($equipo_id, $desafio_id) {
 }
 
 /**
- * Marcar equipo como completado (cuando termina los 6 desafíos)
+ * Marcar equipo como completado (cuando termina los 6 desafíos) - VERSIÓN CORREGIDA
  */
 function marcarEquipoCompletado($equipo_id) {
     global $db;
     
-    $tiempo_finalizacion = date('Y-m-d H:i:s');
-    $stmt = $db->prepare("UPDATE equipos SET completado = TRUE, tiempo_finalizacion = ?, desafios_completados = 6 WHERE id = ?");
-    return $stmt->execute([$tiempo_finalizacion, $equipo_id]);
+    try {
+        $tiempo_finalizacion = date('Y-m-d H:i:s');
+        $stmt = $db->prepare("
+            UPDATE equipos 
+            SET completado = TRUE, 
+                tiempo_finalizacion = ?,
+                estado = 1,
+                desafios_completados = 6
+            WHERE id = ?
+        ");
+        return $stmt->execute([$tiempo_finalizacion, $equipo_id]);
+        
+    } catch (Exception $e) {
+        error_log("Error en marcarEquipoCompletado: " . $e->getMessage());
+        return false;
+    }
 }
 
 /**
@@ -604,27 +653,56 @@ function obtenerRankingEquiposConTiempo() {
 }
 
 /**
- * Actualizar desafíos completados
+ * Actualizar desafíos completados - VERSIÓN CORREGIDA
  */
 function actualizarDesafiosCompletados($equipo_id) {
     global $db;
     
-    $stmt = $db->prepare("
-        UPDATE equipos 
-        SET desafios_completados = (
-            SELECT COUNT(*) FROM desafios_completados WHERE equipo_id = ?
-        ) 
-        WHERE id = ?
-    ");
-    $stmt->execute([$equipo_id, $equipo_id]);
-    
-    // Verificar si completó todos los desafíos
-    $equipo = obtenerInfoEquipo($equipo_id);
-    if ($equipo['desafios_completados'] >= 6 && !$equipo['completado']) {
-        marcarEquipoCompletado($equipo_id);
+    try {
+        // Obtener el conteo actual de desafíos completados
+        $stmt = $db->prepare("
+            SELECT COUNT(*) as total_completados 
+            FROM desafios_completados 
+            WHERE equipo_id = ?
+        ");
+        $stmt->execute([$equipo_id]);
+        $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
+        $total_completados = $resultado['total_completados'];
+        
+        // Actualizar el contador en la tabla equipos
+        $stmt = $db->prepare("
+            UPDATE equipos 
+            SET desafios_completados = ? 
+            WHERE id = ?
+        ");
+        $stmt->execute([$total_completados, $equipo_id]);
+        
+        // Verificar si completó todos los desafíos (6) y aún no está marcado como completado
+        if ($total_completados >= 6) {
+            $stmt = $db->prepare("SELECT completado FROM equipos WHERE id = ?");
+            $stmt->execute([$equipo_id]);
+            $equipo = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$equipo['completado']) {
+                // Marcar como completado
+                $tiempo_finalizacion = date('Y-m-d H:i:s');
+                $stmt = $db->prepare("
+                    UPDATE equipos 
+                    SET completado = TRUE, 
+                        tiempo_finalizacion = ?,
+                        estado = 1  -- Mantener estado como activo pero marcado como completado
+                    WHERE id = ?
+                ");
+                $stmt->execute([$tiempo_finalizacion, $equipo_id]);
+            }
+        }
+        
+        return $total_completados;
+        
+    } catch (Exception $e) {
+        error_log("Error en actualizarDesafiosCompletados: " . $e->getMessage());
+        return 0;
     }
-    
-    return $equipo['desafios_completados'];
 }
 
 
@@ -690,5 +768,323 @@ function formatearDuracionLegible($minutos) {
         }
     }
 }
+
+/**
+ * Obtener el estado actual del hackathon para sincronización
+ */
+function obtenerEstadoHackathon() {
+    $config = obtenerConfiguracionHackathon();
+    if (!$config) {
+        return [
+            'hackathon_iniciado' => false,
+            'tiempo_inicio_global' => null,
+            'duracion_minutos' => 90,
+            'timestamp' => time()
+        ];
+    }
+    
+    return [
+        'hackathon_iniciado' => (bool)$config['hackathon_iniciado'],
+        'tiempo_inicio_global' => $config['tiempo_inicio_global'],
+        'duracion_minutos' => $config['duracion_minutos'],
+        'timestamp' => time(),
+        'tiempo_restante' => calcularTiempoRestanteGlobal()
+    ];
+}
+
+
+
+/**
+ * Obtener desafíos completados por un equipo
+ */
+function obtenerDesafiosCompletados($equipo_id) {
+    global $db;
+    $stmt = $db->prepare("
+        SELECT desafio_id, completado_en 
+        FROM desafios_completados 
+        WHERE equipo_id = ?
+    ");
+    $stmt->execute([$equipo_id]);
+    $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $completados = [];
+    foreach ($resultados as $row) {
+        $completados[$row['desafio_id']] = true;
+    }
+    return $completados;
+}
+
+
+
+
+
+// ============================================================
+// functions.php - Lógica de Validación para Hackathon
+// ============================================================
+
+/**
+ * Valida la respuesta del usuario contra la flag correcta
+ * 
+ * @param string $user_answer La respuesta ingresada por el usuario
+ * @return array Array con 'feedback' y 'class' para mostrar el resultado
+ */
+function validateHackathonAnswer($user_answer) {
+    // Flag correcta (definida aquí y no expuesta al frontend)
+    $correct_flag = "H4CK4TH0N_3P1C_D3CRYPT10N";
+    
+    // Normalizar para comparación (sin espacios, minúsculas)
+    $normalized_user = strtolower(preg_replace('/\s+/', '', $user_answer));
+    $normalized_correct = strtolower(preg_replace('/\s+/', '', $correct_flag));
+    
+    if ($normalized_user === $normalized_correct) {
+        return [
+            'feedback' => '✅ ¡ACCESO CONCEDIDO! Has descifrado el mensaje. FLAG{CRYPTO_MASTER} ✅',
+            'class' => 'success'
+        ];
+    } else {
+        return [
+            'feedback' => '❌ ACCESO DENEGADO. Sigue intentando, el cifrado es largo pero no imposible. ❌',
+            'class' => 'error'
+        ];
+    }
+}
+
+/**
+ * Obtiene el texto encriptado (para mantenerlo en el backend)
+ * 
+ * @return string El texto encriptado
+ */
+function getEncryptedText() {
+    return "Vm0wd2QyVkZOVWRXV0doVFYwZG9XRll3Wkc5WFJsbDNXa2M1VjFadGVGWlZNbmhQVmpKS1NHVkdiR0ZXVjJoeVZtcEJlRmRIVmtsaVJtUk9ZV3RhU1ZadGNFZFpWMDE0V2toV2FWSnRVbkJXTUZwSFRURmFkRTFVVWxSTmJFcElWbTAxUzJGc1NuVlJhemxXWWxob1YxcFZXbUZrUlRGVlZXeHdWMkpJUWxsV1ZFa3hWREZzVjFOdVVsWmlSa3BvVm1wT1UyRkdiSEZTYlVacVRWWmFlVmRyV2xOVWJGcFpVV3BXVjFJemFHaFhWbHBhWlZaT2NtRkdXbWxTTW1oWFZtMTBWMlF5VW5OVmJsSnNVakJhY1ZSV1pGTk5SbFowWlVoa1YwMXJWalpWVjNoelZqRmFSbUo2UWxwbGExcDZWbXBHVDJSV1VuTmhSMnhYVFcxb2RsWnRNWGRVTVVWNFVsaG9WbUpyTlZSV2EyUTBWV3hhVjFWWVpGQlZWREE1";
+}
+
+
+
+
+
+
+
+
+// ============================================================
+// functions.php - Lógica del Desafío Login
+// ============================================================
+
+/**
+ * Procesa el login del usuario
+ * 
+ * @param string $usuario Usuario ingresado
+ * @param string $contrasena Contraseña ingresada
+ * @return string Mensaje HTML con el resultado
+ */
+function procesarLogin($usuario, $contrasena) {
+    // Credenciales válidas (visibles en el HTML)
+    if ($usuario == "admin" && $contrasena == "passwordsegura") {
+        return "<div class='alert alert-success mt-4'><strong>¡ACCESO CONCEDIDO!</strong> La bandera es: <code>FLAG{INSPECCIONA_EL_CODIGO}</code></div>";
+    } else {
+        return "<div class='alert alert-danger mt-4'>Error: Credenciales inválidas.</div>";
+    }
+}
+
+
+
+
+
+
+// ============================================================
+// functions.php - Funciones para el Desafío de Buffer Overflow
+// ============================================================
+
+/**
+ * Procesa el input del usuario para el desafío de Buffer Overflow
+ * 
+ * @param string $input Datos ingresados por el usuario
+ * @return array Resultado con mensaje y estado
+ */
+function procesarBufferOverflow($input) {
+    $flag = "FLAG{BUFFER_OVERFLOW_EXPLOIT}";
+    $buffer_size = 64;
+    $input_length = strlen($input);
+    $mensaje = "";
+    $show_input = true;
+    
+    if ($input_length > $buffer_size) {
+        // Se ha desbordado! Verificar si contiene el "payload" para ejecutar flag_secreta
+        $overflow_bytes = $input_length - $buffer_size;
+        
+        // Buscar la dirección simulada de flag_secreta en los bytes extra
+        $flag_hex = "f1e2d3c4";
+        $flag_pattern = "FLAG_SECRETA";
+        
+        if (strpos($input, $flag_pattern) !== false || substr($input, -8) === $flag_hex) {
+            $mensaje = '<div class="alert alert-success">🎉 ¡EXPLOIT EXITOSO! Has sobrescrito el registro de retorno.<br>
+                        <strong>' . $flag . '</strong></div>';
+            $show_input = false;
+        } else {
+            $mensaje = '<div class="alert alert-warning">⚠️ Desbordamiento detectado! Se han escrito ' . $overflow_bytes . 
+                       ' bytes extra. Pero no lograste ejecutar flag_secreta(). Sigue intentando.</div>';
+        }
+    } else {
+        $mensaje = '<div class="alert alert-info">📝 Datos ingresados (' . $input_length . '/' . $buffer_size . 
+                   ' bytes): ' . htmlspecialchars($input) . '<br>El programa terminó normalmente. No hubo overflow.</div>';
+    }
+    
+    return [
+        'mensaje' => $mensaje,
+        'show_input' => $show_input
+    ];
+}
+
+
+
+
+
+
+// ============================================================
+// functions.php - Añadir función para Esteganografía
+// ============================================================
+
+
+/**
+ * Verifica el mensaje descifrado de esteganografía
+ * 
+ * @param string $mensaje El mensaje ingresado por el usuario
+ * @return array Resultado con éxito y mensaje
+ */
+function verificarEsteganografia($mensaje) {
+    // El mensaje correcto (SOLO en el backend)
+    $mensaje_correcto = "el ataque sera al amanecer";
+    $mensaje_correcto2 = "elataqueseraalamanecer";
+    $mensaje_correcto3 = "el ataque será al amanecer";
+    
+    // Limpiar entrada
+    $mensaje_limpio = strtolower(trim($mensaje));
+    
+    // Verificar si coincide con alguno de los mensajes correctos
+    if ($mensaje_limpio === $mensaje_correcto || 
+        $mensaje_limpio === $mensaje_correcto2 || 
+        $mensaje_limpio === $mensaje_correcto3) {
+        return [
+            'exito' => true,
+            'mensaje' => '🎉 <strong>ACCESO CONCEDIDO</strong> 🎉<br><br>' .
+                        '<span style="color:#ff0;">🏆 FLAG{STEGANOGRAPHY_SECRET} 🏆</span><br><br>' .
+                        'Has completado la misión. Reporta este código a tu superior.'
+        ];
+    } else {
+        return [
+            'exito' => false,
+            'mensaje' => '❌ <strong>ACCESO DENEGADO</strong> ❌<br><br>' .
+                        'Mensaje incorrecto. Revisa la imagen con herramientas de esteganografía.'
+        ];
+    }
+}
+
+
+
+
+// ============================================================
+// functions.php - Funciones del Desafío de Patrón Biométrico con Sistema de Bloqueo
+// ============================================================
+
+
+/**
+ * Verifica el patrón biométrico ingresado con sistema de bloqueo
+ */
+function verificarPatronBiometrico($patron) {
+    $patron_correcto = "5-2-1-4-5-6-9-8-5";
+    $patron_limpio = trim($patron);
+    
+    // Inicializar contador si no existe
+    if (!isset($_SESSION['intentos_biometricos'])) {
+        $_SESSION['intentos_biometricos'] = 0;
+    }
+    
+    // Verificar bloqueo
+    if (isset($_SESSION['bloqueado_hasta']) && time() < $_SESSION['bloqueado_hasta']) {
+        $tiempo_restante = $_SESSION['bloqueado_hasta'] - time();
+        return [
+            'exito' => false,
+            'bloqueado' => true,
+            'tiempo_restante' => $tiempo_restante,
+            'mensaje' => '⏰ SISTEMA BLOQUEADO. Espera ' . $tiempo_restante . ' segundos.'
+        ];
+    }
+    
+    // Si expiró el bloqueo
+    if (isset($_SESSION['bloqueado_hasta']) && time() >= $_SESSION['bloqueado_hasta']) {
+        unset($_SESSION['bloqueado_hasta']);
+        $_SESSION['intentos_biometricos'] = 0;
+    }
+    
+    // Verificar patrón
+    if ($patron_limpio === $patron_correcto) {
+        $_SESSION['intentos_biometricos'] = 0;
+        return [
+            'exito' => true,
+            'bloqueado' => false,
+            'mensaje' => '🎉 <strong>¡ACCESO BIOMÉTRICO CONCEDIDO!</strong> 🎉<br><br>' .
+                        '<span style="color:#ff0; font-size:1.3rem;">🏆 FLAG{BIOMETRIC_PATTERN_MASTER} 🏆</span>'
+        ];
+    } else {
+        $_SESSION['intentos_biometricos']++;
+        
+        if ($_SESSION['intentos_biometricos'] >= 3) {
+            $_SESSION['bloqueado_hasta'] = time() + 60;
+            $_SESSION['intentos_biometricos'] = 0;
+            return [
+                'exito' => false,
+                'bloqueado' => true,
+                'tiempo_restante' => 60,
+                'mensaje' => '⚠️ DEMASIADOS INTENTOS.<br>🔒 Sistema bloqueado 60 segundos.'
+            ];
+        }
+        
+        return [
+            'exito' => false,
+            'bloqueado' => false,
+            'intentos' => $_SESSION['intentos_biometricos'],
+            'mensaje' => '❌ Patrón incorrecto. Intentos: ' . $_SESSION['intentos_biometricos'] . '/3'
+        ];
+    }
+}
+
+/**
+ * Obtiene el estado actual del bloqueo biométrico
+ */
+function obtenerEstadoBiometrico() {
+    $estado = [
+        'intentos' => isset($_SESSION['intentos_biometricos']) ? $_SESSION['intentos_biometricos'] : 0,
+        'bloqueado' => false,
+        'tiempo_restante' => 0
+    ];
+    
+    if (isset($_SESSION['bloqueado_hasta']) && time() < $_SESSION['bloqueado_hasta']) {
+        $estado['bloqueado'] = true;
+        $estado['tiempo_restante'] = $_SESSION['bloqueado_hasta'] - time();
+    }
+    
+    return $estado;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ?>

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost:3306
--- Tiempo de generación: 07-11-2025 a las 17:20:06
+-- Tiempo de generación: 13-11-2025 a las 13:26:08
 -- Versión del servidor: 8.0.43-0ubuntu0.24.04.2
 -- Versión de PHP: 8.3.6
 
@@ -40,7 +40,7 @@ CREATE TABLE `configuracion_hackathon` (
 --
 
 INSERT INTO `configuracion_hackathon` (`id`, `hackathon_iniciado`, `tiempo_inicio_global`, `duracion_minutos`, `creado_en`) VALUES
-(1, 0, NULL, 1, '2025-10-30 13:44:43');
+(1, 1, '2025-11-12 14:59:37', 5, '2025-10-30 13:44:43');
 
 -- --------------------------------------------------------
 
@@ -77,6 +77,14 @@ CREATE TABLE `equipos` (
   `completado` tinyint(1) DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
 
+--
+-- Volcado de datos para la tabla `equipos`
+--
+
+INSERT INTO `equipos` (`id`, `nombre_equipo`, `codigo_equipo`, `tiempo_inicio`, `puntuacion_total`, `inicio_tardio`, `creado_en`, `estado`, `actualizado_en`, `tiempo_acumulado`, `tiempo_finalizacion`, `desafios_completados`, `completado`) VALUES
+(33, 'ANGELES DE INFORMATICA', 'WY4UEQ', '2025-11-12 14:59:37', 0, 0, '2025-11-11 14:40:01', 1, '2025-11-12 14:59:37', 0, NULL, 0, 0),
+(34, 'Prueba', 'BVPFGD', '2025-11-12 14:59:37', 0, 0, '2025-11-11 17:54:56', 1, '2025-11-12 14:59:37', 0, NULL, 0, 0);
+
 -- --------------------------------------------------------
 
 --
@@ -90,6 +98,20 @@ CREATE TABLE `participantes` (
   `equipo_id` int DEFAULT NULL,
   `creado_en` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
+
+--
+-- Volcado de datos para la tabla `participantes`
+--
+
+INSERT INTO `participantes` (`id`, `nombre`, `cedula`, `equipo_id`, `creado_en`) VALUES
+(64, 'jose', '10101010', 33, '2025-11-11 14:40:01'),
+(65, 'angel', '20202020', 33, '2025-11-11 14:40:01'),
+(66, 'OTRO', '303030', 33, '2025-11-11 14:40:01'),
+(67, 'OTROS', '505050', 33, '2025-11-11 14:40:01'),
+(68, 'Jsudbsj', '30692052', 34, '2025-11-11 17:54:56'),
+(69, 'Bcksbxj', '98765555', 34, '2025-11-11 17:54:56'),
+(70, 'Kslakdosj', '1738172', 34, '2025-11-11 17:54:56'),
+(71, 'Oaldmaal', '99988877', 34, '2025-11-11 17:54:56');
 
 --
 -- Índices para tablas volcadas
@@ -138,19 +160,19 @@ ALTER TABLE `configuracion_hackathon`
 -- AUTO_INCREMENT de la tabla `desafios_completados`
 --
 ALTER TABLE `desafios_completados`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=115;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=195;
 
 --
 -- AUTO_INCREMENT de la tabla `equipos`
 --
 ALTER TABLE `equipos`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT de la tabla `participantes`
 --
 ALTER TABLE `participantes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=64;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=72;
 
 --
 -- Restricciones para tablas volcadas

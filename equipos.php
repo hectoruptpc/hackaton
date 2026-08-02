@@ -223,24 +223,66 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
         }
 
         .equipo-completo {
-            border: 2px solid #28a745 !important;
-            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%) !important;
-            animation: pulse 2s infinite;
-            position: relative;
-        }
+    border: 2px solid #28a745 !important;
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%) !important;
+    animation: pulse-completo 2s infinite;
+    position: relative;
+    /* NUEVAS PROPIEDADES PARA EVITAR CORTE */
+    overflow: visible !important;
+    z-index: 10;
+    margin: 2px 0;
+    box-shadow: 0 0 20px rgba(40, 167, 69, 0.3);
+    transform-origin: center;
+}
 
-        .equipo-completo::after {
-            content: "✅ COMPLETO";
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 0.8rem;
-            background: #28a745;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
-        }
+.equipo-completo::after {
+    content: "✅ COMPLETO";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8rem;
+    background: #28a745;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    z-index: 11;
+    /* Asegurar que el badge no se corte */
+    white-space: nowrap;
+}
+
+/* ANIMACIÓN MEJORADA QUE NO SE CORTA */
+@keyframes pulse-completo {
+    0%, 100% { 
+        transform: scale(1);
+        box-shadow: 0 0 10px rgba(40, 167, 69, 0.3);
+    }
+    50% { 
+        transform: scale(1.02);
+        box-shadow: 0 0 25px rgba(40, 167, 69, 0.6);
+    }
+}
+
+/* Asegurar que la tabla permita el overflow */
+.table-responsive {
+    overflow: visible !important;
+}
+
+.table {
+    overflow: visible !important;
+}
+
+/* Asegurar que las filas tengan espacio para la animación */
+.table tbody tr {
+    position: relative;
+    overflow: visible !important;
+}
+
+/* Contenedor de la tabla con espacio para animaciones */
+.table-container {
+    overflow: visible !important;
+    position: relative;
+}
 
         /* Podio items */
         .podio-item {
@@ -361,6 +403,41 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
+
+
+/* Busca esta sección en los estilos y agrega: */
+.badge-espera { background-color: #6c757d; }
+.badge-compitiendo { background-color: #198754; }
+.badge-finalizado { background-color: #0d6efd; }
+
+/* Agrega estos nuevos estilos: */
+.equipo-finalizado {
+    border-left: 4px solid #0d6efd !important;
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%) !important;
+}
+
+.equipo-completo {
+    border: 2px solid #28a745 !important;
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%) !important;
+    animation: pulse 2s infinite;
+    position: relative;
+}
+
+.equipo-completo::after {
+    content: "✅ COMPLETO";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8rem;
+    background: #28a745;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+
+
     </style>
 </head>
 <body>
@@ -594,12 +671,26 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <?php if ($equipo['estado'] == 1): ?>
-                                        <span class="badge badge-compitiendo p-2">🏁 COMPITIENDO</span>
-                                    <?php else: ?>
-                                        <span class="badge badge-espera p-2">⏳ EN ESPERA</span>
-                                    <?php endif; ?>
-                                </td>
+    <?php 
+    $estado_mostrar = '';
+    $clase_badge = '';
+    $texto_extra = '';
+    
+    if ($equipo['puntuacion_total'] == 6 || $equipo['completado']) {
+        $estado_mostrar = '✅ FINALIZADO';
+        $clase_badge = 'badge bg-success p-2';
+        $texto_extra = '<br><small class="text-success mt-1 d-block">🎯 6/6 Desafíos</small>';
+    } elseif ($equipo['estado'] == 1) {
+        $estado_mostrar = '🏁 COMPITIENDO';
+        $clase_badge = 'badge badge-compitiendo p-2';
+    } else {
+        $estado_mostrar = '⏳ EN ESPERA';
+        $clase_badge = 'badge badge-espera p-2';
+    }
+    ?>
+    <span class="<?php echo $clase_badge; ?>"><?php echo $estado_mostrar; ?></span>
+    <?php echo $texto_extra; ?>
+</td>
                                 <td class="text-center actions-column">
                                     <!-- Botón Eliminar -->
                                     <button type="button" class="btn btn-danger btn-sm btn-eliminar-equipo" 
@@ -725,7 +816,7 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
 <!-- Modal Podio Completo (Cuando equipos completan los 6 desafíos) -->
 <div class="modal fade" id="podioCompletoModal" tabindex="-1" aria-labelledby="podioCompletoModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content" style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%);">
+        <div class="modal-content" style="background: linear-gradient(135deg, #01b7ffff 0%, #0075d4ff 50%, #005ac2ff 100%);">
             <div class="modal-header border-0">
                 <h2 class="modal-title text-center w-100 text-white" id="podioCompletoModalLabel">
                     🏆 PODIO OFICIAL 🏆
@@ -821,12 +912,12 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
 
 <!-- Audio para el sonido de finalización -->
 <audio id="finishSound" preload="auto">
-    <source src="audios/aplausos.mp3" type="audio/mpeg">
+    <source src="audios/ganador.mp3" type="audio/mpeg">
 </audio>
 
 <!-- Audio para victoria -->
 <audio id="audioVictoria" preload="auto">
-    <source src="audios/aplausos.mp3" type="audio/mpeg">
+    <source src="audios/ganador.mp3" type="audio/mpeg">
 </audio>
 
 <!-- Audios para bandera 1 (en orden) -->
@@ -949,6 +1040,105 @@ const tiempoElement = document.getElementById('tiempo-global');
 const tablaEquipos = document.getElementById('tabla-equipos');
 const totalEquiposElement = document.getElementById('total-equipos');
 const PUNTUACION_MAXIMA = 6;
+
+// =============================================
+// SISTEMA DE SINCRONIZACIÓN MEJORADO - Mismo método que puntaje
+// =============================================
+
+let ultimaVerificacionEstado = Date.now();
+let hackathonActivo = <?php echo $hackathon_activo ? 'true' : 'false'; ?>;
+let estadoSincronizado = false;
+
+// Función para verificar cambios en el estado del hackathon
+function verificarEstadoHackathon() {
+    fetch(`obtener_estado_hackathon.php?t=${Date.now()}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const estadoActual = data.estado.hackathon_iniciado;
+                
+                // Si el estado cambió
+                if (estadoActual !== hackathonActivo) {
+                    console.log(`🔄 Cambio de estado detectado: ${hackathonActivo} → ${estadoActual}`);
+                    
+                    if (estadoActual && !hackathonActivo) {
+                        // Hackathon fue iniciado desde otro dispositivo
+                        console.log('🚀 Hackathon iniciado desde otro dispositivo - Recargando...');
+                        mostrarNotificacionSincronizacion('¡Hackathon iniciado desde otro dispositivo!', 'success');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    } else if (!estadoActual && hackathonActivo) {
+                        // Hackathon fue reiniciado desde otro dispositivo
+                        console.log('🔄 Hackathon reiniciado desde otro dispositivo - Recargando...');
+                        mostrarNotificacionSincronizacion('¡Hackathon reiniciado desde otro dispositivo!', 'warning');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    }
+                    
+                    hackathonActivo = estadoActual;
+                }
+                
+                estadoSincronizado = true;
+            }
+        })
+        .catch(error => {
+            console.error('❌ Error verificando estado hackathon:', error);
+        });
+}
+
+// Función para notificar cambios de estado a otros dispositivos
+function notificarCambioEstado(accion) {
+    fetch(`actualizar_estado_hackathon.php?accion=${accion}&t=${Date.now()}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log(`📢 Estado ${accion} notificado a otros dispositivos`);
+            }
+        })
+        .catch(error => {
+            console.error('❌ Error notificando cambio:', error);
+        });
+}
+
+// Función para mostrar notificación de sincronización
+function mostrarNotificacionSincronizacion(mensaje, tipo = 'info') {
+    const notificacion = document.createElement('div');
+    notificacion.className = `alert alert-${tipo} alert-dismissible fade show notificacion-flotante`;
+    notificacion.style.zIndex = '10000';
+    notificacion.style.top = '80px';
+    
+    notificacion.innerHTML = `
+        <div class="d-flex align-items-center">
+            <span class="fs-5 me-2">${tipo === 'success' ? '🔄' : '⚠️'}</span>
+            <div>
+                <strong>Sincronización</strong>
+                <p class="mb-0">${mensaje}</p>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notificacion);
+    
+    setTimeout(() => {
+        if (notificacion.parentNode) {
+            notificacion.remove();
+        }
+    }, 4000);
+}
+
+// Iniciar verificación de estado
+function iniciarVerificacionEstado() {
+    console.log('📡 Iniciando verificación de estado del hackathon...');
+    
+    // Verificar cada 2 segundos (misma frecuencia que los equipos)
+    setInterval(verificarEstadoHackathon, 2000);
+    
+    // Verificar inmediatamente
+    setTimeout(verificarEstadoHackathon, 1000);
+}
 
 // =============================================
 // SISTEMA DE SONIDOS COMPLETO - CORREGIDO
@@ -1164,16 +1354,16 @@ document.addEventListener('DOMContentLoaded', function() {
         if (audiosBanderas[bandera]) {
             audiosBanderas[bandera].forEach(audio => {
                 if (audio) {
-                    audio.volume = 0.7; // 70% de volumen para todos los audios
+                    audio.volume = 0.7;
                 }
             });
         }
     }
     if (audioVictoria) {
-        audioVictoria.volume = 0.8; // 80% de volumen para victoria
+        audioVictoria.volume = 0.8;
     }
     if (finishSound) {
-        finishSound.volume = 0.8; // 80% de volumen para finalización
+        finishSound.volume = 0.8;
     }
     
     // Iniciar temporizador solo si el hackathon está activo
@@ -1181,7 +1371,6 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('⏱️ Hackathon activo - Iniciando temporizador...');
     const temporizador = setInterval(actualizarTiempoGlobal, 1000);
 
-    // Verificar inmediatamente si el tiempo ya se agotó
     if (tiempoRestante <= 0) {
         console.log('⏰ Tiempo ya agotado - Mostrando resultado...');
         mostrarResultadoTiempo();
@@ -1195,6 +1384,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Configurar panel de configuración
     configurarPanelConfiguracion();
+    
+    // INICIAR VERIFICACIÓN DE ESTADO (NUEVO)
+    iniciarVerificacionEstado();
 });
 
 // Configurar eventos para botones de eliminar
@@ -1330,7 +1522,7 @@ function reordenarTablaCompleta(rankingCompleto) {
     configurarEventosEliminacion();
 }
 
-// Función para crear una nueva fila de equipo
+// Función para crear una nueva fila de equipo - ACTUALIZADA
 function crearFilaEquipo(equipo, index) {
     const nuevaFila = document.createElement('tr');
     nuevaFila.setAttribute('data-equipo-id', equipo.id);
@@ -1341,6 +1533,23 @@ function crearFilaEquipo(equipo, index) {
     else if (index === 2) claseFila = 'top-3';
     
     nuevaFila.className = `${claseFila} equipo-nuevo`;
+    
+    // Determinar estado - NUEVO CÓDIGO
+    let estadoTexto = '';
+    let claseBadge = '';
+    let textoExtra = '';
+    
+    if (equipo.puntuacion_total === 6 || equipo.completado) {
+        estadoTexto = '✅ FINALIZADO';
+        claseBadge = 'badge bg-success p-2';
+        textoExtra = '<br><small class="text-success mt-1 d-block">🎯 6/6 Desafíos</small>';
+    } else if (equipo.estado == 1) {
+        estadoTexto = '🏁 COMPITIENDO';
+        claseBadge = 'badge badge-compitiendo p-2';
+    } else {
+        estadoTexto = '⏳ EN ESPERA';
+        claseBadge = 'badge badge-espera p-2';
+    }
     
     nuevaFila.innerHTML = `
         <td>
@@ -1371,9 +1580,8 @@ function crearFilaEquipo(equipo, index) {
             }
         </td>
         <td>
-            <span class="badge ${equipo.estado == 1 ? 'badge-compitiendo' : 'badge-espera'} p-2">
-                ${equipo.estado == 1 ? '🏁 COMPITIENDO' : '⏳ EN ESPERA'}
-            </span>
+            <span class="${claseBadge}">${estadoTexto}</span>
+            ${textoExtra}
         </td>
         <td class="text-center actions-column">
             <button type="button" class="btn btn-danger btn-sm btn-eliminar-equipo" 
@@ -1387,6 +1595,11 @@ function crearFilaEquipo(equipo, index) {
         </td>
     `;
     
+    // Marcar como completo si llegó a 6 puntos
+    if (equipo.puntuacion_total === 6 || equipo.completado) {
+        nuevaFila.classList.add('equipo-completo');
+    }
+    
     // Remover clase de nuevo después de 3 segundos
     setTimeout(() => {
         nuevaFila.classList.remove('equipo-nuevo');
@@ -1399,7 +1612,7 @@ function crearFilaEquipo(equipo, index) {
     return nuevaFila;
 }
 
-// Función para actualizar una fila existente de equipo
+// Función para actualizar una fila existente de equipo - ACTUALIZADA
 function actualizarFilaEquipo(fila, equipo, index) {
     const celdaPosicion = fila.querySelector('td:nth-child(1) strong');
     const posicionAnterior = parseInt(celdaPosicion.textContent);
@@ -1452,10 +1665,29 @@ function actualizarFilaEquipo(fila, equipo, index) {
         celdaTiempo.innerHTML = '<span class="text-muted">--:--</span>';
     }
     
-    // Actualizar celda de estado (6ta columna)
-    const celdaEstado = fila.querySelector('td:nth-child(6) span');
-    celdaEstado.className = `badge ${equipo.estado == 1 ? 'badge-compitiendo' : 'badge-espera'} p-2`;
-    celdaEstado.textContent = equipo.estado == 1 ? '🏁 COMPITIENDO' : '⏳ EN ESPERA';
+    // Actualizar celda de estado (6ta columna) - MODIFICADO
+    const celdaEstado = fila.querySelector('td:nth-child(6)');
+    
+    let estadoTexto = '';
+    let claseBadge = '';
+    let textoExtra = '';
+    
+    if (equipo.puntuacion_total === 6 || equipo.completado) {
+        estadoTexto = '✅ FINALIZADO';
+        claseBadge = 'badge bg-success p-2';
+        textoExtra = '<br><small class="text-success mt-1 d-block">🎯 6/6 Desafíos</small>';
+    } else if (equipo.estado == 1) {
+        estadoTexto = '🏁 COMPITIENDO';
+        claseBadge = 'badge badge-compitiendo p-2';
+    } else {
+        estadoTexto = '⏳ EN ESPERA';
+        claseBadge = 'badge badge-espera p-2';
+    }
+    
+    celdaEstado.innerHTML = `
+        <span class="${claseBadge}">${estadoTexto}</span>
+        ${textoExtra}
+    `;
     
     // Marcar como completo si llegó a 6 puntos
     if (equipo.puntuacion_total === 6 || equipo.completado) {
@@ -1469,7 +1701,7 @@ function actualizarFilaEquipo(fila, equipo, index) {
 // SISTEMA DE RESULTADOS Y PODIOS - CORREGIDO
 // =============================================
 
-// Función para verificar si hay equipos que completaron los 6 desafíos
+// Función para verificar si hay equipos que completaron los 6 desafíos - ACTUALIZADA
 function verificarPodioCompleto(ranking) {
     if (!ranking || ranking.length === 0 || podioCompletoMostrado) return;
     
@@ -1480,6 +1712,21 @@ function verificarPodioCompleto(ranking) {
     
     if (equiposCompletos.length > 0) {
         console.log('🏆 Equipos completaron todos los desafíos:', equiposCompletos.length);
+        
+        // Marcar automáticamente como FINALIZADO en la interfaz
+        equiposCompletos.forEach(equipo => {
+            const fila = document.querySelector(`tr[data-equipo-id="${equipo.id}"]`);
+            if (fila) {
+                const celdaEstado = fila.querySelector('td:nth-child(6)');
+                celdaEstado.innerHTML = `
+                    <span class="badge bg-success p-2">✅ FINALIZADO</span>
+                    <br>
+                    <small class="text-success mt-1 d-block">🎯 6/6 Desafíos</small>
+                `;
+                fila.classList.add('equipo-completo');
+            }
+        });
+        
         mostrarPodioCompleto(equiposCompletos);
         podioCompletoMostrado = true;
     }
@@ -1908,6 +2155,39 @@ console.log('🔊 Sistema de sonidos listo');
 console.log('⏱️ Temporizador listo');
 console.log('📡 Monitoreo en tiempo real activo');
 console.log('🏆 Sistema de resultados configurado');
+console.log('🔄 Sistema de sincronización activo');
+
+
+
+
+
+// =============================================
+// CONFIGURACIÓN DE FORMULARIOS PARA SINCRONIZACIÓN
+// =============================================
+
+// Configurar formulario de iniciar hackathon
+const formIniciar = document.querySelector('#iniciarModal form');
+if (formIniciar) {
+    formIniciar.addEventListener('submit', function() {
+        console.log('🚀 Notificando inicio de hackathon a otros dispositivos...');
+        notificarCambioEstado('iniciar');
+    });
+}
+
+// Configurar formulario de reiniciar hackathon  
+const formReiniciar = document.querySelector('#reiniciarModal form');
+if (formReiniciar) {
+    formReiniciar.addEventListener('submit', function() {
+        console.log('🔄 Notificando reinicio de hackathon a otros dispositivos...');
+        notificarCambioEstado('reiniciar');
+    });
+}
+
+
+
+
+
+
 </script>
 
 </body>
