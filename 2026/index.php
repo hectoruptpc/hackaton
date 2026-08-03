@@ -2,6 +2,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 session_start();
+header('X-Secret-Flag: FLAG{http_header_secret}');
 require_once __DIR__ . '/conf/functions.php';
 
 // 1. Si ya está en sesión, calcula el tiempo y muestra dashboard
@@ -181,7 +182,7 @@ if (isset($_SESSION['cedula'])) {
     <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Inicio Hackaton 2025</title>
+        <title>Inicio Hackaton</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
         <style>
             .hero-section { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 60px 0; border-radius: 15px; }
@@ -193,9 +194,10 @@ if (isset($_SESSION['cedula'])) {
     </head>
     <body>
     <div class="container mt-4">
+        <!-- FLAG{source_code_secret} -->
         <div class="text-center mb-3">
             <img src="img/img.jpg" alt="Logo Hackathon" style="max-width:800px;">
-            <h1>Hackathon UPTPC 2025</h1>
+            <h1>Hackathon UPTPC 2026 - Segundo Evento</h1>
         </div>
         
         <div class="hero-section text-center mb-5">
@@ -297,6 +299,10 @@ if (isset($_SESSION['cedula'])) {
                                 <input type="text" class="form-control form-control-lg" id="cedula_acceso" name="cedula_acceso" 
                                        required pattern="\d+" maxlength="20" placeholder="Ingresa tu cédula">
                                 <div class="form-text">Solo números, sin puntos ni espacios</div>
+                            </div>
+                            
+                            <div class="text-center mb-3">
+                                <small class="text-muted" onclick="alert('FLAG{login_clickable_secret}')" style="cursor: default;">¿Olvidaste tu contraseña?</small>
                             </div>
                             
                             <div id="access-alert-container" class="mb-3"></div>
@@ -576,7 +582,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hackathon 2025: Desafío de Seguridad</title>
+<title>Hackathon Universitario: Desafío de Seguridad</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
@@ -592,6 +598,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </head>
 <body>
 <div class="container mt-4">
+    <!-- FLAG{html_comment_easy} -->
     <!-- Header con información del usuario y equipo -->
     <div class="alert alert-success mb-4">
         <div class="row align-items-center">
@@ -609,7 +616,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <div class="text-center mb-3">
         <img src="img/img.jpg" alt="Logo Hackathon" style="max-width:800px;">
-        <h1>Hackathon UPTPC 2025</h1>
+        <h1>Hackathon UPTPC 2026 - Segundo Evento</h1>
     </div>
 
     <!-- Información del equipo -->
@@ -684,67 +691,46 @@ document.addEventListener('DOMContentLoaded', function() {
     ?>
         <!-- Mensaje de espera (visible cuando estado = 0) -->
         <div id="mensaje-espera" class="alert alert-info text-center mb-4">
-            <h3>⏳ Esperando inicio del Hackathon 2025</h3>
+            <h3>⏳ Esperando inicio del Hackathon 2026</h3>
             <p class="mb-0">Tu equipo está registrado y listo para competir. El administrador iniciará el hackathon pronto.</p>
             <p class="mt-2"><small>Esta página se actualizará automáticamente cuando comience la competencia.</small></p>
         </div>
     <?php else: ?>
         <!-- Sección de niveles (visible cuando estado = 1) -->
         <div id="niveles-section">
-            <h2 class="mb-4 text-center">🎯 Desafíos Disponibles</h2>
+            <h2 class="mb-4 text-center">🎯 Desafíos Disponibles - Hackathon 2026</h2>
             <div class="row">
 
-                <!-- Desafío 1: Aplicación Web CTF -->
+                <!-- Desafío 1: Login Inseguro -->
                 <div class="col-md-4 mb-4">
-                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['ctf']) ? 'completed-challenge' : ''; ?>" id="challenge-ctf">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['login_inseguro']) ? 'completed-challenge' : ''; ?>" id="challenge-login_inseguro">
                         <div class="card-body">
-                            <h5 class="card-title text-primary">1. Aplicación Web CTF</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Web Hacking (1 🚩)</h6>
-                            <p class="card-text">Encuentra una vulnerabilidad en este formulario de inicio de sesión.</p>
+                            <h5 class="card-title text-primary">1. Login Inseguro</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Login (1 🚩)</h6>
+                            <p class="card-text">podras conseguir las credenciales de este codigo?.</p>
                             
-                            <a href="challenge_ctf.php" class="btn btn-primary">Acceder al Desafío</a>
+                            <a href="login_inseguro.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
-                                <input type="text" class="form-control" id="flag-ctf" placeholder="Ingresa la bandera" 
-                                    <?php echo isset($desafiosCompletados['ctf']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
-                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="ctf"
-                                    <?php echo isset($desafiosCompletados['ctf']) ? 'disabled' : ''; ?>>
-                                    <?php echo isset($desafiosCompletados['ctf']) ? 'Completado' : 'Verificar'; ?>
+                                <input type="text" class="form-control" id="flag-login_inseguro" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['login_inseguro']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="login_inseguro"
+                                    <?php echo isset($desafiosCompletados['login_inseguro']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['login_inseguro']) ? 'Completado' : 'Verificar'; ?>
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Desafío 2: Ingeniería Inversa -->
-                <div class="col-md-4 mb-4">
-                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['re']) ? 'completed-challenge' : ''; ?>" id="challenge-re">
-                        <div class="card-body">
-                            <h5 class="card-title text-primary">2. Ingeniería Inversa</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Análisis de Binarios (1 🚩)</h6>
-                            <p class="card-text">Descarga el archivo binario y realiza ingeniería inversa para obtener la contraseña oculta.</p>
-                            <p class="fw-bold">Archivo: <a href="reverse_challenge.zip">reverse_challenge.zip</a></p>
-                            
-                            <div class="mt-3">
-                                <input type="text" class="form-control" id="flag-re" placeholder="Ingresa la bandera" 
-                                    <?php echo isset($desafiosCompletados['re']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
-                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="re"
-                                    <?php echo isset($desafiosCompletados['re']) ? 'disabled' : ''; ?>>
-                                    <?php echo isset($desafiosCompletados['re']) ? 'Completado' : 'Verificar'; ?>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Desafío 3: Criptografía -->
+                <!-- Desafío 2: Criptografia -->
                 <div class="col-md-4 mb-4">
                     <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['crypto']) ? 'completed-challenge' : ''; ?>" id="challenge-crypto">
                         <div class="card-body">
-                            <h5 class="card-title text-primary">3. Criptografía</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Descifrado de Mensajes (1 🚩)</h6>
-                            <p class="card-text">Descifra el mensaje oculto. haz lo posible para identificar que cifrado es y desencriptarlo.</p>
-                            <p class="fw-bold">Cifrado: RkxBR3tFTF9ERVNFTkNSSVBUQURPUl9NQVNURVJ9</p>
+                            <h5 class="card-title text-primary">2. Criptografía</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Criptografía (1 🚩)</h6>
+                            <p class="card-text">Descubre el mensaje encriptado para conseguir la bandera.</p>
                             
+                            <a href="crypto.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
                                 <input type="text" class="form-control" id="flag-crypto" placeholder="Ingresa la bandera" 
                                     <?php echo isset($desafiosCompletados['crypto']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
@@ -757,63 +743,166 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
 
-                <!-- Desafío 4: Puzzle de URL -->
+                <!-- Desafío 3: Buffer Overflow-->
                 <div class="col-md-4 mb-4">
-                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['url']) ? 'completed-challenge' : ''; ?>" id="challenge-url">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['buffer_overflow']) ? 'completed-challenge' : ''; ?>" id="challenge-buffer_overflow">
                         <div class="card-body">
-                            <h5 class="card-title text-primary">4. Puzzle de Redireccion</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Parámetros Ocultos (1 🚩)</h6>
-                            <p class="card-text">Encuentra la vulnerabilidad en las redirecciones para encontrar la bandera.</p>
+                            <h5 class="card-title text-primary">3. Buffer Overflow</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Desbordamiento de Búfer (1 🚩)</h6>
+                            <p class="card-text">Descubre como romper el sistema para conseguir la bandera.</p>
                             
-                            <a href="nivel4.php" class="btn btn-primary">Iniciar Desafío</a>
+                            <a href="challenge_buffer_overflow.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
-                                <input type="text" class="form-control" id="flag-url" placeholder="Ingresa la bandera" 
-                                    <?php echo isset($desafiosCompletados['url']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
-                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="url"
-                                    <?php echo isset($desafiosCompletados['url']) ? 'disabled' : ''; ?>>
-                                    <?php echo isset($desafiosCompletados['url']) ? 'Completado' : 'Verificar'; ?>
+                                <input type="text" class="form-control" id="flag-buffer_overflow" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['buffer_overflow']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="buffer_overflow"
+                                    <?php echo isset($desafiosCompletados['buffer_overflow']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['buffer_overflow']) ? 'Completado' : 'Verificar'; ?>
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Desafío 5: Metadatos de Imagen -->
+                <!-- Desafío 4: Análisis de URL -->
                 <div class="col-md-4 mb-4">
-                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['meta']) ? 'completed-challenge' : ''; ?>" id="challenge-meta">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['command_injection']) ? 'completed-challenge' : ''; ?>" id="challenge-command_injection">
                         <div class="card-body">
-                            <h5 class="card-title text-primary">5. Análisis Forense</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Metadatos EXIF (1 🚩)</h6>
-                            <p class="card-text">Descarga la imagen y analiza sus metadatos EXIF para encontrar la bandera oculta.</p>
-                            <p class="fw-bold">Imagen: <a href="mystery_image.jpeg" download>mystery_image.jpeg</a></p>
+                            <h5 class="card-title text-primary">4. Análisis de URL</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Análisis de Red (1 🚩)</h6>
+                            <p class="card-text">Pasa de url en url hasta descubrir la vulnerabilidad.</p>
                             
+                            <a href="desafio_4/inicio.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
-                                <input type="text" class="form-control" id="flag-meta" placeholder="Ingresa la bandera" 
-                                    <?php echo isset($desafiosCompletados['meta']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
-                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="meta"
-                                    <?php echo isset($desafiosCompletados['meta']) ? 'disabled' : ''; ?>>
-                                    <?php echo isset($desafiosCompletados['meta']) ? 'Completado' : 'Verificar'; ?>
+                                <input type="text" class="form-control" id="flag-command_injection" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['command_injection']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="command_injection"
+                                    <?php echo isset($desafiosCompletados['command_injection']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['command_injection']) ? 'Completado' : 'Verificar'; ?>
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Desafío 6: Promoción Sospechosa -->
+                <!-- Desafío 5: API Vulnerable -->
                 <div class="col-md-4 mb-4">
-                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['promo']) ? 'completed-challenge' : ''; ?>" id="challenge-promo">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['file_upload']) ? 'completed-challenge' : ''; ?>" id="challenge-file_upload">
                         <div class="card-body">
-                            <h5 class="card-title text-primary">6. Promoción Sospechosa</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Reconocimiento de Patrones (1 🚩)</h6>
-                            <p class="card-text">El departamento de marketing creó esta imagen promocional, pero contiene información sensible escondida.</p>
-                            <p class="fw-bold">Imagen: <a href="promocion_sospechosa.jpg" download>promocion_sospechosa.jpg</a></p>
+                            <h5 class="card-title text-primary">5. API REST Vulnerable</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">API Hacking (1 🚩)</h6>
+                            <p class="card-text">¡WAOS! Esta API no valida tokens correctamente.</p>
+                            
+                            <a href="api_lab.html" class="btn btn-primary">Acceder al Desafío</a>
+                            <div class="mt-3">
+                                <input type="text" class="form-control" id="flag-file_upload" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['file_upload']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="file_upload"
+                                    <?php echo isset($desafiosCompletados['file_upload']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['file_upload']) ? 'Completado' : 'Verificar'; ?>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Desafío 6: Esteganografía -->
+                <div class="col-md-4 mb-4">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['broken_auth']) ? 'completed-challenge' : ''; ?>" id="challenge-broken_auth">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">6. Esteganografía</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Ocultación de Datos (1 🚩)</h6>
+                            <p class="card-text">que se oculta detras de lo que ven tus ojos?</p>
+                            
+                            <a href="estego_inicio.php" class="btn btn-primary">Acceder al Desafío</a>
+                            <div class="mt-3">
+                                <input type="text" class="form-control" id="flag-broken_auth" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['broken_auth']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="broken_auth"
+                                    <?php echo isset($desafiosCompletados['broken_auth']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['broken_auth']) ? 'Completado' : 'Verificar'; ?>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Desafío 7: Login Clickable -->
+                <div class="col-md-4 mb-4">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['idor']) ? 'completed-challenge' : ''; ?>" id="challenge-idor">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">7. Astucia</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Elemento Oculto (1 🚩)</h6>
+                            <p class="card-text">UPS! se me a ido una vulnerabilidad en el index.php tendras la astucia de encontrarlo?.</p>
                             
                             <div class="mt-3">
-                                <input type="text" class="form-control" id="flag-promo" placeholder="Ingresa la bandera" 
-                                    <?php echo isset($desafiosCompletados['promo']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
-                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="promo"
-                                    <?php echo isset($desafiosCompletados['promo']) ? 'disabled' : ''; ?>>
-                                    <?php echo isset($desafiosCompletados['promo']) ? 'Completado' : 'Verificar'; ?>
+                                <input type="text" class="form-control" id="flag-idor" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['idor']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="idor"
+                                    <?php echo isset($desafiosCompletados['idor']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['idor']) ? 'Completado' : 'Verificar'; ?>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Desafío 8: BIOMETRICO -->
+                <div class="col-md-4 mb-4">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['biometrico']) ? 'completed-challenge' : ''; ?>" id="challenge-biometrico">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">8. BIOMETRICO</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Autenticación Biométrica (1 🚩)</h6>
+                            <p class="card-text">Para acceder a los archivos clasificados, deberás replicar el patrón correcto en la cuadrícula 3x3.</p>
+                            
+                            <a href="biometrico/biometrico.php" class="btn btn-primary">Acceder al Desafío</a>
+                            <div class="mt-3">
+                                <input type="text" class="form-control" id="flag-biometrico" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['biometrico']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="biometrico"
+                                    <?php echo isset($desafiosCompletados['biometrico']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['biometrico']) ? 'Completado' : 'Verificar'; ?>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Desafío 9: XXE -->
+                <div class="col-md-4 mb-4">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['xxe']) ? 'completed-challenge' : ''; ?>" id="challenge-xxe">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">9. XXE</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">XML External Entity (1 🚩)</h6>
+                            <p class="card-text">Esta aplicación procesa XML sin validar. Inyecta entidades externas para leer archivos del servidor como /etc/passwd usando &xxe;.</p>
+                            
+                            <a href="challenge_xxe.php" class="btn btn-primary">Acceder al Desafío</a>
+                            <div class="mt-3">
+                                <input type="text" class="form-control" id="flag-xxe" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['xxe']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="xxe"
+                                    <?php echo isset($desafiosCompletados['xxe']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['xxe']) ? 'Completado' : 'Verificar'; ?>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Desafío 10: Cookie Manipulation -->
+                <div class="col-md-4 mb-4">
+                    <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['race_condition']) ? 'completed-challenge' : ''; ?>" id="challenge-race_condition">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">10. Cookie Manipulation</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Manipulación de Cookies (1 🚩)</h6>
+                            <p class="card-text">¡Piensa en el lado cliente! Las aplicaciones almacenan información en cookies. Usa las herramientas del navegador para modificar cookies y escalar privilegios.</p>
+                            
+                            <div class="mt-3">
+                                <input type="text" class="form-control" id="flag-race_condition" placeholder="Ingresa la bandera" 
+                                    <?php echo isset($desafiosCompletados['race_condition']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
+                                <button class="btn btn-sm btn-outline-success mt-2 check-flag" data-challenge="race_condition"
+                                    <?php echo isset($desafiosCompletados['race_condition']) ? 'disabled' : ''; ?>>
+                                    <?php echo isset($desafiosCompletados['race_condition']) ? 'Completado' : 'Verificar'; ?>
                                 </button>
                             </div>
                         </div>
@@ -862,9 +951,9 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="modal-body text-center">
                 <div class="mb-4">
                     <i class="fas fa-trophy fa-4x text-warning mb-3"></i>
-                    <h3>¡HAS COMPLETADO TODOS LOS DESAFÍOS!</h3>
+                    <h3>¡HAS COMPLETADO TODOS LOS DESAFÍOS DEL HACKATHON 2026!</h3>
                 </div>
-                <p class="lead">El equipo <strong><?php echo htmlspecialchars($_SESSION['nombre_equipo']); ?></strong> ha resuelto exitosamente los 6 desafíos de seguridad.</p>
+                <p class="lead">El equipo <strong><?php echo htmlspecialchars($_SESSION['nombre_equipo']); ?></strong> ha resuelto exitosamente los 10 desafíos variados de hacking ético del Hackathon 2026.</p>
                 <div class="alert alert-info">
                     <h5>Puntuación Final: <span id="final-score" class="text-success"><?php echo $_SESSION['puntuacion_equipo']; ?></span> puntos</h5>
                     
@@ -889,7 +978,7 @@ let timers = {};
 
 // Inicializar desafíos completados desde PHP
 let completedChallenges = <?php echo json_encode($desafiosCompletados); ?>;
-let totalChallenges = 6;
+let totalChallenges = 10;
 
 // Elementos de audio
 const successSound = document.getElementById('successSound');
@@ -900,7 +989,7 @@ const resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
 
 // Calcular tiempo por desafío basado en el tiempo global restante
 const challengeDurations = {};
-const desafios = ['ctf', 're', 'crypto', 'url', 'meta', 'promo'];
+const desafios = ['login_inseguro', 'crypto', 'buffer_overflow', 'command_injection', 'file_upload', 'broken_auth', 'idor', 'biometrico', 'xxe', 'race_condition'];
 desafios.forEach(desafio => {
     const tiempoDesafio = Math.min(15 * 60, globalTimeLeft);
     challengeDurations[desafio] = tiempoDesafio;

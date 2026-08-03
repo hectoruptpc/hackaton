@@ -234,10 +234,19 @@ function mostrarAlerta($mensaje, $tipo = 'error') {
 }
 
 /**
+ * Normalizar texto para comparar banderas sin importar mayúsculas, espacios o formato.
+ */
+function normalizarTexto($texto) {
+    $texto = trim((string) $texto);
+    $texto = strtolower($texto);
+    return preg_replace('/\s+/', '', $texto);
+}
+
+/**
  * Verificar bandera (para los desafíos)
  */
 function verificarBandera($bandera_usuario, $bandera_correcta) {
-    return trim($bandera_usuario) === $bandera_correcta;
+    return normalizarTexto($bandera_usuario) === normalizarTexto($bandera_correcta);
 }
 
 /**

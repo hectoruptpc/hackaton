@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once '../conf/functions.php';
+require_once __DIR__ . '/../conf/functions.php';
 
 $resultado_html = '';
 $mostrar_resultado = false;
