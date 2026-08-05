@@ -5,45 +5,82 @@
 # 🚀 Hackaton - Unidad de Ciencia y Tecnología
 
 ![Hackaton](https://img.shields.io/badge/Hackaton-2025--2026-blue)
-![PHP](https://img.shields.io/badge/PHP-95.5%25-777BB4)
-![HTML](https://img.shields.io/badge/HTML-3.9%25-E34F26)
+![PHP](https://img.shields.io/badge/PHP-8.x-777BB4)
+![HTML](https://img.shields.io/badge/HTML-5-E34F26)
+![MySQL](https://img.shields.io/badge/MySQL-SQL-4479A1)
 
-## 📋 Descripción
+## 📋 Descripción general
 
-Proyecto desarrollado en el marco del Hackaton de la Unidad de Ciencia y Tecnología UPTPC. Este repositorio contiene el desarrollo web implementado con PHP y HTML, incluyendo bases de datos SQL y desafíos técnicos organizados por año.
+Este repositorio contiene el desarrollo web del Hackaton de la Unidad de Ciencia y Tecnología UPTPC. El proyecto está orientado a la creación de desafíos interactivos, ejercicios técnicos y una plataforma web que organiza la experiencia del evento en años consecutivos.
 
-## 🛠️ Tecnologías Utilizadas
+El contenido está dividido en dos ediciones principales: 2025 y 2026, cada una con sus propios retos, páginas dinámicas, scripts de base de datos y recursos multimedia.
 
-- **PHP** (95.5%) - Backend y lógica del servidor
-- **HTML** (3.9%) - Estructura de las páginas web
-- **SQL** - Gestión de base de datos
+## 🎯 Objetivo del proyecto
 
-## 📁 Estructura del Proyecto
+El objetivo principal es ofrecer una experiencia de hackathon digital donde los participantes puedan:
+
+- Explorar desafíos técnicos y retos interactivos.
+- Resolver problemas mediante lógica, seguridad, debugging y programación.
+- Interactuar con una plataforma web organizada por años y módulos.
+- Gestionar estados, equipos, puntuaciones y tiempos mediante PHP y base de datos.
+
+## 🛠️ Tecnologías utilizadas
+
+- **PHP**: lógica del backend, gestión de sesiones, validación de datos y procesamiento de retos.
+- **HTML/CSS/JavaScript**: estructura y experiencia visual de las páginas.
+- **MySQL**: almacenamiento de información de usuarios, equipos, estados y resultados.
+- **SQL**: scripts y estructuras para la base de datos del proyecto.
+
+## 📁 Estructura del proyecto
+
+```text
 hackaton/
-├── 2025/              # Desafíos y ejercicios del año 2025
-├── 2026/              # Desafíos y ejercicios del año 2026
-├── img/               # Recursos gráficos y logotipos del proyecto
-├── sql/               # Scripts de base de datos
-├── index.php          # Página principal
-├── informe_habilidades.md  # Informe de habilidades
-└── .gitignore         # Configuración de Git
+├── 2025/                      # Desafíos, scripts y módulos del año 2025
+├── 2026/                      # Desafíos, scripts y módulos del año 2026
+├── img/                       # Recursos gráficos e imágenes del proyecto
+├── sql/                       # Scripts de base de datos SQL
+├── index.php                  # Página principal de acceso
+├── informe_habilidades.md     # Documento con información de habilidades y avances
+└── README.md                  # Documentación general del proyecto
+```
 
-## 🎯 Objetivo
+## 🧩 Componentes principales
 
-Este proyecto tiene como objetivo documentar y desarrollar soluciones a diversos desafíos técnicos propuestos durante el hackaton, demostrando habilidades en desarrollo web, manejo de bases de datos y resolución de problemas.
+### Año 2025
+Contiene la primera versión del proyecto con retos, lógica de interacción y módulos iniciales del hackaton.
 
-## 📊 Estadísticas del Repositorio
+### Año 2026
+Incluye una versión más amplia y organizada del proyecto, con desafíos más desarrollados, páginas específicas y recursos adicionales.
 
-- **Commits:** 115
-- **Contributors:** 4
-- **Ramas:** 3
+### Base de datos
+La carpeta sql contiene los scripts necesarios para crear y mantener la estructura de datos utilizada por la plataforma.
 
-## 📌 Características
+### Recursos visuales
+La carpeta img almacena imágenes y elementos gráficos usados en la interfaz del proyecto.
 
-- ✅ Desarrollo progresivo año tras año (2025-2026)
-- ✅ Documentación de habilidades y avances
-- ✅ Implementación de bases de datos SQL
-- ✅ Estructura organizada y escalable
+## ▶️ Requisitos para ejecutar el proyecto
+
+Para trabajar con este proyecto es recomendable tener instalado:
+
+- **PHP** con soporte para Apache o Nginx.
+- **MySQL o MariaDB**.
+- Un servidor local como **XAMPP**, **WAMP** o **Laragon**.
+- Un navegador web moderno.
+
+## 🚀 Cómo usarlo
+
+1. Clonar o descargar este repositorio en el directorio del servidor web.
+2. Crear la base de datos y cargar los scripts ubicados en la carpeta sql.
+3. Configurar los accesos a la base de datos en los archivos de conexión correspondientes.
+4. Iniciar el servidor local y abrir la página principal desde el navegador.
+
+## 📌 Características destacadas
+
+- ✅ Desarrollo progresivo año tras año.
+- ✅ Plataforma web orientada a retos técnicos y capacitación.
+- ✅ Estructura modular y organizada por ediciones.
+- ✅ Integración con base de datos para controlar el estado del evento.
+- ✅ Documentación adicional para seguimiento y análisis del proyecto.
 
 ---
 
@@ -51,13 +88,9 @@ Este proyecto tiene como objetivo documentar y desarrollar soluciones a diversos
 
 Este proyecto fue desarrollado por el equipo de la Unidad de Ciencia y Tecnología.
 
-<br>
-
 **Héctor Marulanda**  
 Programador  
 Unidad de Ciencia y Tecnología
-
-<br>
 
 **José Herrera**  
 Coordinador  
