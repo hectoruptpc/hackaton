@@ -47,12 +47,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['patron'])) {
             padding: 30px;
             box-shadow: 0 0 60px rgba(0, 204, 255, 0.15), inset 0 0 60px rgba(0, 204, 255, 0.05);
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Patrón de fondo con código morse */
+        .container::before {
+            content: "..... ..--- .---- ....- ..... -.... ----. ---.. .....";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            color: rgba(0, 204, 255, 0.06);
+            letter-spacing: 4px;
+            word-spacing: 8px;
+            line-height: 16px;
+            white-space: pre-wrap;
+            padding: 15px;
+            pointer-events: none;
+            z-index: 0;
+            transform: rotate(-2deg) scale(1.1);
+            user-select: none;
         }
 
         .header {
             border-bottom: 2px solid #00ccff;
             padding-bottom: 15px;
             margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
         }
 
         .header h1 {
@@ -93,6 +119,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['patron'])) {
             padding: 10px;
             margin-bottom: 20px;
             border-radius: 8px;
+            position: relative;
+            z-index: 1;
         }
 
         .top-secret span {
@@ -102,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['patron'])) {
             font-size: 0.8rem;
         }
 
-        /* PISTA DE ESPIONAJE - Sutil, integrada en el diseño */
+        /* PISTA DE ESPIONAJE */
         .pista-espia {
             background: rgba(0, 10, 20, 0.6);
             border-left: 3px solid #ff00aa;
@@ -114,6 +142,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['patron'])) {
             border-radius: 0 8px 8px 0;
             font-style: italic;
             letter-spacing: 0.5px;
+            position: relative;
+            z-index: 1;
         }
 
         .pista-espia .clasificado {
@@ -128,6 +158,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['patron'])) {
             font-style: normal;
         }
 
+        /* Código Morse - visible pero con aspecto decorativo */
+        .morse-decorativo {
+            color: rgba(0, 204, 255, 0.5);
+            font-size: 0.65rem;
+            letter-spacing: 3px;
+            text-align: center;
+            padding: 8px 0;
+            font-family: 'Courier New', monospace;
+            border-top: 1px solid rgba(0, 204, 255, 0.1);
+            border-bottom: 1px solid rgba(0, 204, 255, 0.1);
+            margin: 10px 0;
+            position: relative;
+            z-index: 1;
+            word-break: break-all;
+            user-select: none;
+            background: rgba(0, 204, 255, 0.03);
+            border-radius: 4px;
+        }
+
+        .morse-decorativo .morse-char {
+            display: inline-block;
+            animation: morsePulse 3s ease-in-out infinite;
+            margin: 0 1px;
+        }
+
+        .morse-decorativo .morse-char:nth-child(odd) {
+            animation-delay: 0.5s;
+        }
+
+        .morse-decorativo .morse-space {
+            display: inline-block;
+            width: 8px;
+        }
+
+        @keyframes morsePulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.9; }
+        }
+
         .patron-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -139,6 +208,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['patron'])) {
             border-radius: 15px;
             border: 1px solid #1a3a4a;
             box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 1;
         }
 
         .punto {
@@ -216,6 +287,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['patron'])) {
             justify-content: center;
             gap: 5px;
             flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
         }
 
         .secuencia .label {
@@ -245,6 +318,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['patron'])) {
             padding: 8px;
             background: rgba(0, 0, 0, 0.4);
             border-radius: 8px;
+            position: relative;
+            z-index: 1;
         }
 
         .intentos-info span {
@@ -258,6 +333,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['patron'])) {
             justify-content: space-between;
             gap: 10px;
             margin: 10px 0;
+            position: relative;
+            z-index: 1;
         }
 
         .btn-limpiar {
@@ -295,6 +372,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['patron'])) {
             border-radius: 10px;
             letter-spacing: 2px;
             text-transform: uppercase;
+            position: relative;
+            z-index: 1;
         }
 
         .btn-verificar:hover:not(:disabled) {
@@ -322,6 +401,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['patron'])) {
             width: 100%;
             margin-top: 15px;
             border-radius: 10px;
+            position: relative;
+            z-index: 1;
         }
 
         .btn-volver:hover {
@@ -338,6 +419,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['patron'])) {
             border-radius: 12px;
             font-size: 1rem;
             line-height: 1.6;
+            position: relative;
+            z-index: 1;
         }
 
         .resultado.exito {
@@ -385,6 +468,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['patron'])) {
             margin: 15px 0;
             color: #ff8800;
             animation: glowBlock 1s infinite;
+            position: relative;
+            z-index: 1;
         }
 
         .temporizador .titulo {
@@ -429,6 +514,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['patron'])) {
             color: #334455;
             margin-top: 20px;
             letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
         }
 
         @media (max-width: 500px) {
@@ -438,6 +525,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['patron'])) {
             .punto { font-size: 0.7rem; }
             .btn-verificar { font-size: 0.8rem; padding: 12px; }
             .pista-espia { font-size: 0.65rem; padding: 8px 12px; }
+            .morse-decorativo { font-size: 0.5rem; letter-spacing: 2px; }
         }
     </style>
 </head>
@@ -452,12 +540,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['patron'])) {
         <span>🔒 SISTEMA DE SEGURIDAD NIVEL 8 🔒</span>
     </div>
 
-    <!-- PISTA DE ESPIONAJE - ÚNICA PISTA -->
+    <!-- PISTA DE ESPIONAJE -->
     <div class="pista-espia">
         <span class="clasificado">🔎 INTELIGENCIA CLASIFICADA:</span><br>
-        El objetivo tiene una obsesión documentada con las constelaciones. 
-        Especialmente <span class="destacar">la Osa Menor</span>. 
-        Debo lograr descifrar su patron con esta información.
+        El objetivo habla una lengua distinta, nadie entendía lo que decía y su secreto se mantuvo a salvo hasta hoy.
+    </div>
+
+    <!-- Código Morse - visible como elemento decorativo -->
+    <div class="morse-decorativo">
+        <span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">·</span>
+        <span class="morse-space"></span>
+        <span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">−</span><span class="morse-char">−</span><span class="morse-char">−</span>
+        <span class="morse-space"></span>
+        <span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">−</span><span class="morse-char">−</span><span class="morse-char">−</span>
+        <span class="morse-space"></span>
+        <span class="morse-char">·</span><span class="morse-char">−</span><span class="morse-char">−</span><span class="morse-char">−</span><span class="morse-char">−</span>
+        <span class="morse-space"></span>
+        <span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">·</span>
+        <span class="morse-space"></span>
+        <span class="morse-char">−</span><span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">·</span>
+        <span class="morse-space"></span>
+        <span class="morse-char">−</span><span class="morse-char">−</span><span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">·</span>
+        <span class="morse-space"></span>
+        <span class="morse-char">−</span><span class="morse-char">−</span><span class="morse-char">−</span><span class="morse-char">−</span><span class="morse-char">·</span>
+        <span class="morse-space"></span>
+        <span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">·</span>
     </div>
 
     <?php if ($estado['bloqueado']): ?>

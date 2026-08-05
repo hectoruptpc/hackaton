@@ -1,37 +1,73 @@
-# Informe de Desafíos - Hackathon 2026
-## Resumen Ejecutivo
-Este documento detalla los desafíos técnicos del Hackathon 2026 y las habilidades requeridas para resolverlos exitosamente. La competencia está diseñada para evaluar competencias en ciberseguridad ofensiva, análisis forense y explotación de vulnerabilidades.
+# Informe de Habilidades - Hackathon 2026
+
+## Resumen ejecutivo
+Este informe presenta una visión técnica y actualizada del Hackathon 2026, alineada con los retos que se encuentran implementados en el proyecto. La edición 2026 integra competencias en seguridad web, criptografía, explotación de vulnerabilidades, análisis forense y razonamiento lógico.
+
 ---
-## Catálogo de Desafíos
+
+## Catálogo de desafíos implementados
+
 ### 1. Login Inseguro
-- **Categoría:** Web Security
-- **Descripción:** Bypass de mecanismos de autenticación mediante técnicas de evasión.
-- **Habilidades:** Manipulación de formularios, bypass de validación cliente, lógica de autenticación.
-### 2. Crypto Challenge
+- **Categoría:** Seguridad Web
+- **Descripción:** Este reto evalúa la capacidad del participante para identificar fallos de autenticación y explotar debilidades en la lógica de acceso del sistema.
+- **Habilidades requeridas:** análisis de código, evaluación de mecanismos de autenticación, manipulación de formularios y bypass de validaciones básicas.
+
+### 2. Criptografía
 - **Categoría:** Criptografía
-- **Descripción:** Descifrado de mensajes utilizando codificación Base64 y cifrados clásicos.
-- **Habilidades:** Decodificación Base64, criptoanálisis de cifrados simples (César, Vigenère).
+- **Descripción:** El participante debe descifrar un mensaje oculto mediante técnicas de análisis, transformación de datos y comprensión de estructuras criptográficas elementales.
+- **Habilidades requeridas:** decodificación, reconocimiento de patrones, lógica de cifrado y análisis criptográfico básico.
+
 ### 3. Buffer Overflow
-- **Categoría:** Binary Exploitation
-- **Descripción:** Explotación de vulnerabilidades de desbordamiento de buffer para controlar el flujo de ejecución.
-- **Habilidades:** Gestión de memoria, registros CPU (EIP, EBP), inyección de shellcode.
-### 4. URL Analysis
-- **Categoría:** Web Security
-- **Descripción:** Identificación y explotación de inyección de comandos a través de parámetros URL.
-- **Habilidades:** Command Injection, manipulación de parámetros HTTP, encoding/decoding.
-### 5. API Hacking
-- **Categoría:** Web Security / APIs
-- **Descripción:** Explotación de vulnerabilidades en APIs RESTful incluyendo SQL Injection e IDOR.
-- **Habilidades:** Métodos HTTP, SQL Injection, Insecure Direct Object Reference (IDOR), análisis de respuestas JSON.
+- **Categoría:** Exploitation / Binary Security
+- **Descripción:** Este desafío simula una vulnerabilidad de desbordamiento de buffer y exige la manipulación de entradas para alterar el flujo de ejecución esperado.
+- **Habilidades requeridas:** comprensión de memoria, manejo del stack, control de flujo, análisis de registros como EBP y EIP, y explotación básica.
+
+### 4. Análisis de URL
+- **Categoría:** Seguridad Web / Red
+- **Descripción:** El participante debe recorrer múltiples rutas y analizar la estructura de las solicitudes para identificar la vulnerabilidad subyacente en la aplicación.
+- **Habilidades requeridas:** análisis de rutas, inspección de parámetros, deducción de lógica de negocio y navegación por escenarios multi-etapa.
+
+### 5. API REST Vulnerable
+- **Categoría:** Seguridad Web / APIs
+- **Descripción:** Este reto expone una API con fallos de seguridad en la lógica de acceso y autenticación, permitiendo la exploración de vulnerabilidades de negocio y de control de acceso.
+- **Habilidades requeridas:** consumo de endpoints, manejo de métodos HTTP, análisis de respuestas JSON, manipulación de payloads y explotación de lógica débil.
+
 ### 6. Esteganografía
-- **Categoría:** Forensics
-- **Descripción:** Extracción de información oculta en imágenes usando técnica LSB (Least Significant Bit).
-- **Habilidades:** Análisis de imágenes digitales, herramientas de esteganografía (steghide, zsteg).
-### 7. Broken Authentication
-- **Categoría:** Web Security
-- **Descripción:** Bypass de validaciones del lado del cliente para acceder a funcionalidades restringidas.
-- **Habilidades:** Manipulación de JavaScript, interceptación de requests, lógica de negocio.
-### 8. Biometric Pattern
-- **Categoría:** Reverse Engineering / Lógica
-- **Descripción:** Descifrado de patrones de desbloqueo en matrices 3x3.
-- **Habilidades:** Reconocimiento de patrones, lógica combinatoria, análisis de secuencias.
+- **Categoría:** Forensics / Steganography
+- **Descripción:** La información sensible se encuentra oculta dentro de un medio visual, y el participante debe extraerla mediante análisis técnico y observación detallada.
+- **Habilidades requeridas:** análisis de imágenes, extracción de datos ocultos, inspección de metadatos y razonamiento forense.
+
+### 7. Astucia
+- **Categoría:** Lógica / Exploración
+- **Descripción:** Este desafío está orientado a la detección de elementos ocultos o fallas sutiles en la interfaz y la arquitectura del sistema.
+- **Habilidades requeridas:** observación precisa, exploración del código, identificación de pistas ocultas y deducción estructural.
+
+### 8. Biométrico
+- **Categoría:** Lógica / Reverse Engineering
+- **Descripción:** El reto requiere inferir un patrón de desbloqueo a partir de restricciones, pistas y comportamiento del sistema.
+- **Habilidades requeridas:** razonamiento lógico, reconocimiento de patrones, combinatoria y análisis de secuencias.
+
+---
+
+## Habilidades transversales del 2026
+
+Las competencias más relevantes para esta edición son:
+- Seguridad web aplicada y análisis de entradas.
+- Criptografía introductoria y descifrado de mensajes.
+- Manejo de APIs y comprensión del comportamiento de servicios web.
+- Análisis forense básico y extracción de información oculta.
+- Razonamiento lógico y resolución de retos de naturaleza multi-etapa.
+- Inspección de sistemas, identificación de pistas y experimentación técnica.
+
+---
+
+## Recomendación de preparación
+1. Practicar con ejercicios de inyección, parsing y análisis de datos en formatos estructurados.
+2. Fortalecer las bases de ocultación de información y análisis de medios digitales.
+3. Reforzar conceptos fundamentales de memoria, explotación y control de flujo.
+4. Desarrollar habilidades de deducción para resolver escenarios encadenados y de investigación.
+
+---
+
+## Nota final
+Este informe refleja únicamente los retos que se encuentran creados y disponibles en la versión 2026 del proyecto, sin incluir desafíos pendientes ni propuestas no implementadas.
