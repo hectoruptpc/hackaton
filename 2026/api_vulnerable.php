@@ -1,4 +1,25 @@
 <?php
+/**
+ * ============================================================
+ * DESAFÍO #5: API REST VULNERABLE
+ * Unidad de Ciencia y Tecnología — UPTPC 2026
+ * ============================================================
+ * 
+ * 🧠 CONOCIMIENTOS REQUERIDOS:
+ * - Arquitectura RESTful, métodos HTTP (GET, POST, PUT, DELETE) y formato JSON.
+ * - Inyección lógica / SQL en payloads JSON.
+ * 
+ * 🛠️ SOLUCIÓN OFICIAL:
+ * 1. Enviar una petición POST a la ruta de login con el payload JSON:
+ *    { "nombre": "admin' OR '1'='1", "password": "" }
+ * 2. La API devolverá la bandera FLAG{API_HACKED}.
+ * 
+ * 🔀 ALTERNATIVAS DE RESOLUCIÓN:
+ * - Método A: Usar la interfaz web provista en api_lab.html.
+ * - Método B: Consumir el endpoint mediante Postman o cURL en consola.
+ * ============================================================
+ */
+
 header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");

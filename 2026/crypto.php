@@ -1,7 +1,24 @@
 <?php
-// ============================================================
-// crypto.php - Desafío de Encriptación Épica para Hackathon
-// ============================================================
+/**
+ * ============================================================
+ * DESAFÍO #2: CRIPTOGRAFÍA ÉPICA
+ * Unidad de Ciencia y Tecnología — UPTPC 2026
+ * ============================================================
+ * 
+ * 🧠 CONOCIMIENTOS REQUERIDOS:
+ * - Fundamentos de cifrado y codificación (Base64, sustitución, ROT13).
+ * - Reconocimiento de secuencias y transformaciones de texto.
+ * 
+ * 🛠️ SOLUCIÓN OFICIAL:
+ * 1. Analizar el bloque cifrado en la consola Cyberpunk.
+ * 2. Aplicar decodificación por etapas de la cadena presentada.
+ * 3. Enviar la bandera obtenida en el formulario de respuesta.
+ * 
+ * 🔀 ALTERNATIVAS DE RESOLUCIÓN:
+ * - Método A: Usar herramientas online como CyberChef o dcode.fr.
+ * - Método B: Script en Python con funciones de la librería base64.
+ * ============================================================
+ */
 
 // Incluir la lógica de funciones
 require_once 'conf/functions.php';

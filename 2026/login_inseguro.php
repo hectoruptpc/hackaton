@@ -1,7 +1,24 @@
 <?php
-// ============================================================
-// login_inseguro.php - Desafío de Login
-// ============================================================
+/**
+ * ============================================================
+ * DESAFÍO #1: LOGIN INSEGURO
+ * Unidad de Ciencia y Tecnología — UPTPC 2026
+ * ============================================================
+ * 
+ * 🧠 CONOCIMIENTOS REQUERIDOS:
+ * - Inspección básica de código fuente HTML en navegadores web (F12).
+ * - Comprensión de comentarios HTML (<!-- -->) y riesgo de datos sensibles.
+ * 
+ * 🛠️ SOLUCIÓN OFICIAL:
+ * 1. Abrir la página y presionar F12 (o Ctrl+U) para ver el código fuente.
+ * 2. Buscar el comentario <!-- CREDENCIALES: admin / passwordsegura -->.
+ * 3. Ingresar las credenciales en el formulario para autenticarse.
+ * 
+ * 🔀 ALTERNATIVAS DE RESOLUCIÓN:
+ * - Método A: Inspeccionar con DevTools en la pestaña Elements.
+ * - Método B: Ejecutar 'curl -s http://localhost/hackaton/2026/login_inseguro.php'
+ * ============================================================
+ */
 
 // Incluir la lógica de funciones
 require_once 'conf/functions.php';
