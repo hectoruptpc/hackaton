@@ -1,4 +1,24 @@
 <?php
+/**
+ * ============================================================
+ * DESAFÍO #4: ANÁLISIS DE URL Y LABERINTO WEB (CASO 404)
+ * Unidad de Ciencia y Tecnología — UPTPC 2026
+ * ============================================================
+ * 
+ * 🧠 CONOCIMIENTOS REQUERIDOS:
+ * - Estructura de URLs, parámetros GET y respuestas de estado HTTP (404 Not Found).
+ * - Deducción lógica y trazabilidad de rutas en aplicaciones web.
+ * 
+ * 🛠️ SOLUCIÓN OFICIAL:
+ * 1. Resolver el acertijo del Caso 404 (el número de error HTTP es 404).
+ * 2. Navegar a través de las páginas evitando trampas (kernel_panic.php, etc.).
+ * 3. Alcanzar el archivo final flag_real.php.
+ * 
+ * 🔀 ALTERNATIVAS DE RESOLUCIÓN:
+ * - Método A: Inspeccionar los atributos href de cada enlace antes de hacer clic.
+ * - Método B: Fuzzing / Escaneo de nombres de archivo del directorio.
+ * ============================================================
+ */
 session_start();
 session_destroy();
 session_start();

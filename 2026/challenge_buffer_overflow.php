@@ -1,5 +1,23 @@
 <?php
-// challenge_buffer_overflow.php - Desafío Buffer Overflow estilo CTF
+/**
+ * ============================================================
+ * DESAFÍO #3: BUFFER OVERFLOW SIMULADO
+ * Unidad de Ciencia y Tecnología — UPTPC 2026
+ * ============================================================
+ * 
+ * 🧠 CONOCIMIENTOS REQUERIDOS:
+ * - Arquitectura de computadoras (Memoria Stack, Registros EBP, EIP).
+ * - Conceptos de desbordamiento de buffer y cálculo de offsets.
+ * 
+ * 🛠️ SOLUCIÓN OFICIAL:
+ * 1. El buffer es de 64 bytes + 4 bytes del registro EBP (Total 68 bytes).
+ * 2. Enviar 68 bytes basura + la palabra clave FLAG_SECRETA (o la dirección f1e2d3c4).
+ * 
+ * 🔀 ALTERNATIVAS DE RESOLUCIÓN:
+ * - Método A: Payload manual de 68 caracteres 'A' seguidos de FLAG_SECRETA.
+ * - Método B: Script en Python con la librería pwntools / requests.
+ * ============================================================
+ */
 
 session_start();
 require_once 'conf/functions.php';

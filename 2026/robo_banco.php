@@ -1,7 +1,26 @@
-﻿<?php
-// ============================================================
-// challenge_xxe.php - Desafío Banco CSRF / Robo a Mr. Beast
-// ============================================================
+<?php
+/**
+ * ============================================================
+ * DESAFÍO #9: ROBO BANCO Y MANIPULACIÓN CSRF
+ * Unidad de Ciencia y Tecnología — UPTPC 2026
+ * ============================================================
+ * 
+ * 🧠 CONOCIMIENTOS REQUERIDOS:
+ * - Manipulación de parámetros HTTP GET/POST y vulnerabilidades de lógica de negocio.
+ * - Riesgos de falsificación de peticiones en sitios cruzados (CSRF).
+ * 
+ * 🛠️ SOLUCIÓN OFICIAL:
+ * 1. Iniciar sesión con la cuenta hacker / hack123.
+ * 2. Iniciar una transferencia hacia Mr. Beast.
+ * 3. En el modal de confirmación, inspeccionar y modificar la URL de GET:
+ *    Cambiar origen=hacker&destino=mrbeast por origen=mrbeast&destino=hacker.
+ * 4. Presionar Enter en la barra de direcciones para invertir la transferencia.
+ * 
+ * 🔀 ALTERNATIVAS DE RESOLUCIÓN:
+ * - Método A: Modificación manual de la URL en la barra de direcciones del navegador.
+ * - Método B: Intercepción de peticiones con herramientas de proxy como Burp Suite.
+ * ============================================================
+ */
 
 require_once 'conf/functions.php';
 session_start();

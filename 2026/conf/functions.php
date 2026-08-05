@@ -300,7 +300,7 @@ function obtenerConfiguracionDesafios() {
             'tiempo' => 15 * 60
         ],
         'race_condition' => [
-            'flag' => 'FLAG{COOKIE_MANIPULATED}',
+            'flag' => 'FLAG{DINAMIC_WEB_HACKER_2026}',
             'puntos' => 1,
             'tiempo' => 15 * 60
         ]

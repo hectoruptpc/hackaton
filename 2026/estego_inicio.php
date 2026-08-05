@@ -1,4 +1,25 @@
 <?php
+/**
+ * ============================================================
+ * DESAFÍO #6: ESTEGANOGRAFÍA FORENSE
+ * Unidad de Ciencia y Tecnología — UPTPC 2026
+ * ============================================================
+ * 
+ * 🧠 CONOCIMIENTOS REQUERIDOS:
+ * - Informática forense básica e inspección de archivos multimedia.
+ * - Extracción de cadenas legibles (strings) o análisis de metadatos EXIF.
+ * 
+ * 🛠️ SOLUCIÓN OFICIAL:
+ * 1. Descargar las imágenes hacker.png / luna.jpeg del dossier.
+ * 2. Extraer el texto oculto en la estructura del archivo de imagen.
+ * 3. Introducir la frase en el campo de validación del formulario.
+ * 
+ * 🔀 ALTERNATIVAS DE RESOLUCIÓN:
+ * - Método A: Ejecutar 'strings hacker.png' en consola Linux / Git Bash.
+ * - Método B: Usar visores de metadatos online o editores de código.
+ * ============================================================
+ */
+
 session_start();
 require_once 'conf/functions.php';
 
