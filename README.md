@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="img/CIENCIA%20Y%20TECNOLOGIA%20B_N.png" alt="Unidad de Ciencia y Tecnología" width="350"/>
+</p>
+
 # 🚀 Hackaton - Unidad de Ciencia y Tecnología
 
 ![Hackaton](https://img.shields.io/badge/Hackaton-2025--2026-blue)
@@ -18,6 +22,7 @@ Proyecto desarrollado en el marco del Hackaton de la Unidad de Ciencia y Tecnolo
 hackaton/
 ├── 2025/              # Desafíos y ejercicios del año 2025
 ├── 2026/              # Desafíos y ejercicios del año 2026
+├── img/               # Recursos gráficos y logotipos del proyecto
 ├── sql/               # Scripts de base de datos
 ├── index.php          # Página principal
 ├── informe_habilidades.md  # Informe de habilidades
