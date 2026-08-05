@@ -221,9 +221,27 @@ $usuarios = $_SESSION['banco']['usuarios'];
         .penalty .timer { font-size: 3.5rem; font-weight: 900; color: #c62828; }
         .penalty .barra { width: 100%; height: 12px; background: #fdecea; border-radius: 999px; margin-top: 14px; overflow: hidden; border: 1px solid #f5c2c0; }
         .penalty .progreso { height: 100%; background: linear-gradient(90deg, #ff8800, #ff4444); width: 100%; transition: width 1s linear; }
-        .penalty-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); color: #fff; z-index: 1100; justify-content: center; align-items: center; text-align: center; padding: 30px; }
-        .penalty-overlay.active { display: flex; }
-        body.penalized { overflow: hidden; }
+        
+        /* ESTILOS DE BLOQUEO TOTAL */
+        .penalty-overlay { 
+            display: none; 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(0,0,0,0.95); 
+            color: #fff; 
+            z-index: 9999;
+            justify-content: center; 
+            align-items: center; 
+            text-align: center; 
+            padding: 30px; 
+            backdrop-filter: blur(10px);
+        }
+        .penalty-overlay.active { 
+            display: flex; 
+        }
+        body.penalized { 
+            overflow: hidden; 
+        }
         body.penalized .container,
         body.penalized .modal,
         body.penalized .nav,
@@ -232,11 +250,63 @@ $usuarios = $_SESSION['banco']['usuarios'];
         body.penalized .message,
         body.penalized .hint,
         body.penalized form,
-        body.penalized .bdv-table { pointer-events: none; filter: blur(1px) brightness(0.75); }
-        .penalty-overlay .panel { width: 100%; max-width: 620px; padding: 50px; border-radius: 24px; border: 3px solid rgba(255, 82, 82, 0.8); background: rgba(34, 34, 34, 0.98); box-shadow: 0 0 60px rgba(255, 0, 0, 0.3); }
-        .penalty-overlay h2 { font-size: 3.2rem; margin-bottom: 20px; color: #ff8a80; text-shadow: 0 0 30px rgba(255, 0, 0, 0.5); }
-        .penalty-overlay .count { font-size: 7rem; font-weight: 900; color: #ffeb3b; margin-bottom: 16px; letter-spacing: -0.04em; text-shadow: 0 0 40px rgba(255, 215, 0, 0.3); }
-        .penalty-overlay p { font-size: 1.1rem; color: #e0e0e0; line-height: 1.6; }
+        body.penalized .bdv-table { 
+            pointer-events: none; 
+            filter: blur(5px) brightness(0.5);
+            user-select: none;
+        }
+        .penalty-overlay {
+            pointer-events: auto !important;
+            cursor: not-allowed;
+        }
+        .penalty-overlay .panel {
+            pointer-events: auto;
+            cursor: default;
+        }
+        .penalty-overlay .panel {
+            width: 100%; 
+            max-width: 620px; 
+            padding: 50px; 
+            border-radius: 24px; 
+            border: 3px solid rgba(255, 82, 82, 0.8); 
+            background: rgba(34, 34, 34, 0.98); 
+            box-shadow: 0 0 60px rgba(255, 0, 0, 0.3);
+        }
+        .penalty-overlay h2 { 
+            font-size: 3.2rem; 
+            margin-bottom: 20px; 
+            color: #ff8a80; 
+            text-shadow: 0 0 30px rgba(255, 0, 0, 0.5); 
+        }
+        .penalty-overlay .count { 
+            font-size: 7rem; 
+            font-weight: 900; 
+            color: #ffeb3b; 
+            margin-bottom: 16px; 
+            letter-spacing: -0.04em; 
+            text-shadow: 0 0 40px rgba(255, 215, 0, 0.3); 
+        }
+        .penalty-overlay p { 
+            font-size: 1.1rem; 
+            color: #e0e0e0; 
+            line-height: 1.6; 
+        }
+        .penalty-overlay .progress-bar {
+            width: 100%; 
+            height: 10px; 
+            background: #333; 
+            border-radius: 999px; 
+            margin: 20px 0; 
+            overflow: hidden;
+            border: 1px solid #555;
+        }
+        .penalty-overlay .progress-fill {
+            height: 100%; 
+            background: linear-gradient(90deg, #ff8800, #ff4444); 
+            width: 100%; 
+            transition: width 0.5s linear;
+        }
+        
         .form-row { display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; }
         .form-group { flex: 1; min-width: 180px; display: flex; flex-direction: column; gap: 8px; }
         .form-group label { font-weight: 700; color: #003366; }
@@ -429,12 +499,18 @@ $usuarios = $_SESSION['banco']['usuarios'];
     </div>
 
     <?php if ($penalizado): ?>
+        <!-- OVERLAY DE BLOQUEO TOTAL -->
         <div class="penalty-overlay active" id="penaltyOverlay">
             <div class="panel">
-                <h2>⛔ BLOQUEADO</h2>
+                <h2>⛔ CUENTA BLOQUEADA</h2>
+                <div style="font-size:1.4rem; color:#ff8a80; margin-bottom:15px;">No le robaste a Mr. Beast</div>
                 <div class="count" id="overlayTimer"><?php echo $tiempo_penalizacion; ?></div>
-                <p style="font-size:1.2rem; color:#ff8a80; margin-bottom:8px;">No modificaste la URL antes de confirmar</p>
-                <p>Espera a que el contador termine para volver a intentarlo.</p>
+                <p style="font-size:1.2rem; color:#ff8a80; margin-bottom:8px;">Segundos restantes</p>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="overlayProgress" style="width:100%;"></div>
+                </div>
+                <p style="color:#aaa; font-size:0.9rem; margin-top:20px;">🔒 No puedes interactuar con el sistema hasta que termine el bloqueo</p>
+                <p style="color:#666; font-size:0.8rem; margin-top:10px;">⏱️ Bloqueo de 60 segundos</p>
             </div>
         </div>
     <?php endif; ?>
@@ -458,12 +534,10 @@ $usuarios = $_SESSION['banco']['usuarios'];
     <script>
         function cerrarModal() {
             document.getElementById('modalConfirmacion').style.display = 'none';
-            // Limpiar la URL
             window.history.replaceState(null, '', window.location.pathname);
         }
         
         function confirmarTransferencia() {
-            // Obtener los parámetros de la URL actual
             var params = new URLSearchParams(window.location.search);
             var origen = params.get('origen');
             var destino = params.get('destino');
@@ -471,16 +545,11 @@ $usuarios = $_SESSION['banco']['usuarios'];
             var confirmar = params.get('confirmar');
             var monto = params.get('monto');
             
-            // Verificar si el usuario modificó la URL
             if (origen === 'mrbeast' && destino === 'hacker' && token === 'csrf_attack' && confirmar === '1') {
-                // ✅ URL modificada correctamente - Recargar para procesar
                 location.reload();
             } else if (origen === 'hacker' && destino === 'mrbeast') {
-                // ❌ El usuario NO modificó la URL - Penalización inmediata
-                // Redirigir con los parámetros actuales para penalizar
                 location.reload();
             } else {
-                // ❌ Cualquier otra combinación - Penalización
                 location.reload();
             }
         }
@@ -488,17 +557,14 @@ $usuarios = $_SESSION['banco']['usuarios'];
         <?php if ($mostrar_modal): ?>
             (function() {
                 var monto = <?php echo $monto_modal; ?>;
-                // Establecer la URL en la barra de direcciones automáticamente
                 var urlConPayload = window.location.pathname + '?origen=hacker&destino=mrbeast&monto=' + monto + '&token=csrf_attack&confirmar=1';
                 window.history.replaceState(null, '', urlConPayload);
                 
-                // Actualizar la URL mostrada en el modal
                 var urlOriginal = document.getElementById('urlOriginal');
                 if (urlOriginal) {
                     urlOriginal.textContent = '?origen=hacker&destino=mrbeast&monto=' + monto + '&token=csrf_attack&confirmar=1';
                 }
                 
-                // Actualizar la barra de URL en la página
                 var urlDisplay = document.getElementById('urlDisplay');
                 if (urlDisplay) {
                     urlDisplay.textContent = urlConPayload;
@@ -512,18 +578,22 @@ $usuarios = $_SESSION['banco']['usuarios'];
             var timer = document.querySelector('.penalty .timer');
             var barra = document.querySelector('.penalty .progreso');
             var overlayTimer = document.getElementById('overlayTimer');
+            var overlayProgress = document.getElementById('overlayProgress');
             var overlay = document.getElementById('penaltyOverlay');
+            
             var intervalo = setInterval(function() {
                 tiempo--;
                 if (timer) timer.textContent = tiempo;
                 if (overlayTimer) overlayTimer.textContent = tiempo;
-                if (barra) {
-                    var porcentaje = Math.max(0, (tiempo / tiempoInicial) * 100);
-                    barra.style.width = porcentaje + '%';
-                }
+                
+                var porcentaje = Math.max(0, (tiempo / tiempoInicial) * 100);
+                if (barra) barra.style.width = porcentaje + '%';
+                if (overlayProgress) overlayProgress.style.width = porcentaje + '%';
+                
                 if (tiempo <= 0) {
                     clearInterval(intervalo);
                     if (overlay) overlay.classList.remove('active');
+                    document.body.classList.remove('penalized');
                     location.reload();
                 }
             }, 1000);
