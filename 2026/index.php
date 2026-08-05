@@ -868,7 +868,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
 
-                <!-- Desafío 9: XXE -->
+                <!-- Desafío 9: CSRF -->
                 <div class="col-md-4 mb-4">
                     <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['xxe']) ? 'completed-challenge' : ''; ?>" id="challenge-xxe">
                         <div class="card-body">
@@ -889,14 +889,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
 
-                <!-- Desafío 10: Cookie Manipulation -->
+                <!-- Desafío 10: CODE DINAMIC -->
                 <div class="col-md-4 mb-4">
                     <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['race_condition']) ? 'completed-challenge' : ''; ?>" id="challenge-race_condition">
                         <div class="card-body">
-                            <h5 class="card-title text-primary">10. Cookie Manipulation</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Manipulación de Cookies (1 🚩)</h6>
-                            <p class="card-text">¡Piensa en el lado cliente! Las aplicaciones almacenan información en cookies. Usa las herramientas del navegador para modificar cookies y escalar privilegios.</p>
+                            <h5 class="card-title text-primary">10. CODE DINAMIC</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Codigo Dinamico (1 🚩)</h6>
+                            <p class="card-text"></p>
                             
+                            <a href="challenge_dynamic.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
                                 <input type="text" class="form-control" id="flag-race_condition" placeholder="Ingresa la bandera" 
                                     <?php echo isset($desafiosCompletados['race_condition']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
