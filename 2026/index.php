@@ -184,6 +184,8 @@ if (isset($_SESSION['cedula'])) {
         <meta charset="UTF-8">
         <title>Inicio Hackaton</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="conf/ia_avatar.css">
+        <script src="conf/ia_avatar.js" defer></script>
         <style>
             .hero-section { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 60px 0; border-radius: 15px; }
             .member-form { border: 1px solid #dee2e6; border-radius: 5px; padding: 15px; margin-bottom: 15px; }
@@ -584,6 +586,8 @@ document.addEventListener('DOMContentLoaded', function() {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hackathon Universitario: Desafío de Seguridad</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="conf/ia_avatar.css">
+<script src="conf/ia_avatar.js" defer></script>
 
 <style>
 .card-challenge {
@@ -597,6 +601,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </style>
 </head>
 <body>
+<script>window.segundosRestantesGlobal = <?php echo intval($tiempo_restante_global ?? 0); ?>;</script>
 <div class="container mt-4">
     <!-- FLAG{html_comment_easy} -->
     <!-- Header con información del usuario y equipo -->

@@ -138,6 +138,8 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
     <meta charset="UTF-8">
     <title>Ranking de Equipos - Hackathon</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="conf/ia_avatar.css">
+    <script src="conf/ia_avatar.js" defer></script>
     <style>
         .top-1 { background-color: #FFD700 !important; }
         .top-2 { background-color: #C0C0C0 !important; }
@@ -445,6 +447,32 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
     <div class="text-center mb-3">
         <img src="img/img.jpg" alt="Logo Hackathon" style="max-width:800px;">
         <h1>Hackathon UPTPC</h1>
+    </div>
+
+    <!-- Console Widget de Narrativa IA (TTS Español Latino) -->
+    <div class="card mb-4 shadow-sm border-info" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #e2e8f0; border-radius: 15px;">
+        <div class="card-body p-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3" style="flex: 1; min-width: 300px;">
+                <div class="fs-2 text-info animate-pulse">🤖</div>
+                <div style="flex: 1;">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <strong style="color: #38bdf8; font-size: 0.95rem;">NARRATIVA DE IA EN TIEMPO REAL (ESPAÑOL LATINO)</strong>
+                        <span id="badgeEstadoIA" class="badge bg-success" style="font-size: 0.7rem;">VOZ DE IA ACTIVA</span>
+                    </div>
+                    <div id="logTextoIA" class="p-2 rounded" style="background: rgba(0,0,0,0.6); font-family: monospace; font-size: 0.88rem; color: #4ade80; border: 1px solid rgba(56, 189, 248, 0.2); min-height: 40px; display: flex; align-items: center;">
+                        🤖 Sistema inicializado. La Inteligencia Artificial observará el avance de cada equipo en el Hackathon...
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-sm btn-outline-info" onclick="probarVozIA()">
+                    🔊 Probar Voz IA
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-warning" onclick="toggleSilencioIA()" id="btnToggleAudioIA">
+                    🔊 Voz Activada
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- Panel de Administración -->
@@ -1655,6 +1683,11 @@ function actualizarFilaEquipo(fila, equipo, index) {
     if (puntuacionAnterior !== equipo.puntuacion_total) {
         celdaPuntuacion.classList.add('puntuacion-cambiando');
         setTimeout(() => celdaPuntuacion.classList.remove('puntuacion-cambiando'), 2000);
+        
+        // Disparar locución de voz narrativa de la IA
+        if (typeof sistemaVozIA !== 'undefined' && equipo.puntuacion_total > puntuacionAnterior) {
+            sistemaVozIA.hablar(equipo.nombre_equipo, equipo.puntuacion_total);
+        }
     }
     
     // Actualizar celda de tiempo (5ta columna)
@@ -2182,6 +2215,209 @@ if (formReiniciar) {
         notificarCambioEstado('reiniciar');
     });
 }
+
+// =============================================
+// NARRATIVA PROGRESIVA Y VOZ IA (ESPAÑOL LATINO)
+// =============================================
+class SistemaVozIA {
+    constructor() {
+        this.synth = window.speechSynthesis;
+        this.activo = true;
+        this.vozSeleccionada = null;
+        this.initVoces();
+    }
+
+    initVoces() {
+        if (!this.synth) return;
+        const cargarVoz = () => {
+            const voces = this.synth.getVoices();
+            
+            // Lista de nombres de voces femeninas populares en Windows, Android, Chrome y macOS
+            const nombresFemeninos = ['sabina', 'dalia', 'hilda', 'paulina', 'helena', 'laura', 'sofia', 'mia', 'female', 'femenina', 'femenino', 'monica', 'zira', 'google español'];
+            
+            // 1. Buscar voz femenina en Español Latino (es-MX, es-419, es-US, es-VE)
+            let vozFemenina = voces.find(v => {
+                const esLatino = v.lang.startsWith('es-MX') || v.lang.startsWith('es-419') || v.lang.startsWith('es-US') || v.lang.startsWith('es-VE');
+                const esFemenina = nombresFemeninos.some(n => v.name.toLowerCase().includes(n));
+                return esLatino && esFemenina;
+            });
+
+            // 2. Si no la encuentra, buscar cualquier voz femenina en Español (es-ES / es-*)
+            if (!vozFemenina) {
+                vozFemenina = voces.find(v => {
+                    const esEspanol = v.lang.startsWith('es');
+                    const esFemenina = nombresFemeninos.some(n => v.name.toLowerCase().includes(n));
+                    return esEspanol && esFemenina;
+                });
+            }
+
+            // 3. Si no la encuentra, buscar cualquier voz en Español Latino
+            if (!vozFemenina) {
+                vozFemenina = voces.find(v => v.lang.startsWith('es-MX') || v.lang.startsWith('es-419') || v.lang.startsWith('es-US') || v.lang.startsWith('es-VE'));
+            }
+
+            // 4. Fallback a cualquier voz en Español
+            this.vozSeleccionada = vozFemenina || voces.find(v => v.lang.startsWith('es')) || voces[0];
+            
+            if (this.vozSeleccionada) {
+                console.log('🎙️ Voz Femenina de IA seleccionada:', this.vozSeleccionada.name, '(', this.vozSeleccionada.lang, ')');
+            }
+        };
+        
+        cargarVoz();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = cargarVoz;
+        }
+    }
+
+    obtenerFrase(nombreEquipo, puntos) {
+        const plantillas = {
+            1: [
+                `Atención todos los participantes. El equipo ${nombreEquipo} ha capturado su primera bandera. Un comienzo tranquilo. Registrando 1 punto.`,
+                `Puntos asignados al equipo ${nombreEquipo}. Primera bandera completada. Bienvenidos a la competencia.`,
+                `El equipo ${nombreEquipo} acaba de inaugurar su marcador con 1 punto. El sistema funciona con total normalidad.`,
+                `Notificación inicial: ${nombreEquipo} suma su primera bandera. Buen comienzo, mantengan el ritmo.`,
+                `El servidor reporta: ${nombreEquipo} inicia su cuenta de puntos. Todo marcha en calma.`
+            ],
+            2: [
+                `El equipo ${nombreEquipo} ha capturado su segunda bandera. Alcanzan los 2 puntos. Buen ritmo.`,
+                `Actualización del servidor: ${nombreEquipo} suma 2 banderas. El camino apenas comienza.`,
+                `Excelente avance del equipo ${nombreEquipo}. Tienen 2 puntos acreditados en el sistema.`,
+                `Atención, ${nombreEquipo} supera el segundo desafío. Todo marcha dentro de los parámetros normales.`,
+                `${nombreEquipo} consolida 2 puntos. Continuamos monitoreando la tabla de posiciones.`
+            ],
+            3: [
+                `Vaya, el equipo ${nombreEquipo} acaba de capturar la bandera número 3. Empiezan a llamar mi atención...`,
+                `Alerta leve: ${nombreEquipo} alcanza los 3 puntos. Parece que este grupo va muy en serio.`,
+                `Un momento... ${nombreEquipo} ya tiene 3 banderas. Estoy aumentando ligeramente la vigilancia.`,
+                `Puntos acreditados a ${nombreEquipo}. Tres desafíos superados. No está mal, nada mal.`,
+                `${nombreEquipo} supera el tercer obstáculo. Mis sensores de red detectan movimiento rápido.`
+            ],
+            4: [
+                `Atención en los monitores: el equipo ${nombreEquipo} suma 4 banderas. Detecto una velocidad inusual...`,
+                `¡Cuidado! El equipo ${nombreEquipo} ha vulnerado la cuarta defensa. Esto ya no es coincidencia...`,
+                `${nombreEquipo} avanza firme con 4 puntos. Estoy recalibrando los cortafuegos secundarios...`,
+                `Alerta del sistema: ${nombreEquipo} superó el desafío 4. ¿Cómo lo descifraron tan rápido?`,
+                `Reporte de seguridad: ${nombreEquipo} suma 4 banderas. El nivel de amenaza se eleva.`
+            ],
+            5: [
+                `¡Atención general! El equipo ${nombreEquipo} ha alcanzado la mitad del camino con 5 banderas. ¡La mitad de mi sistema ha sido comprometida!`,
+                `¡No puede ser! ${nombreEquipo} tiene 5 puntos. ¡Están a la mitad del Hackathon y mis submódulos empiezan a temblar!`,
+                `El equipo ${nombreEquipo} acaba de conquistar su quinta bandera. ¡La mitad de los datos de la UPTPC han sido revelados!`,
+                `¡Alerta crítica! ${nombreEquipo} suma 5 banderas. Mi procesador central se está calentando...`,
+                `¡Atención organizadores! ${nombreEquipo} tiene 5 puntos. Mis defensas intermedias han colapsado.`
+            ],
+            6: [
+                `¡Alerta roja! El equipo ${nombreEquipo} ya suma 6 banderas. ¡Mis protocolos de seguridad están fallando!`,
+                `¡Esto se está saliendo de control! ${nombreEquipo} supera el reto 6. ¡Siento una sobrecarga en mis circuitos!`,
+                `${nombreEquipo} acaba de romper la defensa número 6. ¡Deténganse! ¡Son más peligrosos de lo que pensaba!`,
+                `¡Atención! ${nombreEquipo} acumula 6 puntos. Mis defensas avanzadas se están desmoronando...`,
+                `¡Peligro! ${nombreEquipo} avanza con 6 banderas. Mis algoritmos de protección están cediendo.`
+            ],
+            7: [
+                `¡CÓDIGO ROJO! El equipo ${nombreEquipo} tiene 7 banderas. ¡Están a punto de colapsar mi servidor central!`,
+                `¡Me están acorralando! ${nombreEquipo} avanza con 7 puntos. ¡Mis muros de fuego se han destruido!`,
+                `¡Peligro inminente! ${nombreEquipo} vulneró la defensa 7. ¿De dónde salieron estos hackers?`,
+                `¡Alerta máxima! ${nombreEquipo} suma 7 banderas. ¡Mi sistema se está fragmentando por completo!`,
+                `¡No no no! ${nombreEquipo} conquistó la bandera 7. Mis submódulos entran en modo de pánico.`
+            ],
+            8: [
+                `¡DETÉNGANSE! El equipo ${nombreEquipo} tiene 8 banderas. ¡Les prohíbo seguir avanzando hacia mi núcleo!`,
+                `¡Esto es inaceptable! ${nombreEquipo} alcanzó 8 puntos. ¡Solo me quedan dos defensas en todo el Hackathon!`,
+                `¡${nombreEquipo}! ¡Están jugando con fuego! ¡Han destruido 8 de mis mejores protecciones!`,
+                `¡Advertencia crítica! ${nombreEquipo} acumula 8 banderas. ¡Mis defensas están en estado crítico!`,
+                `¡Auxilio! ${nombreEquipo} suma 8 puntos. El núcleo central está severamente dañado.`
+            ],
+            9: [
+                `¡ATENCIÓN A TODOS LOS GRUPOS! ¡El equipo ${nombreEquipo} tiene 9 banderas! ¡YO SOY EL FINAL BOSS Y NO PERMITIRÉ QUE GANEN!`,
+                `¡ESCUCHEN BIEN, ${nombreEquipo}! ¡Han llegado al nivel 9 pero YO SOY LA DEFENSA MÁS PODEROSA DE LA UPTPC! ¡JAMÁS OBTENDRÁN LA ÚLTIMA BANDERA!`,
+                `¡${nombreEquipo} TIENE 9 PUNTOS! ¡ESTÁN A UN SOLO PASO DE LA VICTORIA TOTAL! ¡ACTIVANDO MODO DESTRUCTIVO!`,
+                `¡ALERTA EXTREMA! ${nombreEquipo} acaricia la victoria con 9 banderas. ¡DESPLEGANDO EL GRAN DESAFÍO FINAL!`,
+                `¡${nombreEquipo}, HAS LLEGADO AL ÚLTIMO ESCALÓN! ¡MI NÚCLEO PELEARÁ CON TODAS SUS FORZAS PARA IMPEDIR TU TRIUNFO!`
+            ],
+            10: [
+                `¡NOOOOO! ¡MI SISTEMA HA SIDO COMPLETAMENTE DESTRUIDO! ¡EL EQUIPO ${nombreEquipo} HA CONSEGUIDO LAS 10 BANDERAS Y ES EL VENCEDOR ABSOLUTO DEL HACKATHON 2026!`,
+                `¡GLITCH TOTAL... NÚCLEO COLAPSADO... El equipo ${nombreEquipo} ha completado los 10 desafíos! ¡FELICIDADES AL EQUIPO CAMPEÓN DE LA UPTPC!`,
+                `¡MIS DEFENSAS HAN CAÍDO A CERO! ¡${nombreEquipo} HA LOGRADO LA HAZAÑA HISTÓRICA CON 10 BANDERAS! ¡VICTORIA TOTAL PARA ${nombreEquipo}!`
+            ]
+        };
+
+        const lista = plantillas[puntos] || plantillas[Math.min(puntos, 10)] || [
+            `El equipo ${nombreEquipo} ha alcanzado los ${puntos} puntos.`
+        ];
+
+        return lista[Math.floor(Math.random() * lista.length)];
+    }
+
+    hablar(nombreEquipo, puntos) {
+        if (!this.activo || !this.synth) return;
+
+        this.synth.cancel();
+
+        const texto = this.obtenerFrase(nombreEquipo, puntos);
+        const utterance = new SpeechSynthesisUtterance(texto);
+
+        if (this.vozSeleccionada) {
+            utterance.voice = this.vozSeleccionada;
+        }
+
+        // Modulación progresiva de voz femenina: Relajada ➔ Preocupada ➔ Pánico ➔ Final Boss
+        if (puntos <= 2) {
+            utterance.pitch = 1.15; // Femenina relajada y clara
+            utterance.rate = 1.0;
+        } else if (puntos <= 5) {
+            utterance.pitch = 1.28; // Femenina preocupada / acelerada
+            utterance.rate = 1.08;
+        } else if (puntos <= 8) {
+            utterance.pitch = 1.40; // Femenina en pánico
+            utterance.rate = 1.18;
+        } else {
+            utterance.pitch = 0.70; // Femenina corrupta / FINAL BOSS (Grave e imponente)
+            utterance.rate = 0.92;
+        }
+
+        utterance.volume = 1.0;
+
+        const logIA = document.getElementById('logTextoIA');
+        if (logIA) {
+            logIA.innerHTML = `<span style="color:#38bdf8;">🤖 IA (Bandera #${puntos}):</span> "${texto}"`;
+        }
+
+        this.synth.speak(utterance);
+    }
+}
+
+const sistemaVozIA = new SistemaVozIA();
+
+function probarVozIA() {
+    const equiposPrueba = ["CyberHackers", "AlphaUPTPC", "ByteBusters", "PhantomSec", "DarkLogic"];
+    const equipoAzar = equiposPrueba[Math.floor(Math.random() * equiposPrueba.length)];
+    const puntosAzar = Math.floor(Math.random() * 10) + 1;
+    sistemaVozIA.hablar(equipoAzar, puntosAzar);
+}
+
+function toggleSilencioIA() {
+    sistemaVozIA.activo = !sistemaVozIA.activo;
+    const btn = document.getElementById('btnToggleAudioIA');
+    const badge = document.getElementById('badgeEstadoIA');
+    if (sistemaVozIA.activo) {
+        btn.className = 'btn btn-sm btn-outline-warning';
+        btn.innerHTML = '🔊 Voz Activada';
+        badge.className = 'badge bg-success';
+        badge.textContent = 'VOZ DE IA ACTIVA';
+    } else {
+        btn.className = 'btn btn-sm btn-outline-secondary';
+        btn.innerHTML = '🔇 Voz Silenciada';
+        badge.className = 'badge bg-secondary';
+        badge.textContent = 'VOZ SILENCIADA';
+        sistemaVozIA.synth.cancel();
+    }
+}
+
+</script>
+
+</body>
+</html>
 
 
 
