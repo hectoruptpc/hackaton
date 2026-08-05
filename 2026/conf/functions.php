@@ -295,7 +295,7 @@ function obtenerConfiguracionDesafios() {
             'tiempo' => 15 * 60
         ],
         'xxe' => [
-            'flag' => 'FLAG{SESSION_HIJACKED}',
+            'flag' => 'FLAG{ROBO_BANCO}',
             'puntos' => 1,
             'tiempo' => 15 * 60
         ],
