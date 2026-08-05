@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="img/CIENCIA%20Y%20TECNOLOGIA%20B_N.png" alt="Unidad de Ciencia y Tecnología" width="350"/>
+  <img src="img/cyt.png" alt="Unidad de Ciencia y Tecnología" width="350"/>
 </p>
 
 # 🚀 Hackaton - Unidad de Ciencia y Tecnología
