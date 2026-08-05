@@ -19,6 +19,12 @@
             border-radius: 999px;
             padding: 0.8rem 1.25rem;
         }
+        .footer-logo {
+            width: 140px;
+            height: auto;
+            opacity: 0.9;
+            margin-top: 2rem;
+        }
     </style>
 </head>
 <body>
@@ -50,6 +56,10 @@
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div class="text-center">
+                    <img src="img/cyt.png" alt="Logo Unidad de Ciencia y Tecnología" class="footer-logo">
                 </div>
             </div>
         </div>

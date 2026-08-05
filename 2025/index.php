@@ -194,7 +194,7 @@ if (isset($_SESSION['cedula'])) {
     <body>
     <div class="container mt-4">
         <div class="text-center mb-3">
-            <img src="img/img.jpg" alt="Logo Hackathon" style="max-width:800px;">
+            <img src="../img/img.png" alt="Logo Hackathon" style="max-width:800px;">
             <h1>Hackathon UPTPC 2025</h1>
         </div>
         

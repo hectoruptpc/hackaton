@@ -443,7 +443,7 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
 <body>
 <div class="container mt-4">
     <div class="text-center mb-3">
-        <img src="img/img.jpg" alt="Logo Hackathon" style="max-width:800px;">
+        <img src="../img/img.png" alt="Logo Hackathon" style="max-width:800px;">
         <h1>Hackathon UPTPC</h1>
     </div>
 

@@ -445,7 +445,7 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
 <body>
 <div class="container mt-4">
     <div class="text-center mb-3">
-        <img src="img/img.jpg" alt="Logo Hackathon" style="max-width:800px;">
+        <img src="../img/img.png" alt="Logo Hackathon" style="max-width:800px;">
         <h1>Hackathon UPTPC</h1>
     </div>
 
@@ -1012,8 +1012,8 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
 <audio id="audioBandera4_2" preload="auto">
     <source src="audios/estan_avanzando_muy_rapido_son_peligrosos.mp3" type="audio/mpeg">
 </audio>
-<audio id="audioBandera4_3" preload="auto">
-    <source src="audios/me_estan_empezando_a_poner_nerviosa_sera_que_lo_lograran?.mp3" type="audio/mpeg">
+<audio id="audioBandera4_3" preload="none">
+    <source src="audios/me_estan_empezando_a_poner_nerviosa_sera_que_lo_lograran.mp3" type="audio/mpeg">
 </audio>
 <audio id="audioBandera4_4" preload="auto">
     <source src="audios/pongan_mas_defensas_suban_la_dificultad_no_permitire_que_ganen.mp3" type="audio/mpeg">
@@ -1029,8 +1029,8 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
 <audio id="audioBandera5_1" preload="auto">
     <source src="audios/solo_nos_queda_una_defensa_que_no_avancen.mp3" type="audio/mpeg">
 </audio>
-<audio id="audioBandera5_2" preload="auto">
-    <source src="audios/pero_que_sucede_como_estan_avanzando?_no_no_no.mp3" type="audio/mpeg">
+<audio id="audioBandera5_2" preload="none">
+    <source src="audios/pero_que_sucede_como_estan_avanzando_no_no_no.mp3" type="audio/mpeg">
 </audio>
 <audio id="audioBandera5_3" preload="auto">
     <source src="audios/esto_no_puede_estar_pasando_me_van_a_derrotar.mp3" type="audio/mpeg">
@@ -1076,38 +1076,59 @@ const PUNTUACION_MAXIMA = 6;
 let ultimaVerificacionEstado = Date.now();
 let hackathonActivo = <?php echo $hackathon_activo ? 'true' : 'false'; ?>;
 let estadoSincronizado = false;
+let recargaEstadoEnProgreso = false;
+let tiempoCargaPagina = Date.now();
 
 // Función para verificar cambios en el estado del hackathon
 function verificarEstadoHackathon() {
+    if (recargaEstadoEnProgreso) {
+        return;
+    }
+
     fetch(`obtener_estado_hackathon.php?t=${Date.now()}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                const estadoActual = data.estado.hackathon_iniciado;
-                
-                // Si el estado cambió
+                const estadoActual = Boolean(data.estado?.hackathon_iniciado);
+                const cambioReciente = (Date.now() - tiempoCargaPagina) < 5000;
+
                 if (estadoActual !== hackathonActivo) {
                     console.log(`🔄 Cambio de estado detectado: ${hackathonActivo} → ${estadoActual}`);
-                    
+
                     if (estadoActual && !hackathonActivo) {
-                        // Hackathon fue iniciado desde otro dispositivo
+                        if (cambioReciente) {
+                            console.log('🔄 Cambio detectado justo al cargar la página, se sincroniza sin recargar');
+                            hackathonActivo = estadoActual;
+                            estadoSincronizado = true;
+                            return;
+                        }
+
                         console.log('🚀 Hackathon iniciado desde otro dispositivo - Recargando...');
                         mostrarNotificacionSincronizacion('¡Hackathon iniciado desde otro dispositivo!', 'success');
+                        recargaEstadoEnProgreso = true;
                         setTimeout(() => {
                             location.reload();
                         }, 1500);
+                        return;
                     } else if (!estadoActual && hackathonActivo) {
-                        // Hackathon fue reiniciado desde otro dispositivo
+                        if (cambioReciente) {
+                            console.log('🔄 Cambio detectado justo al cargar la página, se sincroniza sin recargar');
+                            hackathonActivo = estadoActual;
+                            estadoSincronizado = true;
+                            return;
+                        }
+
                         console.log('🔄 Hackathon reiniciado desde otro dispositivo - Recargando...');
                         mostrarNotificacionSincronizacion('¡Hackathon reiniciado desde otro dispositivo!', 'warning');
+                        recargaEstadoEnProgreso = true;
                         setTimeout(() => {
                             location.reload();
                         }, 1500);
+                        return;
                     }
-                    
-                    hackathonActivo = estadoActual;
                 }
-                
+
+                hackathonActivo = estadoActual;
                 estadoSincronizado = true;
             }
         })
@@ -1362,6 +1383,7 @@ function inicializarPuntuacionesAnteriores(ranking) {
 // Inicializar mapa de equipos actuales
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Página cargada - Inicializando sistema completo...');
+    tiempoCargaPagina = Date.now();
     
     // Guardar los equipos actuales en el mapa
     const filasEquipos = document.querySelectorAll('#tabla-equipos tr[data-equipo-id]');
