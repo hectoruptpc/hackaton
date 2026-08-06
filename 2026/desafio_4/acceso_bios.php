@@ -20,7 +20,7 @@ session_start();
 <script>
     function validar() {
         let r = document.getElementById("acertijo").value.trim().toLowerCase();
-        if(r === "radio" || r === "la radio" || r === "television") {
+        if(r === "el eco" || r === "eco" || r === "perico" || r === "loro" || r === "radio" || r === "la radio" || r === "television") {
             window.location.href = "validando_identidad.php";
         } else {
             document.getElementById("msg").innerHTML = "❌ Error de sistema.";
