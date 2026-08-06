@@ -183,7 +183,9 @@ if (isset($_SESSION['cedula'])) {
         <title>Inicio Hackaton</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="conf/ia_avatar.css">
+        <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
         <script src="conf/ia_avatar.js" defer></script>
+
         <style>
             .hero-section { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 60px 0; border-radius: 15px; }
             .member-form { border: 1px solid #dee2e6; border-radius: 5px; padding: 15px; margin-bottom: 15px; }
@@ -585,6 +587,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <title>Hackathon Universitario: Desafío de Seguridad</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="conf/ia_avatar.css">
+<link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
 <script src="conf/ia_avatar.js" defer></script>
 
 <style>

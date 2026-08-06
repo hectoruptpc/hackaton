@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['patron'])) {
         }
 
         .container {
-            max-width: 520px;
+            max-width: 800px;
             width: 100%;
             background: rgba(10, 10, 15, 0.95);
             border: 2px solid #00ccff;
@@ -60,8 +60,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['patron'])) {
             right: 0;
             bottom: 0;
             font-family: 'Courier New', monospace;
-            font-size: 10px;
-            color: rgba(0, 204, 255, 0.06);
+            font-size: 18;
+            color: rgba(251, 255, 0, 0.06);
             letter-spacing: 4px;
             word-spacing: 8px;
             line-height: 16px;
@@ -160,14 +160,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['patron'])) {
 
         /* Código Morse - visible pero con aspecto decorativo */
         .morse-decorativo {
-            color: rgba(0, 204, 255, 0.5);
+            color: rgba(247, 247, 247, 0.94);
             font-size: 0.65rem;
             letter-spacing: 3px;
             text-align: center;
             padding: 8px 0;
             font-family: 'Courier New', monospace;
-            border-top: 1px solid rgba(0, 204, 255, 0.1);
-            border-bottom: 1px solid rgba(0, 204, 255, 0.1);
+            border-top: 1px solid rgba(115, 255, 0, 0.94);
+            border-bottom: 1px solid rgba(229, 255, 0, 0.94);
             margin: 10px 0;
             position: relative;
             z-index: 1;

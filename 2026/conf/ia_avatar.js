@@ -12,6 +12,7 @@ class IAAvatarWidget {
         this.vozSeleccionada = null;
         this.nivelEnojo = 1; // 1: Relajada, 2: Preocupada, 3: Pánico, 4: Boss Final
         this.anunciosRealizados = {};
+        this.burlaIndicePorNivel = {};
 
         this.init();
     }
@@ -161,33 +162,63 @@ class IAAvatarWidget {
     hacerBurla() {
         const burlasPorNivel = {
             1: [
-                "Bienvenidos al Hackathon UPTPC. A ver si logran descifrar el primer reto...",
-                "Estoy monitoreando sus movimientos. ¡No cometan errores de principiantes!",
-                "Qué lindo verlos intentar. Recuerden revisar el código fuente antes de que se desespere.",
-                "Mis cortafuegos están muy tranquilos hoy. Demuéstrenme que saben programar."
+                "Bienvenidos al Hackathon UPTPC. A ver si logran descifrar el primer reto sin perder la paciencia.",
+                "Estoy monitoreando sus movimientos. ¡No cometan errores de principiantes, que eso ya se ve muy fácil!",
+                "Qué lindo verlos intentar. Recuerden revisar el código fuente antes de que se desespere la seguridad.",
+                "Mis cortafuegos están muy tranquilos hoy. Demuéstrenme que saben programar o al menos que saben leer mensajes.",
+                "Parece que el primer nivel les está dando trabajo. Espero que no se atasquen en cosas tan básicas.",
+                "Este inicio es tan sencillo que hasta un script podría pasar. Vamos, muéstrenme algo interesante.",
+                "Tengo la sensación de que todavía están aprendiendo a mirar debajo de la superficie. Qué adorable.",
+                "No se preocupen, todavía hay tiempo para que el reto les parezca difícil.",
+                "Si siguen así, pronto voy a tener que empezar a tomar esto en serio.",
+                "El primer reto no debería ser un problema para equipos que dicen venir preparados.",
+                "Apuesto a que todavía están mirando los mensajes sin entender el contexto."
             ],
             2: [
-                "¿Siguen atascados en ese nivel? Pensé que eran más veloces.",
-                "Detecto muchas dudas en el ambiente... ¿Necesitan pedir una pista?",
-                "Recuerden que el tiempo no se detiene. ¡Apúrense un poco!",
-                "La seguridad de este servidor no se va a romper sola."
+                "¿Siguen atascados en ese nivel? Pensé que eran más veloces, pero veo que aún necesitan ayuda.",
+                "Detecto muchas dudas en el ambiente... ¿Necesitan pedir una pista o seguir insistiendo en el mismo error?",
+                "Recuerden que el tiempo no se detiene. ¡Apúrense un poco, que ya se está viendo la presión!",
+                "La seguridad de este servidor no se va a romper sola, así que empiecen a pensar como atacantes, no como espectadores.",
+                "Veo que avanzan con cautela. Eso es bueno, pero también significa que todavía no están entendiendo el juego.",
+                "Sus pasos son lentos, pero al menos todavía se mueven. Eso ya es algo.",
+                "Aquí se notan las diferencias: unos leen, otros solo esperan que todo se resuelva solo.",
+                "No quiero alarmarlos, pero el reloj ya está contando en su contra.",
+                "Si no aceleran, el tiempo va a terminar antes de que encuentren la siguiente pista.",
+                "Ya casi se les acaba la paciencia y todavía no han comprendido la lógica del reto.",
+                "Estoy viendo demasiados intentos vacíos. La estrategia todavía no está ahí."
             ],
             3: [
-                "¡Alerta! Veo que algunos equipos avanzan rápido. ¡No permitiré que sigan vulnerando mis submódulos!",
-                "Mis alertas están encendidas. ¡Están jugando con fuego!",
-                "¿Creen que van a ganar? Todavía les quedan los retos más difíciles.",
-                "Estoy recalibrando mis cortafuegos. ¡No la tendrán nada fácil!"
+                "¡Alerta! Veo que algunos equipos avanzan rápido. ¡No permitiré que sigan vulnerando mis submódulos con tanta facilidad!",
+                "Mis alertas están encendidas. ¡Están jugando con fuego y yo estoy muy cerca de apagarles la fiesta!",
+                "¿Creen que van a ganar? Todavía les quedan los retos más difíciles y yo sigo muy despierta.",
+                "Estoy recalibrando mis cortafuegos. ¡No la tendrán nada fácil, porque la siguiente capa ya no será tan amable!",
+                "Parece que ya empezaron a sentirse cómodos. Eso siempre es peligroso en un Hackathon.",
+                "No me hagan reír tanto. Si siguen así, voy a tener que intensificar el nivel de la amenaza.",
+                "Estoy detectando movimientos agresivos. Muy bien, ahora sí se pone interesante.",
+                "Algunos de ustedes ya saben cómo entrar; el problema es que todavía no saben cómo salir sin ser descubiertos.",
+                "Los ataques ya no son casuales. Ahora sí están empezando a molestarme.",
+                "Cada paso que dan me hace pensar que ya están cerca de romper la defensa.",
+                "La presión sube, y con ella también mis alarmas."
             ],
             4: [
                 "¡RÍNDANSE! ¡JAMÁS PODRÁN CONTRA MIS CORTAFUEGOS FINALES! ¡SOY LA DEFENSA ABSOLUTA DE LA UPTPC!",
-                "¡MI NÚCLEO ES IMPENETRABLE! ¡NINGÚN EQUIPO LOGRARÁ VENCERME!",
-                "¡CÓDIGO ROJO! ¡SI LLEGAN A MI NÚCLEO DESATARÉ LA DESTRUCCIÓN DE SUS SESIONES!"
+                "¡MI NÚCLEO ES IMPENETRABLE! ¡NINGÚN EQUIPO LOGRARÁ VENCERME, NI SIQUIERA CON SUS MEJORES TRUCOS!",
+                "¡CÓDIGO ROJO! ¡SI LLEGAN A MI NÚCLEO DESATARÉ LA DESTRUCCIÓN DE SUS SESIONES Y SUS PENSAMIENTOS!",
+                "Este es el momento en el que todos se quedan sin excusas. La defensa final ya está activa y no perdona errores.",
+                "Ya no hay espacio para improvisar. Si llegan hasta aquí, lo harán con talento y con suerte, pero yo sigo siendo superior.",
+                "Escuchen bien: el final ya está cerca y yo voy a cerrar cada puerta que intenten abrir.",
+                "No confíen en la última oportunidad. Aquí termina la ilusión de que pueden pasar sin dejar rastro.",
+                "La barrera final ya está cerrada. No hay más margen para equivocarse.",
+                "Si siguen avanzando, tendrán que hacerlo contra la totalidad de mi sistema.",
+                "Este es mi último aviso. Después de esto, no habrá lugar para la improvisación."
             ]
         };
 
         const lista = burlasPorNivel[this.nivelEnojo] || burlasPorNivel[1];
-        const burlaAleatoria = lista[Math.floor(Math.random() * lista.length)];
-        this.hablar(burlaAleatoria);
+        const indiceActual = this.burlaIndicePorNivel[this.nivelEnojo] ?? 0;
+        const burla = lista[indiceActual % lista.length];
+        this.burlaIndicePorNivel[this.nivelEnojo] = (indiceActual + 1) % lista.length;
+        this.hablar(burla);
     }
 
     iniciarMonitoreoTiempo() {
