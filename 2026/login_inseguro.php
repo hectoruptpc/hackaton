@@ -88,6 +88,35 @@ Contraseña: passwordsegura
 
 </div>
 </div>
+<script>
+console.log(
+'%c' + 
+`
+╔══════════════════════════════════════════════════════════════════╗
+║                                                                  ║
+║   🎯  ¡B U E N   I N T E N T O ,   H A C K E R !  🎯           ║
+║                                                                  ║
+║   ┌──────────────────────────────────────────────────────────┐   ║
+║   │                                                          │   ║
+║   │   😂 ¿EN SERIO ABRESTES LA CONSOLA PARA ESTO? 😂        │   ║
+║   │                                                          │   ║
+║   │   JAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJA   │   ║
+║   │   Aquí no vas a encontrar absolutamente NADA.           │   ║
+║   │   Sigue perdiendo el tiempo, CAMPEÓN.                    │   ║
+║   │                                                          │   ║
+║   │   😘  Saludos desde el equipo de Ciencia y Tecnología  😘 │   ║
+║   │                                                          │   ║
+║   └──────────────────────────────────────────────────────────┘   ║
+║                                                                  ║
+║   💀  EL VERDADERO HACKER USA SU CEREBRO, NO LA CONSOLA  💀    ║
+║                                                                  ║
+╚══════════════════════════════════════════════════════════════════╝
+`,
+'color: #00ffcc; font-size: 13px; font-weight: bold; font-family: monospace; background: #090d16; padding: 10px; border: 2px solid #38bdf8;'
+);
+console.log('%c🚫 NO PERDAS TU TIEMPO AQUÍ, NO HAY NINGUNA PISTA 🚫', 'color: #ff0000; font-size: 16px; font-weight: bold; background: #1a0000; padding: 8px;');
+console.log('%c🤣 TE CREÍSTE MUY LISTO ABRIENDO F12, ¿VERDAD? 🤣', 'color: #ffff00; font-size: 16px; font-weight: bold;');
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -348,7 +348,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
         </form>
         <div style="display: flex; justify-content: center; margin-top: 1rem;">
-            <button type="button" onclick="history.back();">⬅️ REGRESAR</button>
+            <button type="button" onclick="window.location.href='index.php';">⬅️ REGRESAR</button>
         </div>
     </div>
 
@@ -383,7 +383,7 @@ console.log(
 ║   │   La flag está en el BACKEND, no en el frontend.        │   ║
 ║   │   Sigue intentando, pero no por aquí, CAMPEÓN.          │   ║
 ║   │                                                          │   ║
-║   │   😘  Saludos desde el equipo de Robotica  😘         │   ║
+║   │   😘  Saludos desde el equipo de Ciencia y Tecnología  😘 │   ║
 ║   │                                                          │   ║
 ║   └──────────────────────────────────────────────────────────┘   ║
 ║                                                                  ║

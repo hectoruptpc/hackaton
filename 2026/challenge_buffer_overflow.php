@@ -143,19 +143,97 @@ Solo personal autorizado puede ingresar.
 
                     <?php echo $mensaje; ?>
 
-                    <!-- Visualización del stack (educativo) -->
+                    <!-- Visualización del stack (con Popovers interactivos opcionales) -->
                     <div class="stack-visual mt-4">
-                        <h6 class="text-center">📦 MEMORIA (STACK) - Visualización</h6>
-                        <div class="row g-1">
-                            <div class="col-3 register">buffer[0-15]</div>
-                            <div class="col-3 register">buffer[16-31]</div>
-                            <div class="col-3 register">buffer[32-47]</div>
-                            <div class="col-3 register">buffer[48-63]</div>
-                            <div class="col-3 register mt-1 text-danger">EBP (4 bytes)</div>
-                            <div class="col-3 register mt-1 text-warning">EIP (RETURN ADDR)</div>
-                            <div class="col-6 register mt-1 text-success">flag_secreta() [0xf1e2d3c4]</div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">📦 MEMORIA (STACK) - Visualización Interactiva</h6>
+                            <small class="text-info" style="font-size:0.75rem;">ℹ️ Toca las secciones para inspección teórica</small>
                         </div>
-                        <small class="d-block mt-2 text-center">💡 Para ganar: Sobrescribe EIP con la dirección de flag_secreta()</small>
+
+                        <div class="row g-1">
+                            <div class="col-3 register distractor-badge" 
+                                 data-bs-toggle="popover" 
+                                 data-bs-placement="top"
+                                 title="💾 Buffer Segment Alpha (Bytes 0x00 - 0x0F)" 
+                                 data-bs-content="Bloque inicial de la memoria local. En arquitecturas Intel IA-32, los primeros 16 bytes almacenan caracteres codificados en ASCII/UTF-8. Alineación de memoria a 16 bytes según estándar System V ABI.">
+                                buffer[0-15] ℹ️
+                            </div>
+                            <div class="col-3 register distractor-badge" 
+                                 data-bs-toggle="popover" 
+                                 data-bs-placement="top"
+                                 title="💾 Buffer Segment Beta (Bytes 0x10 - 0x1F)" 
+                                 data-bs-content="Módulo secundario del arreglo local. Si se ingresan caracteres como 'A' (0x41), la representación en hexadecimal mostrará 41414141 en los registros de depuración GDB.">
+                                buffer[16-31] ℹ️
+                            </div>
+                            <div class="col-3 register distractor-badge" 
+                                 data-bs-toggle="popover" 
+                                 data-bs-placement="top"
+                                 title="💾 Buffer Segment Gamma (Bytes 0x20 - 0x2F)" 
+                                 data-bs-content="Segmento intermedio del arreglo en la pila. La optimización del compilador GCC puede agregar 4 u 8 bytes de padding en versiones superiores a Linux Kernel 4.15.">
+                                buffer[32-47] ℹ️
+                            </div>
+                            <div class="col-3 register distractor-badge" 
+                                 data-bs-toggle="popover" 
+                                 data-bs-placement="top"
+                                 title="💾 Buffer Segment Delta (Bytes 0x30 - 0x3F)" 
+                                 data-bs-content="Límite máximo del buffer asignado (64 bytes). Superar este byte específico (byte 64) comenzará la corrupción de la estructura del Frame Pointer de la función invocadora.">
+                                buffer[48-63] ℹ️
+                            </div>
+                            <div class="col-3 register mt-1 text-danger distractor-badge" 
+                                 data-bs-toggle="popover" 
+                                 data-bs-placement="bottom"
+                                 title="📌 Registro EBP (Base Pointer - 4 Bytes)" 
+                                 data-bs-content="El Base Pointer conserva la dirección base del marco de pila de la función anterior. Ocupa exactamente 4 bytes (del byte 64 al 67). Debe sobrescribirse antes de alcanzar EIP.">
+                                EBP (4 bytes) ℹ️
+                            </div>
+                            <div class="col-3 register mt-1 text-warning distractor-badge" 
+                                 data-bs-toggle="popover" 
+                                 data-bs-placement="bottom"
+                                 title="⚡ Registro EIP (Instruction Pointer)" 
+                                 data-bs-content="El Instruction Pointer o Return Address apunta a la siguiente instrucción de CPU a ejecutar. Sobrescribir EIP permite redirigir el flujo de control hacia cualquier función en memoria.">
+                                EIP (RETURN) ℹ️
+                            </div>
+                            <div class="col-6 register mt-1 text-success distractor-badge" 
+                                 data-bs-toggle="popover" 
+                                 data-bs-placement="bottom"
+                                 title="🏆 Función flag_secreta() [0xf1e2d3c4]" 
+                                 data-bs-content="Dirección de la función objetivo cargada en la sección .text del ejecutable ELF. Redirigir el registro EIP a esta función imprime la clave secreta del servidor.">
+                                flag_secreta() [0xf1e2d3c4] ℹ️
+                            </div>
+                        </div>
+
+                        <!-- Sección de Registros Teóricos de Distracción Opcionales -->
+                        <div class="mt-3 pt-2 border-top border-secondary text-center">
+                            <small class="text-muted d-block mb-2">🔍 Inspección Teórica de Registros x86 (Opcional):</small>
+                            <div class="d-flex flex-wrap justify-content-center gap-1">
+                                <span class="badge bg-dark border border-cyan text-info distractor-badge" 
+                                      data-bs-toggle="popover" 
+                                      title="⚙️ Registro EAX (Acumulador)" 
+                                      data-bs-content="Utilizado en operaciones aritméticas y para almacenar el valor de retorno de las funciones en C. En este programa devuelve 0x0 en ejecución normal.">EAX (0x00)</span>
+
+                                <span class="badge bg-dark border border-cyan text-info distractor-badge" 
+                                      data-bs-toggle="popover" 
+                                      title="⚙️ Registro ESP (Stack Pointer)" 
+                                      data-bs-content="Apunta al tope actual de la pila. Crece hacia direcciones de memoria más bajas (hacia abajo en arquitectura x86 standard).">ESP (0x7fffffff)</span>
+
+                                <span class="badge bg-dark border border-cyan text-info distractor-badge" 
+                                      data-bs-toggle="popover" 
+                                      title="⚙️ NOP Sled (0x90 Execution)" 
+                                      data-bs-content="Secuencia de instrucciones NOP (No Operation / 0x90). Se utiliza en exploits clásicos para deslizar la ejecución hasta el shellcode cuando la dirección exacta varía.">NOP Sled (0x90)</span>
+
+                                <span class="badge bg-dark border border-cyan text-info distractor-badge" 
+                                      data-bs-toggle="popover" 
+                                      title="🛡️ Estado de ASLR (Address Space Layout Randomization)" 
+                                      data-bs-content="Técnica de seguridad que aleatoriza las posiciones del mapa de memoria. En este desafío se encuentra DESACTIVADA para permitir direccionamiento estático.">ASLR: Disabled</span>
+
+                                <span class="badge bg-dark border border-cyan text-info distractor-badge" 
+                                      data-bs-toggle="popover" 
+                                      title="🐥 Stack Canaries (Protección de Canario)" 
+                                      data-bs-content="Valor entero aleatorio colocado antes del EBP para detectar desbordamientos. En este binario la bandera -fno-stack-protector ha removido el canario.">Canary: None</span>
+                            </div>
+                        </div>
+
+                        <small class="d-block mt-2 text-center text-light">💡 Para ganar: Sobrescribe EIP con la dirección de flag_secreta()</small>
                     </div>
 
                     <div class="mt-4 p-3" style="background:#001100; border-radius:8px;">
@@ -175,5 +253,46 @@ Solo personal autorizado puede ingresar.
             </div>
         </div>
     </div>
+<script>
+console.log(
+'%c' + 
+`
+╔══════════════════════════════════════════════════════════════════╗
+║                                                                  ║
+║   🎯  ¡B U E N   I N T E N T O ,   H A C K E R !  🎯           ║
+║                                                                  ║
+║   ┌──────────────────────────────────────────────────────────┐   ║
+║   │                                                          │   ║
+║   │   😂 ¿CREÍSTE QUE AQUÍ HABÍA ALGUNA PISTA? 😂           │   ║
+║   │                                                          │   ║
+║   │   JAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJA   │   ║
+║   │   Aquí NO hay pistas. Ve a quemarte las pestañas.        │   ║
+║   │   Sigue intentando, CAMPEÓN.                             │   ║
+║   │                                                          │   ║
+║   │   😘  Saludos desde el equipo de Ciencia y Tecnología  😘 │   ║
+║   │                                                          │   ║
+║   └──────────────────────────────────────────────────────────┘   ║
+║                                                                  ║
+║   💀  EL VERDADERO HACKER USA SU CEREBRO, NO LA CONSOLA  💀    ║
+║                                                                  ║
+╚══════════════════════════════════════════════════════════════════╝
+`,
+'color: #00ffcc; font-size: 13px; font-weight: bold; font-family: monospace; background: #090d16; padding: 10px; border: 2px solid #38bdf8;'
+);
+console.log('%c🚫 AQUÍ NO HAY PISTAS, PERDISTE TU TIEMPO ABRIENDO LA CONSOLA 🚫', 'color: #ff0000; font-size: 16px; font-weight: bold; background: #1a0000; padding: 8px;');
+console.log('%c🤣 ¿EN SERIO PENSABAS QUE IBAS A ENCONTRAR ALGO FÁCIL? 🤣', 'color: #ffff00; font-size: 16px; font-weight: bold;');
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+    var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+        return new bootstrap.Popover(popoverTriggerEl, {
+            trigger: 'hover focus click',
+            html: true
+        });
+    });
+});
+</script>
 </body>
 </html>

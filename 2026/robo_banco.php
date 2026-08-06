@@ -78,7 +78,7 @@ if ($usuario_actual && isset($_SESSION['banco']['penalizaciones'][$usuario_actua
 }
 
 if (isset($_POST['logout'])) {
-    session_destroy();
+    unset($_SESSION['banco']);
     header('Location: ' . $_SERVER['PHP_SELF']);
     exit;
 }
@@ -618,5 +618,34 @@ $usuarios = $_SESSION['banco']['usuarios'];
             }, 1000);
         <?php endif; ?>
     </script>
+<script>
+console.log(
+'%c' + 
+`
+╔══════════════════════════════════════════════════════════════════╗
+║                                                                  ║
+║   🎯  ¡B U E N   I N T E N T O ,   H A C K E R !  🎯           ║
+║                                                                  ║
+║   ┌──────────────────────────────────────────────────────────┐   ║
+║   │                                                          │   ║
+║   │   😂 ¿ROBANDO A MR. BEAST DESDE LA CONSOLA? 😂          │   ║
+║   │                                                          │   ║
+║   │   JAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJA   │   ║
+║   │   Aquí no hay dinero ni dinero ni banderas gratis.       │   ║
+║   │   Sigue intentando, CAMPEÓN.                             │   ║
+║   │                                                          │   ║
+║   │   😘  Saludos desde el equipo de Ciencia y Tecnología  😘 │   ║
+║   │                                                          │   ║
+║   └──────────────────────────────────────────────────────────┘   ║
+║                                                                  ║
+║   💀  EL VERDADERO HACKER USA SU CEREBRO, NO LA CONSOLA  💀    ║
+║                                                                  ║
+╚══════════════════════════════════════════════════════════════════╝
+`,
+'color: #00ffcc; font-size: 13px; font-weight: bold; font-family: monospace; background: #090d16; padding: 10px; border: 2px solid #38bdf8;'
+);
+console.log('%c🚫 NO PIERDAS TU TIEMPO EN F12, AQUÍ NO HAY NADA 🚫', 'color: #ff0000; font-size: 16px; font-weight: bold; background: #1a0000; padding: 8px;');
+console.log('%c🤣 TE QUEDASTE CON LAS MANOS VACÍAS 🤣', 'color: #ffff00; font-size: 16px; font-weight: bold;');
+</script>
 </body>
 </html>

@@ -151,7 +151,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 if (isset($_GET['reset'])) {
-    session_destroy();
+    unset($_SESSION['dynamic_challenge']);
     header('Location: ' . $_SERVER['PHP_SELF']);
     exit;
 }
@@ -690,5 +690,34 @@ $historial = $_SESSION['dynamic_challenge']['historial_codigos'];
         
         setInterval(actualizarTimer, 1000);
     </script>
+<script>
+console.log(
+'%c' + 
+`
+╔══════════════════════════════════════════════════════════════════╗
+║                                                                  ║
+║   🎯  ¡B U E N   I N T E N T O ,   H A C K E R !  🎯           ║
+║                                                                  ║
+║   ┌──────────────────────────────────────────────────────────┐   ║
+║   │                                                          │   ║
+║   │   😂 ¿BUSCANDO PISTAS FÁCILES EN EL DESAFÍO FINAL? 😂   │   ║
+║   │                                                          │   ║
+║   │   JAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJA   │   ║
+║   │   La consola JS no te regalará absolutamente NADA.       │   ║
+║   │   El tiempo sigue corriendo, CAMPEÓN...                  │   ║
+║   │                                                          │   ║
+║   │   😘  Saludos desde el equipo de Ciencia y Tecnología  😘 │   ║
+║   │                                                          │   ║
+║   └──────────────────────────────────────────────────────────┘   ║
+║                                                                  ║
+║   💀  EL VERDADERO HACKER USA SU CEREBRO, NO LA CONSOLA  💀    ║
+║                                                                  ║
+╚══════════════════════════════════════════════════════════════════╝
+`,
+'color: #00ffcc; font-size: 13px; font-weight: bold; font-family: monospace; background: #090d16; padding: 10px; border: 2px solid #38bdf8;'
+);
+console.log('%c🚫 AQUÍ NO HAY PISTAS, EL TIEMPO CORRE Y LA CONSOLA NO TE SALVARÁ 🚫', 'color: #ff0000; font-size: 16px; font-weight: bold; background: #1a0000; padding: 8px;');
+console.log('%c🤣 TE QUEDAN POCOS SEGUNDOS Y SEGUÍAS PERDIENDO EL TIEMPO EN F12 🤣', 'color: #ffff00; font-size: 16px; font-weight: bold;');
+</script>
 </body>
 </html>
