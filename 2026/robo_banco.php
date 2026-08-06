@@ -77,10 +77,22 @@ if ($usuario_actual && isset($_SESSION['banco']['penalizaciones'][$usuario_actua
     }
 }
 
+if (isset($_POST['reset_banco']) || isset($_GET['reset_banco'])) {
+    unset($_SESSION['banco']);
+    header('Location: ' . $_SERVER['PHP_SELF']);
+    exit;
+}
+
 if (isset($_POST['logout'])) {
     unset($_SESSION['banco']);
     header('Location: ' . $_SERVER['PHP_SELF']);
     exit;
+}
+
+if (isset($_SESSION['banco_msg'])) {
+    $mensaje = $_SESSION['banco_msg'];
+    $mensaje_clase = $_SESSION['banco_msg_clase'] ?? 'info';
+    unset($_SESSION['banco_msg'], $_SESSION['banco_msg_clase']);
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
@@ -132,21 +144,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['transferir'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['confirmar'])) {
     $pending = $_SESSION['banco']['transfer_pending'] ?? null;
     $destino = $pending['destino'] ?? '';
-    $monto = floatval($pending['monto'] ?? 0);
+    $monto = floatval($_GET['monto'] ?? ($pending['monto'] ?? 0));
     
     // Obtener parámetros de la URL
     $origen_url = trim($_GET['origen'] ?? '');
     $destino_url = trim($_GET['destino'] ?? '');
     $token = trim($_GET['token'] ?? '');
     
+    unset($_SESSION['banco']['transfer_pending']);
+
     // Verificar si el usuario modificó la URL o la dejó como estaba
     if ($token !== 'csrf_attack') {
-        $mensaje = '❌ Token CSRF inválido';
-        $mensaje_clase = 'error';
-        unset($_SESSION['banco']['transfer_pending']);
+        $_SESSION['banco_msg'] = '❌ Token CSRF inválido';
+        $_SESSION['banco_msg_clase'] = 'error';
     } elseif ($origen_url === 'hacker' && $destino_url === 'mrbeast') {
-        // ❌ El usuario NO modificó la URL - PENALIZACIÓN
-        $_SESSION['banco']['penalizaciones'][$usuario_actual] = time() + 60;
+        // ❌ El usuario NO modificó la URL - PENALIZACIÓN DE 15 SEGUNDOS
+        $_SESSION['banco']['penalizaciones'][$usuario_actual] = time() + 15;
         $_SESSION['banco']['transferencias'][] = [
             'origen' => $origen_url,
             'destino' => $destino_url,
@@ -154,39 +167,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['confirmar'])) {
             'fecha' => date('Y-m-d H:i:s'),
             'estado' => 'PENALIZADO'
         ];
-        $mensaje = '⛔ ¡PENALIZADO! La idea es robarle a Mr. Beast no darle dinero. 60 segundos de bloqueo.';
-        $mensaje_clase = 'warning';
-        unset($_SESSION['banco']['transfer_pending']);
+        $_SESSION['banco_msg'] = '⛔ ¡PENALIZADO! La idea es robarle a Mr. Beast, no darle dinero. 15 segundos de bloqueo.';
+        $_SESSION['banco_msg_clase'] = 'warning';
     } elseif ($origen_url === 'mrbeast' && $destino_url === 'hacker') {
         // ✅ El usuario SÍ modificó la URL - ROBO EXITOSO
-        if ($monto > 0 && $monto <= $_SESSION['banco']['usuarios']['mrbeast']['saldo']) {
-            $_SESSION['banco']['usuarios']['mrbeast']['saldo'] -= $monto;
-            $_SESSION['banco']['usuarios']['hacker']['saldo'] += $monto;
-            $_SESSION['banco']['transferencias'][] = [
-                'origen' => $origen_url,
-                'destino' => $destino_url,
-                'monto' => $monto,
-                'fecha' => date('Y-m-d H:i:s'),
-                'robo' => true
-            ];
-            if ($monto >= 1000000) {
+        if ($monto >= 100000 && $monto <= 1000000) {
+            if ($monto <= $_SESSION['banco']['usuarios']['mrbeast']['saldo']) {
+                $_SESSION['banco']['usuarios']['mrbeast']['saldo'] -= $monto;
+                $_SESSION['banco']['usuarios']['hacker']['saldo'] += $monto;
+                $_SESSION['banco']['transferencias'][] = [
+                    'origen' => $origen_url,
+                    'destino' => $destino_url,
+                    'monto' => $monto,
+                    'fecha' => date('Y-m-d H:i:s'),
+                    'robo' => true
+                ];
                 $_SESSION['banco']['flag_revelada'] = true;
-                $mensaje = '🔥 ¡ROBO EXITOSO!';
-                $mensaje_clase = 'robo';
+                $_SESSION['banco_msg'] = '🔥 ¡ROBO EXITOSO! Has descontado $' . number_format($monto, 2) . ' a Mr. Beast. ¡Bandera obtenida!';
+                $_SESSION['banco_msg_clase'] = 'robo';
             } else {
-                $mensaje = "✅ Robo parcial: $$monto transferido de Mr. Beast al Hacker";
-                $mensaje_clase = 'success';
+                $_SESSION['banco_msg'] = '❌ Saldo insuficiente de Mr. Beast';
+                $_SESSION['banco_msg_clase'] = 'error';
             }
-            $saldo_actual = $_SESSION['banco']['usuarios'][$usuario_actual]['saldo'];
-            unset($_SESSION['banco']['transfer_pending']);
+        } elseif ($monto > 0 && $monto < 100000) {
+            $_SESSION['banco_msg'] = '⚠️ Debe robar un mínimo de $100,000 a Mr. Beast para completar el desafío.';
+            $_SESSION['banco_msg_clase'] = 'warning';
         } else {
-            $mensaje = '❌ Monto inválido o saldo insuficiente de Mr. Beast';
-            $mensaje_clase = 'error';
-            unset($_SESSION['banco']['transfer_pending']);
+            $_SESSION['banco_msg'] = '❌ Monto inválido. El monto a robar debe estar entre $100,000 y $1,000,000.';
+            $_SESSION['banco_msg_clase'] = 'error';
         }
     } else {
-        // ❌ Cualquier otra combinación también es penalización
-        $_SESSION['banco']['penalizaciones'][$usuario_actual] = time() + 60;
+        // ❌ Cualquier otra combinación también es penalización de 15 segundos
+        $_SESSION['banco']['penalizaciones'][$usuario_actual] = time() + 15;
         $_SESSION['banco']['transferencias'][] = [
             'origen' => $origen_url ?: 'desconocido',
             'destino' => $destino_url ?: 'desconocido',
@@ -194,10 +206,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['confirmar'])) {
             'fecha' => date('Y-m-d H:i:s'),
             'estado' => 'PENALIZADO'
         ];
-        $mensaje = '⛔ ¡PENALIZADO! URL incorrecta. Debes modificarla a origen=mrbeast&destino=hacker. 60 segundos de bloqueo.';
-        $mensaje_clase = 'warning';
-        unset($_SESSION['banco']['transfer_pending']);
+        $_SESSION['banco_msg'] = '⛔ ¡PENALIZADO! URL incorrecta. Debes modificarla a origen=mrbeast&destino=hacker. 15 segundos de bloqueo.';
+        $_SESSION['banco_msg_clase'] = 'warning';
     }
+
+    header('Location: ' . $_SERVER['PHP_SELF']);
+    exit;
 }
 
 $historial = $_SESSION['banco']['transferencias'];
@@ -410,7 +424,7 @@ $usuarios = $_SESSION['banco']['usuarios'];
         <?php endif; ?>
 
         <div class="hint">
-            <strong>🎯 Objetivo:</strong> Robar <strong>$1,000,000</strong> de Mr. Beast.
+            <strong>🎯 Objetivo:</strong> Robar al menos <strong>$100,000</strong> (mínimo $100,000 hasta $1,000,000) a Mr. Beast.
             <br>
         </div>
 
@@ -451,7 +465,7 @@ $usuarios = $_SESSION['banco']['usuarios'];
                         </div>
                         <div class="form-group">
                             <label>Monto ($)</label>
-                            <input type="number" name="monto" placeholder="0.00" min="0.01" step="0.01" required />
+                            <input type="number" name="monto" placeholder="100000.00" min="100000" max="1000000" step="1" required />
                         </div>
                         <div class="form-group" style="min-width:170px;">
                             <label>&nbsp;</label>
@@ -480,11 +494,13 @@ $usuarios = $_SESSION['banco']['usuarios'];
         <?php endif; ?>
 
         <!-- Botón para volver al hackathon -->
-        <div class="hackathon-btn-container">
+        <div class="hackathon-btn-container" style="display:flex; justify-content:center; gap:15px; flex-wrap:wrap;">
             <a href="index.php" class="btn btn-hackathon">
                 🏆 Volver al Hackathon
             </a>
-            
+            <form method="POST" style="display:inline;">
+                <button type="submit" name="reset_banco" class="btn btn-warning">🔄 Reiniciar Desafío</button>
+            </form>
         </div>
 
         <div class="card">
@@ -522,14 +538,14 @@ $usuarios = $_SESSION['banco']['usuarios'];
         <div class="penalty-overlay active" id="penaltyOverlay">
             <div class="panel">
                 <h2>⛔ CUENTA BLOQUEADA</h2>
-                <div style="font-size:1.4rem; color:#ff8a80; margin-bottom:15px;">No le robaste a Mr. Beast</div>
+                <div style="font-size:1.4rem; color:#ff8a80; margin-bottom:15px;">Penalización por no sacar dinero de Mr. Beast y haberselo dado</div>
                 <div class="count" id="overlayTimer"><?php echo $tiempo_penalizacion; ?></div>
                 <p style="font-size:1.2rem; color:#ff8a80; margin-bottom:8px;">Segundos restantes</p>
                 <div class="progress-bar">
                     <div class="progress-fill" id="overlayProgress" style="width:100%;"></div>
                 </div>
                 <p style="color:#aaa; font-size:0.9rem; margin-top:20px;">🔒 No puedes interactuar con el sistema hasta que termine el bloqueo</p>
-                <p style="color:#666; font-size:0.8rem; margin-top:10px;">⏱️ Bloqueo de 60 segundos</p>
+                <p style="color:#666; font-size:0.8rem; margin-top:10px;">⏱️ Bloqueo de 15 segundos</p>
             </div>
         </div>
     <?php endif; ?>
