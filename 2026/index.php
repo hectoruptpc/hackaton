@@ -767,13 +767,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
 
-                <!-- Desafío 4: Análisis de URL -->
+                <!-- Desafío 4: Consola de Servidor Web -->
                 <div class="col-md-4 mb-4">
                     <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['command_injection']) ? 'completed-challenge' : ''; ?>" id="challenge-command_injection">
                         <div class="card-body">
-                            <h5 class="card-title text-primary">4. Análisis de URL</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Análisis de Red (1 🚩)</h6>
-                            <p class="card-text">Pasa de url en url hasta descubrir la vulnerabilidad.</p>
+                            <h5 class="card-title text-primary">4. Consola de Servidor Web</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Linux CLI & Privilegios (1 🚩)</h6>
+                            <p class="card-text">Explora el servidor web con comandos ls, cd y cat, eleva privilegios con sudo su y encuentra los 4 fragmentos de la bandera.</p>
                             
                             <a href="desafio_4/inicio.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">

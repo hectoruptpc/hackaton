@@ -270,7 +270,7 @@ function obtenerConfiguracionDesafios() {
             'tiempo' => 15 * 60
         ],
         'command_injection' => [
-            'flag' => 'FLAG{URL_ANALYSIS_MASTER}',
+            'flag' => 'FLAG{SERVER_TERMINAL_MASTER}',
             'puntos' => 1,
             'tiempo' => 15 * 60
         ],

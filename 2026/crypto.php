@@ -348,7 +348,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
         </form>
         <div style="display: flex; justify-content: center; margin-top: 1rem;">
-            <button type="button" onclick="history.back();">⬅️ REGRESAR</button>
+            <button type="button" onclick="window.location.href='index.php';">⬅️ REGRESAR</button>
         </div>
     </div>
 

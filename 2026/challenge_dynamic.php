@@ -151,7 +151,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 if (isset($_GET['reset'])) {
-    session_destroy();
+    unset($_SESSION['dynamic_challenge']);
     header('Location: ' . $_SERVER['PHP_SELF']);
     exit;
 }

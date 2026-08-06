@@ -78,7 +78,7 @@ if ($usuario_actual && isset($_SESSION['banco']['penalizaciones'][$usuario_actua
 }
 
 if (isset($_POST['logout'])) {
-    session_destroy();
+    unset($_SESSION['banco']);
     header('Location: ' . $_SERVER['PHP_SELF']);
     exit;
 }
