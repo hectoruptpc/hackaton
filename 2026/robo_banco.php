@@ -48,7 +48,7 @@ if (!isset($_SESSION['banco'])) {
     ];
 }
 
-$usuario_actual = $_SESSION['usuario'] ?? null;
+$usuario_actual = $_SESSION['banco_usuario'] ?? null;
 $mensaje = '';
 $mensaje_clase = 'success';
 $mostrar_modal = false;
@@ -78,13 +78,13 @@ if ($usuario_actual && isset($_SESSION['banco']['penalizaciones'][$usuario_actua
 }
 
 if (isset($_POST['reset_banco']) || isset($_GET['reset_banco'])) {
-    unset($_SESSION['banco']);
+    unset($_SESSION['banco'], $_SESSION['banco_usuario']);
     header('Location: ' . $_SERVER['PHP_SELF']);
     exit;
 }
 
 if (isset($_POST['logout'])) {
-    unset($_SESSION['banco']);
+    unset($_SESSION['banco_usuario']);
     header('Location: ' . $_SERVER['PHP_SELF']);
     exit;
 }
@@ -96,17 +96,17 @@ if (isset($_SESSION['banco_msg'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
-    $user = trim($_POST['usuario'] ?? '');
+    $user = strtolower(trim($_POST['usuario'] ?? ''));
     $pass = trim($_POST['password'] ?? '');
 
     if (isset($_SESSION['banco']['usuarios'][$user]) && $_SESSION['banco']['usuarios'][$user]['password'] === $pass) {
-        $_SESSION['usuario'] = $user;
+        $_SESSION['banco_usuario'] = $user;
         $usuario_actual = $user;
         $saldo_actual = $_SESSION['banco']['usuarios'][$user]['saldo'];
         $nombre_usuario = $_SESSION['banco']['usuarios'][$user]['nombre'];
         $avatar_usuario = $_SESSION['banco']['usuarios'][$user]['avatar'];
         unset($_SESSION['banco']['penalizaciones'][$user]);
-        $mensaje = '✅ Sesión iniciada correctamente';
+        $mensaje = '✅ Sesión iniciada correctamente como ' . $nombre_usuario;
         $mensaje_clase = 'success';
     } else {
         $mensaje = '❌ Usuario o contraseña incorrectos';
