@@ -109,9 +109,37 @@ session_start();
         } else if(entrada === "admin" || entrada === "root" || entrada === "backup" || entrada === "config") {
             window.location.href = "acceso_concedido.php";
         } else {
-            alert("❌ Acceso denegado. El archivo no existe... o tal vez no se llama así.");
         }
     }
+</script>
+<script>
+console.log(
+'%c' + 
+`
+╔══════════════════════════════════════════════════════════════════╗
+║                                                                  ║
+║   🎯  ¡B U E N   I N T E N T O ,   H A C K E R !  🎯           ║
+║                                                                  ║
+║   ┌──────────────────────────────────────────────────────────┐   ║
+║   │                                                          │   ║
+║   │   😂 ¿BUSCANDO RUTAS FÁCILES EN LA CONSOLA? 😂          │   ║
+║   │                                                          │   ║
+║   │   JAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJA   │   ║
+║   │   La consola no te va a salvar de este laberinto.        │   ║
+║   │   Sigue dando vueltas, CAMPEÓN.                          │   ║
+║   │                                                          │   ║
+║   │   😘  Saludos desde el equipo de Ciencia y Tecnología  😘 │   ║
+║   │                                                          │   ║
+║   └──────────────────────────────────────────────────────────┘   ║
+║                                                                  ║
+║   💀  EL VERDADERO HACKER USA SU CEREBRO, NO LA CONSOLA  💀    ║
+║                                                                  ║
+╚══════════════════════════════════════════════════════════════════╝
+`,
+'color: #00ffcc; font-size: 13px; font-weight: bold; font-family: monospace; background: #090d16; padding: 10px; border: 2px solid #38bdf8;'
+);
+console.log('%c🚫 NO HAY RUTAS EN LA CONSOLA, SIGUE PERDIÉNDOTE EN EL LABERINTO 🚫', 'color: #ff0000; font-size: 16px; font-weight: bold; background: #1a0000; padding: 8px;');
+console.log('%c🤣 TE CREÍSTE MUY ASTUTO, PERO TE QUEDASTE A CIEGAS 🤣', 'color: #ffff00; font-size: 16px; font-weight: bold;');
 </script>
 <div style="text-align:center;margin:20px 0;"><a href="../index.php" style="background:#4a5568;color:#fff;padding:10px 20px;text-decoration:none;border-radius:5px;">⬅ Volver al Inicio</a></div>
 </body>

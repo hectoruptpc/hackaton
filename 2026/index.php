@@ -146,9 +146,7 @@ if (isset($_SESSION['cedula'])) {
 // 4. Si viene del formulario de acceso administrativo
 } else if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['codigo_admin'])) {
     $codigo_ingresado = trim($_POST['codigo_admin']);
-    $codigo_correcto = 'robotica';
-    
-    if ($codigo_ingresado === $codigo_correcto) {
+    if ($codigo_ingresado === 'robotica' || $codigo_ingresado === 'cienciaytecnologia') {
         // Crear sesión de administrador
         $_SESSION['es_admin'] = true;
         $_SESSION['admin_autenticado'] = true;

@@ -175,5 +175,34 @@ Solo personal autorizado puede ingresar.
             </div>
         </div>
     </div>
+<script>
+console.log(
+'%c' + 
+`
+╔══════════════════════════════════════════════════════════════════╗
+║                                                                  ║
+║   🎯  ¡B U E N   I N T E N T O ,   H A C K E R !  🎯           ║
+║                                                                  ║
+║   ┌──────────────────────────────────────────────────────────┐   ║
+║   │                                                          │   ║
+║   │   😂 ¿CREÍSTE QUE AQUÍ HABÍA ALGUNA PISTA? 😂           │   ║
+║   │                                                          │   ║
+║   │   JAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJAJA   │   ║
+║   │   Aquí NO hay pistas. Ve a quemarte las pestañas.        │   ║
+║   │   Sigue intentando, CAMPEÓN.                             │   ║
+║   │                                                          │   ║
+║   │   😘  Saludos desde el equipo de Ciencia y Tecnología  😘 │   ║
+║   │                                                          │   ║
+║   └──────────────────────────────────────────────────────────┘   ║
+║                                                                  ║
+║   💀  EL VERDADERO HACKER USA SU CEREBRO, NO LA CONSOLA  💀    ║
+║                                                                  ║
+╚══════════════════════════════════════════════════════════════════╝
+`,
+'color: #00ffcc; font-size: 13px; font-weight: bold; font-family: monospace; background: #090d16; padding: 10px; border: 2px solid #38bdf8;'
+);
+console.log('%c🚫 AQUÍ NO HAY PISTAS, PERDISTE TU TIEMPO ABRIENDO LA CONSOLA 🚫', 'color: #ff0000; font-size: 16px; font-weight: bold; background: #1a0000; padding: 8px;');
+console.log('%c🤣 ¿EN SERIO PENSABAS QUE IBAS A ENCONTRAR ALGO FÁCIL? 🤣', 'color: #ffff00; font-size: 16px; font-weight: bold;');
+</script>
 </body>
 </html>

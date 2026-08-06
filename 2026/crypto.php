@@ -383,7 +383,7 @@ console.log(
 ║   │   La flag está en el BACKEND, no en el frontend.        │   ║
 ║   │   Sigue intentando, pero no por aquí, CAMPEÓN.          │   ║
 ║   │                                                          │   ║
-║   │   😘  Saludos desde el equipo de Robotica  😘         │   ║
+║   │   😘  Saludos desde el equipo de Ciencia y Tecnología  😘 │   ║
 ║   │                                                          │   ║
 ║   └──────────────────────────────────────────────────────────┘   ║
 ║                                                                  ║
