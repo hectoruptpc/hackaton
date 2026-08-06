@@ -1074,4 +1074,12 @@ function obtenerEstadoBiometrico() {
     return $estado;
 }
 
+/**
+ * Obtener el número total de desafíos configurados dinámicamente en el sistema
+ */
+function obtenerTotalDesafios() {
+    $config = obtenerConfiguracionDesafios();
+    return is_array($config) ? count($config) : 6;
+}
+
 ?>

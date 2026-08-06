@@ -703,11 +703,12 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
     $estado_mostrar = '';
     $clase_badge = '';
     $texto_extra = '';
+    $total_desafios_sys = obtenerTotalDesafios();
     
-    if ($equipo['puntuacion_total'] == 6 || $equipo['completado']) {
+    if ($equipo['puntuacion_total'] >= $total_desafios_sys || $equipo['completado']) {
         $estado_mostrar = '✅ FINALIZADO';
         $clase_badge = 'badge bg-success p-2';
-        $texto_extra = '<br><small class="text-success mt-1 d-block">🎯 6/6 Desafíos</small>';
+        $texto_extra = '<br><small class="text-success mt-1 d-block">🎯 ' . $equipo['puntuacion_total'] . '/' . $total_desafios_sys . ' Desafíos</small>';
     } elseif ($equipo['estado'] == 1) {
         $estado_mostrar = '🏁 COMPITIENDO';
         $clase_badge = 'badge badge-compitiendo p-2';
@@ -768,7 +769,7 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
                 <div class="alert alert-info">
                     <strong>📅 Duración:</strong> <?php echo formatearDuracionLegible($duracion_actual); ?><br>
                     <strong>✅ Equipos que comenzarán:</strong> <?php echo count($ranking); ?><br>
-                    <strong>🎯 Desafíos:</strong> 6 desafíos de seguridad
+                    <strong>🎯 Desafíos:</strong> <?php echo obtenerTotalDesafios(); ?> desafíos de seguridad
                 </div>
                 <p class="text-danger"><strong>⚠️ Esta acción no se puede deshacer</strong></p>
             </div>
