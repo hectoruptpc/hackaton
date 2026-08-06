@@ -620,7 +620,7 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 
     <div class="text-center mb-3">
-        <img src="img/img.jpg" alt="Logo Hackathon" style="max-width:800px;">
+        <img src="../img/img.png" alt="Logo Hackathon" style="max-width:800px;">
         <h1>Hackathon UPTPC 2026 - Segundo Evento</h1>
     </div>
 
