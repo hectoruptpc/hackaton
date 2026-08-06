@@ -12,7 +12,7 @@ class IAAvatarWidget {
         this.vozSeleccionada = null;
         this.nivelEnojo = 1; // 1: Relajada, 2: Preocupada, 3: Pánico, 4: Boss Final
         this.anunciosRealizados = {};
-        
+
         this.init();
     }
 
@@ -26,17 +26,17 @@ class IAAvatarWidget {
         if (document.getElementById('iaWidgetContainer')) return;
 
         const widgetHTML = `
-            <div id="iaWidgetContainer" class="ia-floating-widget">
-                <div id="iaSpeechBubble" class="ia-speech-bubble">
-                    <span id="iaSpeechText">🤖 ¡Hola! Soy la IA del Hackathon. Haz clic en mi icono para escucharme...</span>
-                </div>
-                <div id="iaAvatarBtn" class="ia-avatar-btn" title="IA del Hackathon - Haz clic para interactuar">
-                    <span id="iaEmojiAvatar">🤖</span>
-                    <div id="iaSoundBadge" class="ia-sound-badge ${this.activo ? '' : 'muted'}">
-                        ${this.activo ? '🔊' : '🔇'}
-                    </div>
-                </div>
-            </div>
+        <div id="iaWidgetContainer" class="ia-floating-widget">
+        <div id="iaSpeechBubble" class="ia-speech-bubble">
+        <span id="iaSpeechText">🤖 ¡Hola! Soy la IA del Hackathon. Haz clic en mi icono para escucharme...</span>
+        </div>
+        <div id="iaAvatarBtn" class="ia-avatar-btn" title="IA del Hackathon - Haz clic para interactuar">
+        <span id="iaEmojiAvatar">🤖</span>
+        <div id="iaSoundBadge" class="ia-sound-badge ${this.activo ? '' : 'muted'}">
+        ${this.activo ? '🔊' : '🔇'}
+        </div>
+        </div>
+        </div>
         `;
 
         document.body.insertAdjacentHTML('beforeend', widgetHTML);
@@ -56,7 +56,7 @@ class IAAvatarWidget {
         const cargarVoz = () => {
             const voces = this.synth.getVoices();
             const nombresFemeninos = ['sabina', 'dalia', 'hilda', 'paulina', 'helena', 'laura', 'sofia', 'mia', 'female', 'femenina', 'monica', 'zira', 'google español'];
-            
+
             let vozFemenina = voces.find(v => {
                 const esLatino = v.lang.startsWith('es-MX') || v.lang.startsWith('es-419') || v.lang.startsWith('es-US') || v.lang.startsWith('es-VE');
                 const esFemenina = nombresFemeninos.some(n => v.name.toLowerCase().includes(n));
@@ -87,7 +87,7 @@ class IAAvatarWidget {
     toggleAudio() {
         this.activo = !this.activo;
         localStorage.setItem('ia_audio_active', this.activo);
-        
+
         const badge = document.getElementById('iaSoundBadge');
         if (badge) {
             badge.className = `ia-sound-badge ${this.activo ? '' : 'muted'}`;

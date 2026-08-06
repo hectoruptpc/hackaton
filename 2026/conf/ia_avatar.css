@@ -1,7 +1,7 @@
 /* ============================================================
-   ia_avatar.css - Estilos de la Burbuja Flotante Animada de la IA
-   Unidad de Ciencia y Tecnología — UPTPC 2026
-   ============================================================ */
+ *  ia_avatar.css - Estilos de la Burbuja Flotante Animada de la IA
+ *  Unidad de Ciencia y Tecnología — UPTPC 2026
+ *  ============================================================ */
 
 @keyframes floatAvatar {
     0% { transform: translateY(0px) rotate(0deg); }

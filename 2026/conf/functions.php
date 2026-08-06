@@ -31,10 +31,10 @@ function generarCodigoEquipo() {
  */
 function usuarioExiste($cedula) {
     global $db;
-    $stmt = $db->prepare("SELECT p.*, e.nombre_equipo, e.codigo_equipo, e.puntuacion_total, e.tiempo_inicio, e.inicio_tardio 
-                         FROM participantes p 
-                         LEFT JOIN equipos e ON p.equipo_id = e.id 
-                         WHERE p.cedula = ?");
+    $stmt = $db->prepare("SELECT p.*, e.nombre_equipo, e.codigo_equipo, e.puntuacion_total, e.tiempo_inicio, e.inicio_tardio
+    FROM participantes p
+    LEFT JOIN equipos e ON p.equipo_id = e.id
+    WHERE p.cedula = ?");
     $stmt->execute([$cedula]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
@@ -66,12 +66,12 @@ function contarMiembrosEquipo($equipo_id) {
 function registrarEquipo($nombre_equipo) {
     global $db;
     $codigo_equipo = generarCodigoEquipo();
-    
+
     // Verificar que el código no exista (aunque es muy improbable)
     while (equipoExiste($codigo_equipo)) {
         $codigo_equipo = generarCodigoEquipo();
     }
-    
+
     $stmt = $db->prepare("INSERT INTO equipos (nombre_equipo, codigo_equipo) VALUES (?, ?)");
     if ($stmt->execute([$nombre_equipo, $codigo_equipo])) {
         return $db->lastInsertId();
@@ -123,31 +123,31 @@ function desafioCompletado($equipo_id, $desafio_id) {
  */
 function completarDesafio($equipo_id, $desafio_id, $puntos) {
     global $db;
-    
+
     try {
         $db->beginTransaction();
-        
+
         // Registrar completado
         $stmt = $db->prepare("INSERT INTO desafios_completados (equipo_id, desafio_id) VALUES (?, ?)");
         if (!$stmt->execute([$equipo_id, $desafio_id])) {
             throw new Exception("Error al registrar desafío completado");
         }
-        
+
         // Sumar puntos al equipo
         $stmt = $db->prepare("UPDATE equipos SET puntuacion_total = puntuacion_total + ? WHERE id = ?");
         if (!$stmt->execute([$puntos, $equipo_id])) {
             throw new Exception("Error al actualizar puntuación");
         }
-        
+
         // Registrar tiempo acumulado
         registrarTiempoDesafioCompletado($equipo_id, $desafio_id);
-        
+
         // Actualizar contador de desafíos completados
         actualizarDesafiosCompletados($equipo_id);
-        
+
         $db->commit();
         return true;
-        
+
     } catch (Exception $e) {
         $db->rollBack();
         error_log("Error en completarDesafio: " . $e->getMessage());
@@ -173,13 +173,13 @@ function iniciarSesion($participante) {
  */
 function iniciarTiempoEquipo($equipo_id) {
     global $db;
-    
+
     // Verificar si el hackathon está activo
     $config = obtenerConfiguracionHackathon();
     if (!$config || !$config['hackathon_iniciado']) {
         return false; // No iniciar tiempo si el hackathon no ha comenzado
     }
-    
+
     $tiempo_inicio = date('Y-m-d H:i:s');
     $stmt = $db->prepare("UPDATE equipos SET tiempo_inicio = ? WHERE id = ?");
     return $stmt->execute([$tiempo_inicio, $equipo_id]);
@@ -192,21 +192,21 @@ function validarSesion() {
     if (!isset($_SESSION['cedula'])) {
         return false;
     }
-    
+
     global $db;
-    $stmt = $db->prepare("SELECT p.*, e.nombre_equipo, e.codigo_equipo, e.puntuacion_total, e.tiempo_inicio, e.inicio_tardio 
-                         FROM participantes p 
-                         LEFT JOIN equipos e ON p.equipo_id = e.id 
-                         WHERE p.cedula = ?");
+    $stmt = $db->prepare("SELECT p.*, e.nombre_equipo, e.codigo_equipo, e.puntuacion_total, e.tiempo_inicio, e.inicio_tardio
+    FROM participantes p
+    LEFT JOIN equipos e ON p.equipo_id = e.id
+    WHERE p.cedula = ?");
     $stmt->execute([$_SESSION['cedula']]);
     $participante = $stmt->fetch(PDO::FETCH_ASSOC);
-    
+
     if (!$participante) {
         session_unset();
         session_destroy();
         return false;
     }
-    
+
     return $participante;
 }
 
@@ -227,7 +227,7 @@ function mostrarAlerta($mensaje, $tipo = 'error') {
     // En lugar de mostrar alert, guardamos el mensaje en sesión para mostrarlo en un modal
     $_SESSION['modal_message'] = $mensaje;
     $_SESSION['modal_type'] = $tipo;
-    
+
     // Redirigir de vuelta al formulario
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
@@ -323,7 +323,7 @@ function obtenerConfiguracionHackathon() {
 function iniciarHackathonGlobal() {
     global $db;
     $tiempo_inicio = date('Y-m-d H:i:s');
-    
+
     $stmt = $db->prepare("UPDATE configuracion_hackathon SET hackathon_iniciado = TRUE, tiempo_inicio_global = ?");
     return $stmt->execute([$tiempo_inicio]);
 }
@@ -333,23 +333,23 @@ function iniciarHackathonGlobal() {
  */
 function reiniciarHackathon() {
     global $db;
-    
+
     $stmt = $db->prepare("UPDATE configuracion_hackathon SET hackathon_iniciado = FALSE, tiempo_inicio_global = NULL");
     $stmt->execute();
-    
+
     // Reiniciar puntuaciones, desafíos completados, estado y TIEMPOS
-    $stmt = $db->prepare("UPDATE equipos SET 
-        puntuacion_total = 0, 
-        tiempo_inicio = NULL, 
-        inicio_tardio = FALSE, 
-        estado = 0,
-        tiempo_acumulado = 0,
-        tiempo_finalizacion = NULL,
-        desafios_completados = 0,
-        completado = FALSE
+    $stmt = $db->prepare("UPDATE equipos SET
+    puntuacion_total = 0,
+    tiempo_inicio = NULL,
+    inicio_tardio = FALSE,
+    estado = 0,
+    tiempo_acumulado = 0,
+    tiempo_finalizacion = NULL,
+    desafios_completados = 0,
+    completado = FALSE
     ");
     $stmt->execute();
-    
+
     $stmt = $db->prepare("DELETE FROM desafios_completados");
     return $stmt->execute();
 }
@@ -362,7 +362,7 @@ function calcularTiempoTranscurridoGlobal() {
     if (!$config || !$config['tiempo_inicio_global']) {
         return 0;
     }
-    
+
     $tiempo_inicio = strtotime($config['tiempo_inicio_global']);
     $ahora = time();
     return $ahora - $tiempo_inicio;
@@ -376,11 +376,11 @@ function calcularTiempoRestanteGlobal() {
     if (!$config || !$config['tiempo_inicio_global']) {
         return $config ? $config['duracion_minutos'] * 60 : 90 * 60;
     }
-    
+
     $transcurrido = calcularTiempoTranscurridoGlobal();
     $total_segundos = $config['duracion_minutos'] * 60;
     $restante = $total_segundos - $transcurrido;
-    
+
     return max(0, $restante);
 }
 
@@ -392,7 +392,7 @@ function hackathonEstaActivo() {
     if (!$config || !$config['hackathon_iniciado']) {
         return false;
     }
-    
+
     $tiempo_restante = calcularTiempoRestanteGlobal();
     return $tiempo_restante > 0;
 }
@@ -412,13 +412,13 @@ function obtenerTiempoInicioEquipo($equipo_id) {
  */
 function iniciarTiempoEquipoTardio($equipo_id) {
     global $db;
-    
+
     // Verificar si el hackathon está activo
     $config = obtenerConfiguracionHackathon();
     if (!$config || !$config['hackathon_iniciado']) {
         return false; // No iniciar tiempo si el hackathon no ha comenzado
     }
-    
+
     $tiempo_inicio = date('Y-m-d H:i:s');
     $stmt = $db->prepare("UPDATE equipos SET tiempo_inicio = ?, inicio_tardio = TRUE WHERE id = ?");
     return $stmt->execute([$tiempo_inicio, $equipo_id]);
@@ -430,18 +430,18 @@ function iniciarTiempoEquipoTardio($equipo_id) {
  */
 function forzarInicioTiempoEquipo($equipo_id) {
     global $db;
-    
+
     $config = obtenerConfiguracionHackathon();
     if (!$config || !$config['hackathon_iniciado']) {
         return false;
     }
-    
+
     // Verificar si el equipo ya tiene tiempo iniciado
     $info_equipo = obtenerTiempoInicioEquipo($equipo_id);
     if ($info_equipo['tiempo_inicio']) {
         return true; // Ya tiene tiempo iniciado
     }
-    
+
     // Iniciar tiempo marcando como tardío
     $tiempo_inicio = date('Y-m-d H:i:s');
     $stmt = $db->prepare("UPDATE equipos SET tiempo_inicio = ?, inicio_tardio = TRUE WHERE id = ?");
@@ -473,29 +473,29 @@ function obtenerRankingEquipos() {
  */
 function unirAEquipo($cedula, $nombre, $codigo_equipo) {
     global $db;
-    
+
     // Verificar que el equipo exista
     $equipo = equipoExiste($codigo_equipo);
     if (!$equipo) {
         return ['success' => false, 'message' => 'El código del equipo no existe'];
     }
-    
+
     // Verificar que la cédula no esté ya registrada
     if (usuarioExiste($cedula)) {
         return ['success' => false, 'message' => 'La cédula ya está registrada en otro equipo'];
     }
-    
+
     // Verificar que el equipo no tenga más de 4 miembros
     $miembros_actuales = contarMiembrosEquipo($equipo['id']);
     if ($miembros_actuales >= 4) {
         return ['success' => false, 'message' => 'El equipo ya tiene 4 miembros'];
     }
-    
+
     // Registrar el participante
     if (registrarParticipante($nombre, $cedula, $equipo['id'])) {
         return ['success' => true, 'equipo_id' => $equipo['id']];
     }
-    
+
     return ['success' => false, 'message' => 'Error al registrar el participante'];
 }
 
@@ -504,25 +504,25 @@ function unirAEquipo($cedula, $nombre, $codigo_equipo) {
  */
 function verificarBanderaDesafio($equipo_id, $desafio_id, $bandera_usuario) {
     $config_desafios = obtenerConfiguracionDesafios();
-    
+
     if (!isset($config_desafios[$desafio_id])) {
         return ['success' => false, 'message' => 'Desafío no encontrado'];
     }
-    
+
     $desafio = $config_desafios[$desafio_id];
-    
+
     // Verificar si ya fue completado
     if (desafioCompletado($equipo_id, $desafio_id)) {
         return ['success' => false, 'message' => 'Este desafío ya fue completado por tu equipo'];
     }
-    
+
     // Verificar bandera
     if (verificarBandera($bandera_usuario, $desafio['flag'])) {
         // Registrar completado y sumar puntos
         if (completarDesafio($equipo_id, $desafio_id, $desafio['puntos'])) {
             return [
-                'success' => true, 
-                'message' => '¡Bandera correcta!', 
+                'success' => true,
+                'message' => '¡Bandera correcta!',
                 'puntos' => $desafio['puntos']
             ];
         } else {
@@ -538,25 +538,25 @@ function verificarBanderaDesafio($equipo_id, $desafio_id, $bandera_usuario) {
  */
 function eliminarEquipo($equipo_id) {
     global $db;
-    
+
     try {
         $db->beginTransaction();
-        
+
         // 1. Eliminar desafíos completados del equipo
         $stmt = $db->prepare("DELETE FROM desafios_completados WHERE equipo_id = ?");
         $stmt->execute([$equipo_id]);
-        
+
         // 2. Eliminar participantes del equipo
         $stmt = $db->prepare("DELETE FROM participantes WHERE equipo_id = ?");
         $stmt->execute([$equipo_id]);
-        
+
         // 3. Eliminar el equipo
         $stmt = $db->prepare("DELETE FROM equipos WHERE id = ?");
         $stmt->execute([$equipo_id]);
-        
+
         $db->commit();
         return true;
-        
+
     } catch (Exception $e) {
         $db->rollBack();
         error_log("Error al eliminar equipo: " . $e->getMessage());
@@ -570,13 +570,13 @@ function eliminarEquipo($equipo_id) {
  */
 function obtenerEquiposNuevos($ultimo_id) {
     global $db;
-    
+
     try {
         $stmt = $db->prepare("
-            SELECT id, nombre_equipo, codigo_equipo, puntuacion_total, tiempo_inicio, inicio_tardio, estado, creado_en 
-            FROM equipos 
-            WHERE id > ? 
-            ORDER BY id ASC
+        SELECT id, nombre_equipo, codigo_equipo, puntuacion_total, tiempo_inicio, inicio_tardio, estado, creado_en
+        FROM equipos
+        WHERE id > ?
+        ORDER BY id ASC
         ");
         $stmt->execute([$ultimo_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -592,16 +592,16 @@ function obtenerEquiposNuevos($ultimo_id) {
  */
 function registrarTiempoDesafioCompletado($equipo_id, $desafio_id) {
     global $db;
-    
+
     // Obtener tiempo actual del equipo
     $equipo = obtenerInfoEquipo($equipo_id);
     if (!$equipo || !$equipo['tiempo_inicio']) {
         return false;
     }
-    
+
     // Calcular tiempo transcurrido hasta ahora
     $tiempo_transcurrido = calcularTiempoTranscurrido($equipo['tiempo_inicio']);
-    
+
     // Actualizar tiempo acumulado
     $stmt = $db->prepare("UPDATE equipos SET tiempo_acumulado = ? WHERE id = ?");
     return $stmt->execute([$tiempo_transcurrido, $equipo_id]);
@@ -612,19 +612,19 @@ function registrarTiempoDesafioCompletado($equipo_id, $desafio_id) {
  */
 function marcarEquipoCompletado($equipo_id) {
     global $db;
-    
+
     try {
         $tiempo_finalizacion = date('Y-m-d H:i:s');
         $stmt = $db->prepare("
-            UPDATE equipos 
-            SET completado = TRUE, 
-                tiempo_finalizacion = ?,
-                estado = 1,
-                desafios_completados = 6
-            WHERE id = ?
+        UPDATE equipos
+        SET completado = TRUE,
+        tiempo_finalizacion = ?,
+        estado = 1,
+        desafios_completados = 6
+        WHERE id = ?
         ");
         return $stmt->execute([$tiempo_finalizacion, $equipo_id]);
-        
+
     } catch (Exception $e) {
         error_log("Error en marcarEquipoCompletado: " . $e->getMessage());
         return false;
@@ -636,26 +636,26 @@ function marcarEquipoCompletado($equipo_id) {
  */
 function obtenerRankingEquiposConTiempo() {
     global $db;
-    
+
     $stmt = $db->prepare("
-        SELECT 
-            id, 
-            nombre_equipo, 
-            codigo_equipo, 
-            puntuacion_total, 
-            tiempo_inicio, 
-            inicio_tardio, 
-            estado,
-            tiempo_acumulado,
-            tiempo_finalizacion,
-            desafios_completados,
-            completado
-        FROM equipos 
-        ORDER BY 
-            completado DESC,
-            puntuacion_total DESC,
-            tiempo_acumulado ASC,
-            creado_en ASC
+    SELECT
+    id,
+    nombre_equipo,
+    codigo_equipo,
+    puntuacion_total,
+    tiempo_inicio,
+    inicio_tardio,
+    estado,
+    tiempo_acumulado,
+    tiempo_finalizacion,
+    desafios_completados,
+    completado
+    FROM equipos
+    ORDER BY
+    completado DESC,
+    puntuacion_total DESC,
+    tiempo_acumulado ASC,
+    creado_en ASC
     ");
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -666,48 +666,48 @@ function obtenerRankingEquiposConTiempo() {
  */
 function actualizarDesafiosCompletados($equipo_id) {
     global $db;
-    
+
     try {
         // Obtener el conteo actual de desafíos completados
         $stmt = $db->prepare("
-            SELECT COUNT(*) as total_completados 
-            FROM desafios_completados 
-            WHERE equipo_id = ?
+        SELECT COUNT(*) as total_completados
+        FROM desafios_completados
+        WHERE equipo_id = ?
         ");
         $stmt->execute([$equipo_id]);
         $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
         $total_completados = $resultado['total_completados'];
-        
+
         // Actualizar el contador en la tabla equipos
         $stmt = $db->prepare("
-            UPDATE equipos 
-            SET desafios_completados = ? 
-            WHERE id = ?
+        UPDATE equipos
+        SET desafios_completados = ?
+        WHERE id = ?
         ");
         $stmt->execute([$total_completados, $equipo_id]);
-        
+
         // Verificar si completó todos los desafíos (6) y aún no está marcado como completado
         if ($total_completados >= 6) {
             $stmt = $db->prepare("SELECT completado FROM equipos WHERE id = ?");
             $stmt->execute([$equipo_id]);
             $equipo = $stmt->fetch(PDO::FETCH_ASSOC);
-            
+
             if (!$equipo['completado']) {
                 // Marcar como completado
                 $tiempo_finalizacion = date('Y-m-d H:i:s');
                 $stmt = $db->prepare("
-                    UPDATE equipos 
-                    SET completado = TRUE, 
-                        tiempo_finalizacion = ?,
-                        estado = 1  -- Mantener estado como activo pero marcado como completado
-                    WHERE id = ?
+                UPDATE equipos
+                SET completado = TRUE,
+                tiempo_finalizacion = ?,
+                estado = 1  -- Mantener estado como activo pero marcado como completado
+                WHERE id = ?
                 ");
                 $stmt->execute([$tiempo_finalizacion, $equipo_id]);
             }
         }
-        
+
         return $total_completados;
-        
+
     } catch (Exception $e) {
         error_log("Error en actualizarDesafiosCompletados: " . $e->getMessage());
         return 0;
@@ -720,10 +720,10 @@ function actualizarDesafiosCompletados($equipo_id) {
  */
 function formatearTiempo($segundos) {
     if ($segundos <= 0) return '--:--';
-    
+
     $minutos = floor($segundos / 60);
     $segundos_restantes = $segundos % 60;
-    
+
     return sprintf("%02d:%02d", $minutos, $segundos_restantes);
 }
 
@@ -733,12 +733,12 @@ function formatearTiempo($segundos) {
  */
 function actualizarDuracionHackathon($duracion_minutos) {
     global $db;
-    
+
     // Validar que la duración sea un número positivo
     if (!is_numeric($duracion_minutos) || $duracion_minutos <= 0) {
         return false;
     }
-    
+
     $stmt = $db->prepare("UPDATE configuracion_hackathon SET duracion_minutos = ?");
     return $stmt->execute([$duracion_minutos]);
 }
@@ -769,7 +769,7 @@ function formatearDuracionLegible($minutos) {
     } else {
         $horas = floor($minutos / 60);
         $minutos_restantes = $minutos % 60;
-        
+
         if ($minutos_restantes == 0) {
             return $horas . " hora" . ($horas > 1 ? "s" : "");
         } else {
@@ -791,7 +791,7 @@ function obtenerEstadoHackathon() {
             'timestamp' => time()
         ];
     }
-    
+
     return [
         'hackathon_iniciado' => (bool)$config['hackathon_iniciado'],
         'tiempo_inicio_global' => $config['tiempo_inicio_global'],
@@ -809,13 +809,13 @@ function obtenerEstadoHackathon() {
 function obtenerDesafiosCompletados($equipo_id) {
     global $db;
     $stmt = $db->prepare("
-        SELECT desafio_id, completado_en 
-        FROM desafios_completados 
-        WHERE equipo_id = ?
+    SELECT desafio_id, completado_en
+    FROM desafios_completados
+    WHERE equipo_id = ?
     ");
     $stmt->execute([$equipo_id]);
     $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
     $completados = [];
     foreach ($resultados as $row) {
         $completados[$row['desafio_id']] = true;
@@ -833,18 +833,18 @@ function obtenerDesafiosCompletados($equipo_id) {
 
 /**
  * Valida la respuesta del usuario contra la flag correcta
- * 
+ *
  * @param string $user_answer La respuesta ingresada por el usuario
  * @return array Array con 'feedback' y 'class' para mostrar el resultado
  */
 function validateHackathonAnswer($user_answer) {
     // Flag correcta (definida aquí y no expuesta al frontend)
     $correct_flag = "H4CK4TH0N_3P1C_D3CRYPT10N";
-    
+
     // Normalizar para comparación (sin espacios, minúsculas)
     $normalized_user = strtolower(preg_replace('/\s+/', '', $user_answer));
     $normalized_correct = strtolower(preg_replace('/\s+/', '', $correct_flag));
-    
+
     if ($normalized_user === $normalized_correct) {
         return [
             'feedback' => '✅ ¡ACCESO CONCEDIDO! Has descifrado el mensaje. FLAG{CRYPTO_MASTER} ✅',
@@ -860,7 +860,7 @@ function validateHackathonAnswer($user_answer) {
 
 /**
  * Obtiene el texto encriptado (para mantenerlo en el backend)
- * 
+ *
  * @return string El texto encriptado
  */
 function getEncryptedText() {
@@ -880,7 +880,7 @@ function getEncryptedText() {
 
 /**
  * Procesa el login del usuario
- * 
+ *
  * @param string $usuario Usuario ingresado
  * @param string $contrasena Contraseña ingresada
  * @return string Mensaje HTML con el resultado
@@ -905,7 +905,7 @@ function procesarLogin($usuario, $contrasena) {
 
 /**
  * Procesa el input del usuario para el desafío de Buffer Overflow
- * 
+ *
  * @param string $input Datos ingresados por el usuario
  * @return array Resultado con mensaje y estado
  */
@@ -915,28 +915,28 @@ function procesarBufferOverflow($input) {
     $input_length = strlen($input);
     $mensaje = "";
     $show_input = true;
-    
+
     if ($input_length > $buffer_size) {
         // Se ha desbordado! Verificar si contiene el "payload" para ejecutar flag_secreta
         $overflow_bytes = $input_length - $buffer_size;
-        
+
         // Buscar la dirección simulada de flag_secreta en los bytes extra
         $flag_hex = "f1e2d3c4";
         $flag_pattern = "FLAG_SECRETA";
-        
+
         if (strpos($input, $flag_pattern) !== false || substr($input, -8) === $flag_hex) {
             $mensaje = '<div class="alert alert-success">🎉 ¡EXPLOIT EXITOSO! Has sobrescrito el registro de retorno.<br>
-                        <strong>' . $flag . '</strong></div>';
+            <strong>' . $flag . '</strong></div>';
             $show_input = false;
         } else {
-            $mensaje = '<div class="alert alert-warning">⚠️ Desbordamiento detectado! Se han escrito ' . $overflow_bytes . 
-                       ' bytes extra. Pero no lograste ejecutar flag_secreta(). Sigue intentando.</div>';
+            $mensaje = '<div class="alert alert-warning">⚠️ Desbordamiento detectado! Se han escrito ' . $overflow_bytes .
+            ' bytes extra. Pero no lograste ejecutar flag_secreta(). Sigue intentando.</div>';
         }
     } else {
-        $mensaje = '<div class="alert alert-info">📝 Datos ingresados (' . $input_length . '/' . $buffer_size . 
-                   ' bytes): ' . htmlspecialchars($input) . '<br>El programa terminó normalmente. No hubo overflow.</div>';
+        $mensaje = '<div class="alert alert-info">📝 Datos ingresados (' . $input_length . '/' . $buffer_size .
+        ' bytes): ' . htmlspecialchars($input) . '<br>El programa terminó normalmente. No hubo overflow.</div>';
     }
-    
+
     return [
         'mensaje' => $mensaje,
         'show_input' => $show_input
@@ -955,7 +955,7 @@ function procesarBufferOverflow($input) {
 
 /**
  * Verifica el mensaje descifrado de esteganografía
- * 
+ *
  * @param string $mensaje El mensaje ingresado por el usuario
  * @return array Resultado con éxito y mensaje
  */
@@ -964,27 +964,27 @@ function verificarEsteganografia($mensaje) {
     $mensaje_correcto = "el ataque sera al amanecer";
     $mensaje_correcto2 = "elataqueseraalamanecer";
     $mensaje_correcto3 = "el ataque será al amanecer";
-    
+
     // Limpiar entrada
     $mensaje_limpio = strtolower(trim($mensaje));
-    
+
     // Verificar si coincide con alguno de los mensajes correctos
-    if ($mensaje_limpio === $mensaje_correcto || 
-        $mensaje_limpio === $mensaje_correcto2 || 
+    if ($mensaje_limpio === $mensaje_correcto ||
+        $mensaje_limpio === $mensaje_correcto2 ||
         $mensaje_limpio === $mensaje_correcto3) {
         return [
             'exito' => true,
             'mensaje' => '🎉 <strong>ACCESO CONCEDIDO</strong> 🎉<br><br>' .
-                        '<span style="color:#ff0;">🏆 FLAG{STEGANOGRAPHY_SECRET} 🏆</span><br><br>' .
-                        'Has completado la misión. Reporta este código a tu superior.'
+            '<span style="color:#ff0;">🏆 FLAG{STEGANOGRAPHY_SECRET} 🏆</span><br><br>' .
+            'Has completado la misión. Reporta este código a tu superior.'
         ];
-    } else {
-        return [
-            'exito' => false,
-            'mensaje' => '❌ <strong>ACCESO DENEGADO</strong> ❌<br><br>' .
-                        'Mensaje incorrecto. Revisa la imagen con herramientas de esteganografía.'
-        ];
-    }
+        } else {
+            return [
+                'exito' => false,
+                'mensaje' => '❌ <strong>ACCESO DENEGADO</strong> ❌<br><br>' .
+                'Mensaje incorrecto. Revisa la imagen con herramientas de esteganografía.'
+            ];
+        }
 }
 
 
@@ -1001,12 +1001,12 @@ function verificarEsteganografia($mensaje) {
 function verificarPatronBiometrico($patron) {
     $patron_correcto = "5-2-1-4-5-6-9-8-5";
     $patron_limpio = trim($patron);
-    
+
     // Inicializar contador si no existe
     if (!isset($_SESSION['intentos_biometricos'])) {
         $_SESSION['intentos_biometricos'] = 0;
     }
-    
+
     // Verificar bloqueo
     if (isset($_SESSION['bloqueado_hasta']) && time() < $_SESSION['bloqueado_hasta']) {
         $tiempo_restante = $_SESSION['bloqueado_hasta'] - time();
@@ -1017,13 +1017,13 @@ function verificarPatronBiometrico($patron) {
             'mensaje' => '⏰ SISTEMA BLOQUEADO. Espera ' . $tiempo_restante . ' segundos.'
         ];
     }
-    
+
     // Si expiró el bloqueo
     if (isset($_SESSION['bloqueado_hasta']) && time() >= $_SESSION['bloqueado_hasta']) {
         unset($_SESSION['bloqueado_hasta']);
         $_SESSION['intentos_biometricos'] = 0;
     }
-    
+
     // Verificar patrón
     if ($patron_limpio === $patron_correcto) {
         $_SESSION['intentos_biometricos'] = 0;
@@ -1031,11 +1031,11 @@ function verificarPatronBiometrico($patron) {
             'exito' => true,
             'bloqueado' => false,
             'mensaje' => '🎉 <strong>¡ACCESO BIOMÉTRICO CONCEDIDO!</strong> 🎉<br><br>' .
-                        '<span style="color:#ff0; font-size:1.3rem;">🏆 FLAG{BIOMETRIC_PATTERN_MASTER} 🏆</span>'
+            '<span style="color:#ff0; font-size:1.3rem;">🏆 FLAG{BIOMETRIC_PATTERN_MASTER} 🏆</span>'
         ];
     } else {
         $_SESSION['intentos_biometricos']++;
-        
+
         if ($_SESSION['intentos_biometricos'] >= 3) {
             $_SESSION['bloqueado_hasta'] = time() + 60;
             $_SESSION['intentos_biometricos'] = 0;
@@ -1046,7 +1046,7 @@ function verificarPatronBiometrico($patron) {
                 'mensaje' => '⚠️ DEMASIADOS INTENTOS.<br>🔒 Sistema bloqueado 60 segundos.'
             ];
         }
-        
+
         return [
             'exito' => false,
             'bloqueado' => false,
@@ -1065,35 +1065,13 @@ function obtenerEstadoBiometrico() {
         'bloqueado' => false,
         'tiempo_restante' => 0
     ];
-    
+
     if (isset($_SESSION['bloqueado_hasta']) && time() < $_SESSION['bloqueado_hasta']) {
         $estado['bloqueado'] = true;
         $estado['tiempo_restante'] = $_SESSION['bloqueado_hasta'] - time();
     }
-    
+
     return $estado;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ?>
