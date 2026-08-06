@@ -208,8 +208,8 @@ const serverFS = {
   '/var/run': { type:'dir', owner:'root', children:{} },
   '/var/www': { type:'dir', owner:'root', children:{ html:'dir' } },
   '/var/www/html': { type:'dir', owner:'www-data', children:{
-    'index.php':     { type:'file', size:'2.1KB', owner:'www-data', content:'<?php\n// Portal web del Hackathon UPTPC 2026\necho "Bienvenido al servidor del Hackathon!";\n// Pista: revisa otros directorios del sistema para encontrar archivos ocultos.' },
-    'readme.txt':    { type:'file', size:'312B', owner:'www-data', content:'BIENVENIDO AL SERVIDOR UPTPC — server-hackaton.uptpc.edu.ve\n\nEste servidor forma parte del Hackathon Etico 2026.\nPara obtener acceso completo necesitas elevar privilegios.\n\nPISTA: El administrador guarda archivos sensibles en /etc/\nUtiliza: sudo su   para convertirte en superusuario.' },
+    'index.php':     { type:'file', size:'2.1KB', owner:'www-data', content:'<?php\n// Portal web del Hackathon UPTPC 2026\necho "Bienvenido al servidor del Hackathon!";\n// Pista: La bandera esta dividida en 3 partes en el servidor.' },
+    'readme.txt':    { type:'file', size:'380B', owner:'www-data', content:'BIENVENIDO AL SERVIDOR UPTPC — server-hackaton.uptpc.edu.ve\n\nEste servidor forma parte del Hackathon Etico 2026.\nLa bandera esta fragmentada en 3 PARTES distribuidas en el sistema:\n\n[ PARTE 1 DE LA FLAG (1/3): FLAG{SERVER_ ]\n\nPISTA: Revisa /home/invitado/notas.txt para la Parte 2 y eleva privilegios a root con "sudo su" para acceder a /etc/secret_vault/ donde yace la Parte 3.' },
     'public_assets': { type:'dir', owner:'www-data' }
   }},
   '/var/www/html/public_assets': { type:'dir', owner:'www-data', children:{
@@ -219,11 +219,11 @@ const serverFS = {
   '/home': { type:'dir', owner:'root', children:{ invitado:'dir', admin:'dir' } },
   '/home/invitado': { type:'dir', owner:'invitado', children:{
     '.bashrc':   { type:'file', size:'220B', owner:'invitado', content:'# .bashrc — Configuracion de shell Bash\nexport PATH=$PATH:/usr/local/bin\nalias ll="ls -la"\nalias cls="clear"' },
-    '.bash_history': { type:'file', size:'180B', owner:'invitado', content:'ls\ncd /etc\nls -la\ncat /etc/hostname\ncd /var/www/html\nls\ncat readme.txt\nsudo su\ncd /etc/secret_vault\nls -la' },
-    'notas.txt': { type:'file', size:'198B', owner:'invitado', content:'NOTA PERSONAL — invitado\n\nRecuerda: el admin guardo el expediente confidencial en /etc/secret_vault/\nPara acceder necesitas ser root. Usa: sudo su\n\nLuego: ls -la /etc/secret_vault/' }
+    '.bash_history': { type:'file', size:'210B', owner:'invitado', content:'ls\ncat /var/www/html/readme.txt\ncat /home/invitado/notas.txt\nsudo su\ncd /etc/secret_vault\ncat /etc/secret_vault/flag_confidencial.txt' },
+    'notas.txt': { type:'file', size:'280B', owner:'invitado', content:'NOTA PERSONAL — invitado\n\nFragmento del archivo de seguridad:\n[ PARTE 2 DE LA FLAG (2/3): TERMINAL_ ]\n\nRecuerda: La Parte 1 esta en /var/www/html/readme.txt\nY el admin guardo la Parte 3 en /etc/secret_vault/flag_confidencial.txt\nPara acceder a la boveda necesitas ser root. Usa: sudo su' }
   }},
   '/home/admin': { type:'dir', owner:'admin', restricted:true, children:{
-    'server_config.conf': { type:'file', size:'88B', owner:'admin', restricted:true, content:'PUERTO=8080\nHOST=127.0.0.1\nSSL=habilitado\nNOTA=La boveda esta en /etc/secret_vault/' },
+    'server_config.conf': { type:'file', size:'120B', owner:'admin', restricted:true, content:'PUERTO=8080\nHOST=127.0.0.1\nSSL=habilitado\nNOTA=La boveda esta en /etc/secret_vault/\nFRAGMENTO_2=TERMINAL_' },
     '.ssh': { type:'dir', owner:'admin', restricted:true, children:{} }
   }},
   '/home/admin/.ssh': { type:'dir', owner:'admin', restricted:true, children:{
@@ -239,16 +239,23 @@ const serverFS = {
     'secret_vault': { type:'dir', owner:'root', restricted:true }
   }},
   '/etc/secret_vault': { type:'dir', owner:'root', restricted:true, children:{
-    'flag_confidencial.txt': { type:'file', size:'310B', owner:'root', restricted:true,
+    'flag_confidencial.txt': { type:'file', size:'490B', owner:'root', restricted:true,
       content:'FELICIDADES HACKER DE LA UPTPC!\n' +
               '=============================================\n' +
-              '  LA BANDERA DEL DESAFIO #4 ES:\n\n' +
-              '  FLAG{SERVER_TERMINAL_MASTER_2026}\n\n' +
+              '  HAS ALCANZADO LA BOVEDA SECRETA DE ROOT\n' +
+              '  [ PARTE 3 DE LA FLAG (3/3): MASTER_2026} ]\n' +
               '=============================================\n' +
-              '  Copia y valida la bandera en el formulario.' },
+              '  UNIFICACION DE LAS 3 PARTES DE LA BANDERA:\n' +
+              '  - Parte 1 (/var/www/html/readme.txt): FLAG{SERVER_\n' +
+              '  - Parte 2 (/home/invitado/notas.txt): TERMINAL_\n' +
+              '  - Parte 3 (/etc/secret_vault/flag_confidencial.txt): MASTER_2026}\n\n' +
+              '  BANDERA COMPLETA DE ESTE DESAFIO:\n' +
+              '  FLAG{SERVER_TERMINAL_MASTER_2026}\n' +
+              '=============================================\n' +
+              '  Ingresa la bandera completa en el formulario.' },
     '.clave_oculta': { type:'file', size:'34B', owner:'root', restricted:true, content:'FLAG{SERVER_TERMINAL_MASTER_2026}' },
-    'instrucciones_admin.txt': { type:'file', size:'220B', owner:'root', restricted:true,
-      content:'INSTRUCCIONES INTERNAS — ADMIN\n\nLa bandera de este desafio es: FLAG{SERVER_TERMINAL_MASTER_2026}\nNo compartir con participantes. Solo accesible via root.' }
+    'instrucciones_admin.txt': { type:'file', size:'310B', owner:'root', restricted:true,
+      content:'INSTRUCCIONES INTERNAS — ADMIN\n\nLa bandera esta dividida en 3 partes:\nParte 1: FLAG{SERVER_ (en /var/www/html/readme.txt)\nParte 2: TERMINAL_ (en /home/invitado/notas.txt)\nParte 3: MASTER_2026} (en /etc/secret_vault/flag_confidencial.txt)\n\nBandera completa reunida: FLAG{SERVER_TERMINAL_MASTER_2026}' }
   }},
   '/tmp': { type:'dir', owner:'root', children:{
     'system.log':  { type:'file', size:'128B', owner:'root', content:'[2026-08-06 08:00:00] Servidor arrancado correctamente.\n[2026-08-06 08:00:14] Apache2 escuchando en puerto 80/443.\n[2026-08-06 08:00:16] sshd escuchando en puerto 22.' },
