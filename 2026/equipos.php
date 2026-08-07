@@ -139,8 +139,8 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
     <meta charset="UTF-8">
     <title>Ranking de Equipos - Hackathon</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v17">
-    <script src="conf/ia_avatar.js?v=2026_v17" defer></script>
+    <link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v18">
+    <script src="conf/ia_avatar.js?v=2026_v18" defer></script>
     <style>
         .top-1 { background-color: #FFD700 !important; }
         .top-2 { background-color: #C0C0C0 !important; }

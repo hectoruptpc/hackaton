@@ -288,7 +288,15 @@ class IAAvatarWidget {
     iniciarHablaEspontanea() {
         if (this.esPaginaIndex()) return;
 
-        // En equipos y desafíos la voz espontánea opera a sus 30 a 60 segundos sin interrumpir el arranque a los 2s
+        const desafio = this.obtenerDesafioActual();
+        // Si estamos dentro de un DESAFÍO, lanzar la pista inicial a los 2 segundos de ingresar
+        if (desafio && desafio !== 'index' && desafio !== 'equipos') {
+            setTimeout(() => {
+                this.hacerBurlaEspontanea();
+            }, 2000);
+        }
+
+        // Programar locuciones espontáneas regulares cada 30 a 60 segundos
         this.programarSiguienteSpontaneous();
     }
 
