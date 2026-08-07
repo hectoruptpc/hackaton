@@ -295,7 +295,7 @@ function obtenerConfiguracionDesafios() {
             'tiempo' => 15 * 60
         ],
         'xxe' => [
-            'flag' => 'FLAG{ROBO_BANCO}',
+            'flag' => 'FLAG{VULNERABILIDAD_OBTENIDA_BANCO_HACK}',
             'puntos' => 1,
             'tiempo' => 15 * 60
         ],
