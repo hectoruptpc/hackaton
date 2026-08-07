@@ -1037,13 +1037,13 @@ function verificarPatronBiometrico($patron) {
         $_SESSION['intentos_biometricos']++;
 
         if ($_SESSION['intentos_biometricos'] >= 3) {
-            $_SESSION['bloqueado_hasta'] = time() + 60;
+            $_SESSION['bloqueado_hasta'] = time() + 15;
             $_SESSION['intentos_biometricos'] = 0;
             return [
                 'exito' => false,
                 'bloqueado' => true,
-                'tiempo_restante' => 60,
-                'mensaje' => '⚠️ DEMASIADOS INTENTOS.<br>🔒 Sistema bloqueado 60 segundos.'
+                'tiempo_restante' => 15,
+                'mensaje' => '⚠️ DEMASIADOS INTENTOS.<br>🔒 Sistema bloqueado 15 segundos.'
             ];
         }
 
@@ -1066,9 +1066,16 @@ function obtenerEstadoBiometrico() {
         'tiempo_restante' => 0
     ];
 
-    if (isset($_SESSION['bloqueado_hasta']) && time() < $_SESSION['bloqueado_hasta']) {
-        $estado['bloqueado'] = true;
-        $estado['tiempo_restante'] = $_SESSION['bloqueado_hasta'] - time();
+    if (isset($_SESSION['bloqueado_hasta'])) {
+        $restante = $_SESSION['bloqueado_hasta'] - time();
+        if ($restante > 0) {
+            $estado['bloqueado'] = true;
+            $estado['tiempo_restante'] = $restante;
+        } else {
+            unset($_SESSION['bloqueado_hasta']);
+            $_SESSION['intentos_biometricos'] = 0;
+            $estado['intentos'] = 0;
+        }
     }
 
     return $estado;

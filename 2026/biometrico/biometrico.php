@@ -10,9 +10,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['patron'])) {
     $patron = $_POST['patron'];
     $resultado = verificarPatronBiometrico($patron);
     
-    $resultado_html = $resultado['mensaje'];
+    $_SESSION['biometrico_msg'] = $resultado['mensaje'];
+    header('Location: biometrico.php');
+    exit;
+}
+
+if (isset($_SESSION['biometrico_msg'])) {
+    $resultado_html = $_SESSION['biometrico_msg'];
     $mostrar_resultado = true;
-    $estado = obtenerEstadoBiometrico();
+    unset($_SESSION['biometrico_msg']);
 }
 ?>
 <!DOCTYPE html>
@@ -628,7 +634,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['patron'])) {
 console.clear();
 console.log('%c🔐 SISTEMA BIOMÉTRICO ACTIVADO', 'color: #00ccff; font-size: 20px; font-weight: bold;');
 console.log('%c🚫 No encontrarás la flag aquí', 'color: #ff4444; font-size: 16px;');
-console.log('%c💀 3 intentos y el sistema se bloquea 60 segundos', 'color: #ff8800; font-size: 14px;');
+console.log('%c💀 3 intentos y el sistema se bloquea 15 segundos', 'color: #ff8800; font-size: 14px;');
 
 // ============================================================
 // LÓGICA DEL PATRÓN BIOMÉTRICO - PERMITE REPETIR NÚMEROS
@@ -758,7 +764,7 @@ const intervalo = setInterval(function() {
         tiempoElemento.textContent = tiempoRestante;
     }
     if (barraProgreso) {
-        const porcentaje = (tiempoRestante / 60) * 100;
+        const porcentaje = (tiempoRestante / 15) * 100;
         barraProgreso.style.width = porcentaje + '%';
     }
     
@@ -773,16 +779,13 @@ setInterval(function() {
     fetch('../obtener_estado_biometrico.php')
         .then(response => response.json())
         .then(data => {
-            if (data.intentos !== undefined) {
+            if (data.intentos !== undefined && contadorIntentos) {
                 contadorIntentos.textContent = data.intentos;
             }
             if (data.bloqueado) {
-                btnVerificar.disabled = true;
-                if (data.tiempo_restante > 0) {
-                    setTimeout(() => location.reload(), data.tiempo_restante * 1000);
-                }
+                if (btnVerificar) btnVerificar.disabled = true;
             } else {
-                btnVerificar.disabled = false;
+                if (btnVerificar) btnVerificar.disabled = false;
             }
         })
         .catch(error => console.log('Error al actualizar contador'));
