@@ -59,7 +59,7 @@ if (isset($_SESSION['biometrico_msg'])) {
 
         /* Patrón de fondo con código morse */
         .container::before {
-            content: "..... ..--- .---- ....- ..... -.... ----. ---.. .....";
+            content: "..... ..--- .---- ....- ..... -.... ----. ---.. ..... ";
             position: absolute;
             top: 0;
             left: 0;
