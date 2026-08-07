@@ -47,8 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['input_data'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>💀 Buffer Overflow Challenge | Hackathon 💀</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="conf/ia_avatar.css">
-    <script src="conf/ia_avatar.js" defer></script>
+    <link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v14">
+    <script src="conf/ia_avatar.js?v=2026_v14" defer></script>
     <style>
         body {
             background: linear-gradient(135deg, #0a0e1a 0%, #0a0e1a 100%);

@@ -27,6 +27,8 @@ if (isset($_SESSION['biometrico_msg'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🔐 Autenticación Biométrica</title>
+    <link rel="stylesheet" href="../conf/ia_avatar.css?v=2026_v14">
+    <script src="../conf/ia_avatar.js?v=2026_v14" defer></script>
     <style>
         * {
             margin: 0;

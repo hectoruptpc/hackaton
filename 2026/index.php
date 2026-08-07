@@ -182,9 +182,9 @@ if (isset($_SESSION['cedula'])) {
         <meta charset="UTF-8">
         <title>Inicio Hackaton</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="conf/ia_avatar.css">
+        <link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v14">
         <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
-        <script src="conf/ia_avatar.js" defer></script>
+        <script src="conf/ia_avatar.js?v=2026_v14" defer></script>
 
         <style>
             .hero-section { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 60px 0; border-radius: 15px; }
@@ -586,9 +586,9 @@ document.addEventListener('DOMContentLoaded', function() {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hackathon Universitario: Desafío de Seguridad</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="conf/ia_avatar.css">
+<link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v14">
 <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
-<script src="conf/ia_avatar.js" defer></script>
+<script src="conf/ia_avatar.js?v=2026_v14" defer></script>
 
 <style>
 .card-challenge {
