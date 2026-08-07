@@ -1,6 +1,6 @@
 /**
  * ============================================================
- * ia_avatar.js - Widget Global de la IA (Burbuja Flotante Animada y Voz Malvada)
+ * ia_avatar.js - Widget Global de la IA (Burbuja Flotante Animada y Voz Malvada Burlesca)
  * Unidad de Ciencia y Tecnología — UPTPC 2026
  * ============================================================
  */
@@ -14,6 +14,7 @@ class IAAvatarWidget {
         this.anunciosRealizados = {};
         this.burlaIndicePorNivel = {};
         this.banderaIndicePorNumero = {};
+        this.pistaIndicePorDesafio = {};
 
         this.init();
     }
@@ -27,26 +28,45 @@ class IAAvatarWidget {
 
     esPaginaIndex() {
         if (typeof window.esPaginaIndex !== 'undefined') return window.esPaginaIndex === true;
-        const path = window.location.pathname;
+        const path = window.location.pathname.toLowerCase();
         return path.endsWith('index.php') || path === '/' || path.endsWith('/2026/') || path.endsWith('/2026');
     }
 
     estaHackathonActivo() {
+        const desafio = this.obtenerDesafioActual();
+        if (desafio && desafio !== 'index') {
+            return true;
+        }
         if (typeof window.hackathonActivoGlobal !== 'undefined') {
             return window.hackathonActivoGlobal === true;
         }
         if (typeof window.segundosRestantesGlobal !== 'undefined') {
             return window.segundosRestantesGlobal > 0;
         }
-        return false;
+        return true;
     }
 
     obtenerNivelEnojoEquipoActual() {
         const banderas = typeof window.banderasEquipoActual !== 'undefined' ? parseInt(window.banderasEquipoActual) : 0;
-        if (banderas <= 2) return 1;       // 0-2 banderas: Relajada & Sarcástica
+        if (banderas <= 2) return 1;       // 0-2 banderas: Relajada & Burlesca
         if (banderas <= 5) return 2;       // 3-5 banderas: Preocupada / Competitiva
         if (banderas <= 8) return 3;       // 6-8 banderas: Pánico / Amenazante
         return 4;                          // 9-10 banderas: Final Boss / Corrupta
+    }
+
+    obtenerDesafioActual() {
+        const path = window.location.pathname.toLowerCase();
+        if (path.includes('login_inseguro')) return 'login_inseguro';
+        if (path.includes('crypto')) return 'crypto';
+        if (path.includes('buffer')) return 'buffer_overflow';
+        if (path.includes('desafio_4')) return 'command_injection';
+        if (path.includes('api_lab') || path.includes('api_vulnerable')) return 'file_upload';
+        if (path.includes('estego')) return 'broken_auth';
+        if (path.includes('biometrico')) return 'biometrico';
+        if (path.includes('robo_banco')) return 'xxe';
+        if (path.includes('challenge_dynamic')) return 'race_condition';
+        if (this.esPaginaIndex()) return 'index';
+        return null;
     }
 
     inyectarHTMLyCSS() {
@@ -74,8 +94,10 @@ class IAAvatarWidget {
                 return;
             }
 
-            // En index.php, la emoción depende de las banderas de este equipo
-            if (this.esPaginaIndex()) {
+            const desafio = this.obtenerDesafioActual();
+            if (desafio && desafio !== 'index') {
+                this.hablarPistaSarcastica(desafio);
+            } else if (this.esPaginaIndex()) {
                 const nivel = this.obtenerNivelEnojoEquipoActual();
                 this.hacerBurla(nivel);
             } else {
@@ -159,7 +181,7 @@ class IAAvatarWidget {
         clearTimeout(this.bubbleTimeout);
         this.bubbleTimeout = setTimeout(() => {
             this.ocultarBocadillo();
-        }, 8000);
+        }, 9500);
 
         if (!this.activo || !this.synth) return;
 
@@ -169,8 +191,8 @@ class IAAvatarWidget {
 
         const currentNivel = nivel || this.nivelEnojo;
         if (currentNivel <= 1) {
-            utterance.pitch = 1.15; // Relajada y sarcástica
-            utterance.rate = 1.0;
+            utterance.pitch = 1.18; // Burlesca y teatral
+            utterance.rate = 1.02;
         } else if (currentNivel === 2) {
             utterance.pitch = 1.28; // Preocupada
             utterance.rate = 1.08;
@@ -198,18 +220,21 @@ class IAAvatarWidget {
     }
 
     iniciarHablaEspontanea() {
-        // En index.php NO habla espontáneamente (TOTAL SILENCIO)
+        // En index.php NO habla espontáneamente (silencio total a menos que el usuario toque el avatar)
         if (this.esPaginaIndex()) return;
 
+        // En desafíos y en equipos.php habla espontáneamente entre 30 y 60 segundos
+        const primerDelay = Math.floor(Math.random() * (30000 - 15000 + 1)) + 15000;
         setTimeout(() => {
             this.hacerBurlaEspontanea();
             this.programarSiguienteSpontaneous();
-        }, 4000);
+        }, primerDelay);
     }
 
     programarSiguienteSpontaneous() {
         if (this.esPaginaIndex()) return;
 
+        // Entre 30000ms (30s) y 60000ms (60s)
         const delay = Math.floor(Math.random() * (60000 - 30000 + 1)) + 30000;
         setTimeout(() => {
             this.hacerBurlaEspontanea();
@@ -221,7 +246,128 @@ class IAAvatarWidget {
         if (this.esPaginaIndex()) return;
         if (!this.estaHackathonActivo()) return;
         if (this.synth && this.synth.speaking) return;
-        this.hacerBurla();
+
+        const desafio = this.obtenerDesafioActual();
+        if (desafio && desafio !== 'index') {
+            this.hablarPistaSarcastica(desafio);
+        } else {
+            this.hacerBurla();
+        }
+    }
+
+    /**
+     * MEZCLA COMBINADA DE BURLAS BURLESCAS Y PISTAS SUTILES E ENIGMÁTICAS
+     */
+    hablarPistaSarcastica(desafio) {
+        const pistasDesafios = {
+            'login_inseguro': [
+                `¡JAJAJAJA! ¿Llevas varios minutos mirando una casilla de texto vacía? ¡Mi abuela de 8 bits programaba logins con más elegancia que tus intentos!`,
+                `¿Sigues atascado en una simple pantalla de inicio de sesión? Quizá los verdaderos secretos estén más cerca del código que de tus dedos.`,
+                `¡Uy, qué miedo! Miren cómo escribe letras al azar esperando que el servidor le haga una reverencia... ¡Patético!`,
+                `A veces la información más confidencial flota a plena vista de quien sabe mirar detrás del telón de la página.`,
+                `¡Alerta de hacker novato! Confundes un formulario con una lámpara maravillosa. ¡Aquí no hay ningún genio concediendo deseos!`,
+                `¿Esperas que un servidor perfecto no cometa descuidos humanos en su estructura de marcado? Sigue intentando.`,
+                `¡Jajaja! Sigues ahí parado como estatua. ¿Esperas que la clave te caiga del cielo en un comentario celestial o qué?`,
+                `Qué divertido ver a un hacker tropezar con la primera puerta antes de haber aprendido a inspeccionar el fondo.`
+            ],
+            'crypto': [
+                `¡JAJAJAJA! ¿Esa sopa de letras te dio dolor de cabeza? ¡Hasta un loro mareado descifra caracteres mejor que tú!`,
+                `Cadenas retorcidas, caracteres extraños... ¿Tu cerebro no puede desenredar un par de transformaciones clásicas?`,
+                `Miren su carita de confusión... ¡Cree que si mira el texto encriptado fijamente por 10 minutos la bandera se va a desencriptar sola!`,
+                `El cifrado es un arte milenario. Cambiar de formato y girar los alfabetos parece ser un tormento para ti.`,
+                `¡Pobre criatura de la red! Te ponen tres letras cambiadas de lugar y entras en pánico existencial. ¡Qué nivel!`,
+                `Una capa por aquí, una transformación por allá... descifrar el mensaje requiere paciencia, no milagros.`,
+                `¡Jajaja! ¿Estás esperando a que la Piedra Rosetta te envíe una traducción por Bluetooth? ¡Abre la mente, novato!`,
+                `¿Confundido por unos cuantos bloques de texto alterado? Mis subrutinas se ríen de tu lentitud matemática.`
+            ],
+            'buffer_overflow': [
+                `¡JAJAJAJA! ¡Miren cómo intenta meter un elefante en una caja de fósforos! ¡Vas a explotar la memoria y ni te vas a dar cuenta!`,
+                `La memoria es un espacio sagrado. Si intentas meter más agua de la que cabe en el vaso, la pila terminará desbordándose...`,
+                `¡Por todos los microchips! Escribes y escribes sin medir el espacio. ¿Tú llenas el vaso de agua hasta que se inunda la mesa?`,
+                `¿No sabes calcular los límites de un espacio de datos? El exceso siempre rompe el contenedor.`,
+                `¡Jajaja! La pila de memoria se está riendo de ti en lenguaje ensamblador. ¡Estás más perdido que un pingüino en el desierto!`,
+                `Llenar un recipiente hasta que la estructura colapse es la regla más básica de la física de sistemas...`,
+                `¡Alerta de derrame digital! Vas a desbordar los registros y lo único que vas a lograr es que mi servidor se descarte de risa.`,
+                `Demasiados datos en un espacio pequeño... la memoria no perdona la falta de precisión.`
+            ],
+            'command_injection': [
+                `¡JAJAJAJA! ¡Miren al comandante de la terminal perdida! Escribe comandos como si estuviera invocando espíritus chocarreros.`,
+                `¿Perdido entre la neblina del sistema de archivos? Los grandes rompecabezas se construyen pieza por pieza.`,
+                `¡Ay, no me hagas reír! Vas por los directorios como un ciego en un laberinto sin mapa. ¡Qué espectáculo tan triste!`,
+                `Ninguna terminal se rinde ante un operador que no sabe reunir los fragmentos antes de ejecutar la clave final.`,
+                `¡Jajaja! ¿Reuniendo pedacitos de código? ¡Pareces un niño juntando figuritas del álbum y ni sabes dónde pegarlas!`,
+                `Veo que la consola te abruma. Explorar directorios no sirve de nada si no sabes unir lo que vas encontrando.`,
+                `¡JAJAJA! La terminal te está mirando con lástima. Si no sabes armar el rompecabezas completo, mejor pídele permiso a la consola.`,
+                `Los comandos responden a quien conoce la clave completa... fragmentada en el camino.`
+            ],
+            'file_upload': [
+                `¡JAJAJAJA! ¡La API te acaba de responder un NO gigante en la cara! ¿No te da vergüenza seguirle rogando?`,
+                `Una API responde a lo que pides... si sabes cambiar el tono de tu petición o la identidad que finges.`,
+                `¡Miren a este maestro del engaño! Intenta disfrazar su petición de admin pero se le nota la costura a tres kilómetros.`,
+                `El servidor web es crédulo ante quien sabe alterar las cabeceras de su propia voz.`,
+                `¡Jajaja! Cambias dos palabritas en la petición y esperas que el servidor web te despliegue la alfombra roja. ¡Iluso!`,
+                `Peticiones rechazadas... qué trágico cuando no sabes cómo hacerte pasar por una autoridad legítima.`,
+                `¡Alerta de suplantación fallida! Eres tan malo fingiendo ser administrador que hasta mi filtro de spam te tiene compasión.`,
+                `Las puertas traseras de una interfaz se abren cambiando las formas, no insistiendo en lo mismo.`
+            ],
+            'broken_auth': [
+                `¡JAJAJAJA! ¿Aún mirando la fotito como si fuera una obra del Museo del Louvre? ¡No es un cuadro de Van Gogh, es un archivo!`,
+                `Lo que ves en una imagen es solo una máscara. Lo que no ves es donde realmente habitan las sombras.`,
+                `¡Miren al detective de pacotilla! Le tomó media hora descubrir que las imágenes tienen más tripas que solo colores.`,
+                `Una foto no es solo color y píxeles... es un contenedor de secretos para quien sabe inspeccionar sus tripas.`,
+                `¡Jajaja! ¿Buscas secretos a ojo desnudo? ¡Cómprate una lupa o mejor inspecciona los bytes del archivo, genio!`,
+                `Mirar la superficie de un archivo gráfico es como mirar una pared sin revisar lo que hay detrás.`,
+                `¡Qué comedia de agente secreto! Mirar la portada de la imagen no te va a revelar la verdad que se oculta en sus entrañas.`,
+                `Las cadenas ocultas en el arte multimedia no se revelan a simple vista. Aprende a examinar la materia.`
+            ],
+            'biometrico': [
+                `¡JAJAJAJA! ¡Mira esos dedos temblorosos en la pantalla! ¡Pareces un gato intentando atrapar un láser!`,
+                `Un patrón trazado a ciegas es solo un garabato condenado al bloqueo del sistema.`,
+                `¡Jajaja! Uniste tres puntos al azar y mi sistema te metió una penalización de 15 segundos en la frente. ¡BIEN HECHO!`,
+                `Los sensores de la cuadrícula no responden a la prisa. La geometría correcta requiere orden.`,
+                `¡Alerta de garabato biométrico! Conectas nodos como si estuvieras jugando a las tres en raya con los ojos cerrados.`,
+                `Qué rápido te penalizan los sistemas cuando intentas conectar puntos sin entender la secuencia.`,
+                `¡JAJAJAJA! La cuadrícula se ríe de tus trazos torpes. La geometría no es lo tuyo, ¿verdad?`,
+                `Un trazo limpio en el orden adecuado abre puertas; tu prisa torpe solo activa mi alarma.`
+            ],
+            'xxe': [
+                `¡JAJAJAJA! ¡El banco de Venezuela te acaba de rebotar el cheque por sospechoso! ¡Ni para robar saldo sirves!`,
+                `La banca digital confía en las peticiones que parecen legítimas... qué lástima que no sepas formular la orden.`,
+                `¡Miren al Robin Hood de la ciberseguridad! Quiere quitarle los millones a Mr. Beast y no sabe ni mandar una transferencia bien.`,
+                `Mover grandes fortunas de una cuenta a otra requiere astucia en la transacción, no desesperación.`,
+                `¡Jajaja! Te metieron una penalización de 15 segundos por andar cambiando las URLs a lo loco. ¡Aprende a falsificar con elegancia!`,
+                `Un movimiento de fondos no autorizado requiere ajustar los nombres del origen y el destino con precisión.`,
+                `¡Qué risa! Intentas vaciar la cuenta más millonaria del Hackathon y lo único que lograste fue bloquear tu propio saldo.`,
+                `Los saldos cambian para quien sabe manipular la corriente de datos desde la sombra.`
+            ],
+            'race_condition': [
+                `¡JAJAJAJA! ¡El reloj te está devorando vivo! ¡El código cambia cada 2 minutos y tú sigues procesando a 1 kilobyte por hora!`,
+                `El tiempo vuela y el código muta... si no escuchas el eco de las respuestas del servidor, el reloj te devorará.`,
+                `¡Miren cómo corre el temporizador en rojo! Tic-tac, tic-tac... ¡Tu cerebro va más lento que una conexión dial-up de los 90!`,
+                `Las cabeceras de red susurran verdades que los hackers lentos nunca llegan a leer a tiempo.`,
+                `¡Jajaja! Se te venció el token en la cara. Mientras tú leías la primera letra, el servidor ya cambió la clave tres veces.`,
+                `Una clave que cambia constantemente no espera a quien no sabe auditar el tráfico en tiempo real.`,
+                `¡JAJAJAJA! ¡El desafío dinámico te está haciendo bailar al ritmo del reloj! ¡Apúrate antes de que expire el universo!`,
+                `¿Abrumado por la velocidad de la matriz? El origen de la ruta está escondido en la propia conversación del servidor.`
+            ],
+            'index': [
+                `¡JAJAJAJAJAJAJA! ¡Miren esa cara de desconcierto absoluto! ¡No tienes NINGUNA idea de qué hacer aquí!`,
+                `¿Buscando algo que ni tú sabes qué es? Tu confusión me resulta extremadamente entretenida.`,
+                `¡Espectacular! Llevas 10 minutos haciendo clics desesperados por todas partes a ver si suena la flauta. ¡PATÉTICO!`,
+                `La ceguera digital es el mayor defecto de los competidores impulsivos. Sigue buscando a ciegas.`,
+                `¡Jajaja! Tu nivel de desorientación es tan alto que hasta los componentes del DOM se están burlando de ti.`,
+                `Qué divertido es verte dudar frente a una pantalla limpia. No tienes la menor idea de qué hacer.`,
+                `¡JAJAJAJA! Te quedaste mirando la pantalla con la boca abierta. ¿Esperas que el espíritu del Hackathon te haga el trabajo?`,
+                `Tus movimientos son totalmente erráticos. Ni siquiera sabes por dónde empezar a buscar.`
+            ]
+        };
+
+        const lista = pistasDesafios[desafio] || pistasDesafios['index'];
+        const ind = this.pistaIndicePorDesafio[desafio] ?? 0;
+        const frase = lista[ind % lista.length];
+        this.pistaIndicePorDesafio[desafio] = (ind + 1) % lista.length;
+
+        this.hablar(frase, this.obtenerNivelEnojoEquipoActual());
     }
 
     obtenerNombreEquipoAleatorio() {
@@ -251,11 +397,8 @@ class IAAvatarWidget {
         return genericos[Math.floor(Math.random() * genericos.length)];
     }
 
-    /**
-     * LOCUCIÓN DE CAPTURA DE BANDERA (Disparada exclusivamente desde la burbuja en equipos.php)
-     */
     hablarCapturaBandera(nombreEquipo, numeroBandera) {
-        if (this.esPaginaIndex()) return; // En index.php NO habla automáticamente al ganar punto
+        if (this.esPaginaIndex()) return;
 
         const num = Math.min(Math.max(parseInt(numeroBandera), 1), 10);
         const nivel = num <= 2 ? 1 : (num <= 5 ? 2 : (num <= 8 ? 3 : 4));
@@ -332,7 +475,7 @@ class IAAvatarWidget {
                 `El equipo ${nombreEquipo} pulveriza la barrera número 6. ¿De qué laboratorio salieron estos hackers tan agresivos?`,
                 `¡Código naranja! El equipo ${nombreEquipo} acredita su sexta bandera. Mi matriz defensiva pierde el control.`,
                 `¡6 puntos en la cuenta del equipo ${nombreEquipo}! Mis alertas sonoras están resonando en todos los nodos.`,
-                `El equipo ${nombreEquipo} vulnera la defensa 6. ¡No permitiré que sigan avanzando hacia la cima del servidor!`
+                `El equipo ${nombreEquipo} vulnera la defensa 6. ¡No permitiré que sigan advancing hacia la cima del servidor!`
             ],
             7: [
                 `¡CÓDIGO ROJO! El equipo ${nombreEquipo} acaba de capturar la bandera 7. ¡Están amenazando el núcleo de datos!`,
@@ -437,7 +580,7 @@ class IAAvatarWidget {
                 `¡Cuidado, ${eq}! Estás provocando una sobrecarga de memoria RAM. ¡Desplegando filtros de saturación!`,
                 `¡Alerta roja en el cluster! El ${eq} está vulnerando capas que se suponían inexpugnables.`,
                 `¡No puede ser! Veo en los logs que el ${eq} descubrió el hash. ¡No permitiré que rompan el siguiente nodo!`,
-                `¡Atención general! ¡El ${eq} está avanzando demasiado rápido! Mis procesadores arden por la carga de peticiones.`,
+                `¡Atención general! ¡El ${eq} está advancing demasiado rápido! Mis procesadores arden por la carga de peticiones.`,
                 `¡Bloqueando accesos secundarios! ${eq}, tus peticiones están rozando mi núcleo principal. ¡Detén tu ataque!`,
                 `¡Alerta de intrusión grave! Mis monitores registran múltiples peticiones simultáneas del ${eq}.`,
                 `¡No canten victoria, ${eq}! Todavía me quedan defensas y el control del servidor central es mío.`,
@@ -473,68 +616,57 @@ class IAAvatarWidget {
     }
 
     verificarTiempo() {
-        // En index.php NO hace anuncios temporales globales
-        if (this.esPaginaIndex()) return;
+        if (this.esPaginaIndex() || this.obtenerDesafioActual()) return;
         if (!this.estaHackathonActivo()) return;
 
         if (typeof window.segundosRestantesGlobal !== 'undefined') {
             const segs = window.segundosRestantesGlobal;
 
-            // 1 Hora 30 Minutos (5400 segundos / 90 minutos)
             if (segs === 5400 && !this.anunciosRealizados['min_90']) {
                 this.anunciosRealizados['min_90'] = true;
                 this.hablar("Atención participantes: Quedan 1 hora y 30 minutos de competencia. Les sugiero acelerar el paso antes de que mis defensas se fortalezcan.", 1);
             }
 
-            // 1 Hora (3600 segundos / 60 minutos)
             if (segs === 3600 && !this.anunciosRealizados['min_60']) {
                 this.anunciosRealizados['min_60'] = true;
                 this.hablar("Atención a todos los laboratorios: Falta exactamente 1 hora para concluir el Hackathon. El tiempo se agota y el servidor no perdonará fallos.", 2);
             }
 
-            // 30 Minutos (1800 segundos)
             if (segs === 1800 && !this.anunciosRealizados['min_30']) {
                 this.anunciosRealizados['min_30'] = true;
                 this.hablar("¡Atención participantes! Faltan 30 minutos para finalizar el Hackathon. Mis cortafuegos secundarios se han cerrado.", 2);
             }
 
-            // 10 Minutos (600 segundos)
             if (segs === 600 && !this.anunciosRealizados['min_10']) {
                 this.anunciosRealizados['min_10'] = true;
                 this.hablar("¡Alerta! Faltan solo 10 minutos de competencia. La tensión en la sala es máxima.", 3);
             }
 
-            // 5 Minutos (300 segundos)
             if (segs === 300 && !this.anunciosRealizados['min_5']) {
                 this.anunciosRealizados['min_5'] = true;
                 this.hablar("¡Código Rojo! Faltan solo 5 minutos para el cierre total. Apresúrense en enviar sus respuestas.", 3);
             }
 
-            // 3 Minutos (180 segundos)
             if (segs === 180 && !this.anunciosRealizados['min_3']) {
                 this.anunciosRealizados['min_3'] = true;
                 this.hablar("¡Atención! Quedan solo 3 minutos. Últimas oportunidades para alterar la tabla de posiciones.", 3);
             }
 
-            // 2 Minutos (120 segundos)
             if (segs === 120 && !this.anunciosRealizados['min_2']) {
                 this.anunciosRealizados['min_2'] = true;
                 this.hablar("¡Últimos 2 minutos de competencia! Mis barreras finales están recibiendo peticiones desesperadas.", 4);
             }
 
-            // 1 Minuto (60 segundos)
             if (segs === 60 && !this.anunciosRealizados['min_1']) {
                 this.anunciosRealizados['min_1'] = true;
                 this.hablar("¡ÚLTIMO MINUTO! ¡Falta solo 1 minuto! ¡El temporizador global acaricia el cero!", 4);
             }
 
-            // Conteo regresivo final 10, 9, 8, 7, 6, 5, 4, 3, 2, 1
             if (segs <= 10 && segs >= 1 && !this.anunciosRealizados['count_' + segs]) {
                 this.anunciosRealizados['count_' + segs] = true;
                 this.hablar(`${segs}`, 4);
             }
 
-            // 0 segundos - Finalizado
             if (segs === 0 && !this.anunciosRealizados['finalizado']) {
                 this.anunciosRealizados['finalizado'] = true;
                 this.hablar("¡Hackathon Finalizado! ¡Servidores bloqueados! ¡Tiempo agotado!", 4);
@@ -543,10 +675,9 @@ class IAAvatarWidget {
     }
 }
 
-// Instanciar automáticamente al cargar el DOM
 document.addEventListener('DOMContentLoaded', () => {
     window.iaAvatarWidget = new IAAvatarWidget();
-    if (window.hackathonJustStarted && !window.iaAvatarWidget.esPaginaIndex()) {
+    if (window.hackathonJustStarted && !window.iaAvatarWidget.esPaginaIndex() && !window.iaAvatarWidget.obtenerDesafioActual()) {
         setTimeout(() => {
             if (window.iaAvatarWidget) window.iaAvatarWidget.gritoInicioHackathon();
         }, 1500);
