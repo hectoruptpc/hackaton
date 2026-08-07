@@ -207,13 +207,7 @@ if (isset($_SESSION['cedula'])) {
             <p class="lead mb-4">¡Forma tu equipo y compite por el primer lugar!</p>
             <p class="mb-4">Equipos de 3 a 4 personas - Tiempo limitado - Múltiples desafíos</p>
         </div>
-<!-- 
-==============================================
-CREDENCIALES PARA EL DESAFÍO
-==============================================
-Usuario: admin
-==============================================
--->
+
         <div class="row justify-content-center">
             <!-- Formulario de Crear Nuevo Equipo -->
             <div class="col-md-6 mb-4">
@@ -758,13 +752,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         </div>
     </div>
-<!-- 
-==============================================
-CREDENCIALES PARA EL DESAFÍO
-==============================================
-Contraseña: passwordsegura
-==============================================
--->
+
     <?php 
     $estado_actual = $info_equipo['estado'] ?? 0;
     if ($estado_actual === 0): 

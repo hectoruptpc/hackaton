@@ -80,7 +80,13 @@ body {
 </style>
 </head>
 <body>
-
+<!-- 
+==============================================
+CREDENCIALES PARA EL DESAFÍO
+==============================================
+Usuario: admin
+==============================================
+-->
 <div class="container py-4">
     <div class="row g-4 align-items-start">
         <div class="col-lg-7">
@@ -297,5 +303,12 @@ const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]
 });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- 
+==============================================
+CREDENCIALES PARA EL DESAFÍO
+==============================================
+Contraseña: passwordsegura
+==============================================
+-->
 </body>
 </html>
