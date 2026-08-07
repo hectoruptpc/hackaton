@@ -327,7 +327,12 @@ session_start();
     </div>
 
     <button class="btn-volver" onclick="window.location.href='index.php'">← volver</button>
-    <footer>laboratorio de pruebas | explora, prueba, encuentra la flag</footer>
+   <footer>
+         <div style="text-align:center; margin-top:10px;">
+            <img src="../img/cyt.png" alt="Logo Unidad de Ciencia y Tecnología" style="width:90px; height:auto; opacity:0.85;">
+        </div>
+        Laboratorio de pruebas | explora, prueba, encuentra la flag
+        </footer>
 </div>
 
 <script>

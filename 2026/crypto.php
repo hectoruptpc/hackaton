@@ -359,6 +359,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         El formato de la flag es: <strong style="color:#ff44ee;">FLAG{...}</strong>
     </div>
     <footer>
+         <div style="text-align:center; margin-top:10px;">
+            <img src="../img/cyt.png" alt="Logo Unidad de Ciencia y Tecnología" style="width:90px; height:auto; opacity:0.85;">
+        </div>
         ⚡ HACK THE GIBSON ⚡ // NINGÚN SISTEMA ES SEGURO SI PERSISTES // LARGUÍSIMO ENCRYPT CHALL
     </footer>
 </div>
