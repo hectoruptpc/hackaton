@@ -626,7 +626,10 @@ if (isset($_SESSION['biometrico_msg'])) {
     <?php endif; ?>
 
     <footer>
-        🔐 Autenticación Biométrica • Hackathon 2024
+        <div style="text-align:center; margin-top:10px;">
+            <img src="../../img/cyt.png" alt="Logo Unidad de Ciencia y Tecnología" style="width:90px; height:auto; opacity:0.85;">
+        </div>
+        🔐 Autenticación Biométrica • Hackathon Carabobo 2026
     </footer>
 </div>
 
