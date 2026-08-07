@@ -24,6 +24,7 @@ if ($es_admin && isset($_POST['iniciar_hackathon'])) {
     try {
         if (iniciarHackathonGlobal()) {
             $mensaje_exito = "¡Hackathon iniciado! Tiempo: " . formatearDuracionLegible(obtenerDuracionHackathon());
+            $_SESSION['hackathon_just_started'] = true;
             
             // Iniciar tiempo para todos los equipos existentes que ya tienen miembros
             $equipos = obtenerRankingEquipos();
@@ -443,6 +444,10 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
     </style>
 </head>
 <body>
+<?php if (isset($_SESSION['hackathon_just_started']) && $_SESSION['hackathon_just_started']): ?>
+    <script>window.hackathonJustStarted = true;</script>
+    <?php unset($_SESSION['hackathon_just_started']); ?>
+<?php endif; ?>
 <div class="container mt-4">
     <div class="text-center mb-3">
         <img src="../img/img.png" alt="Logo Hackathon" style="max-width:800px;">
@@ -528,6 +533,11 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
                         <button type="button" class="btn btn-warning btn-lg w-100 py-3" data-bs-toggle="modal" data-bs-target="#reiniciarModal">
                             🔄 REINICIAR HACKATHON (TESTING)
                         </button>
+                        
+                        <!-- Botón Cerrar Sesión Admin / Salir al Login -->
+                        <a href="logout.php" class="btn btn-outline-danger btn-lg w-100 py-2">
+                            🚪 Cerrar Sesión / Salir al Login
+                        </a>
                     </div>
                     
                 </div>
@@ -749,11 +759,7 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
         </div>
     </div>
     
-    <div class="text-center mt-4">
-        <a href="index.php" class="btn btn-primary btn-lg">
-            <?php echo isset($_SESSION['cedula']) ? '🎮 Volver al Dashboard' : 'Volver al inicio de sesión'; ?>
-        </a>
-    </div>
+    
 </div>
 
 <!-- Modal para Iniciar Hackathon -->
@@ -853,7 +859,7 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
             </div>
             <div class="modal-body text-center">
                 <div class="fs-1 mb-3">🎉 ¡FELICITACIONES! 🎉</div>
-                <h4 class="text-white mb-4">Equipos que completaron los 6 desafíos</h4>
+                <h4 class="text-white mb-4">Equipos que completaron los 10 desafíos</h4>
                 <div id="podioList">
                     <!-- Se llena dinámicamente -->
                 </div>
@@ -1068,7 +1074,7 @@ let puntuacionesAnteriores = new Map();
 const tiempoElement = document.getElementById('tiempo-global');
 const tablaEquipos = document.getElementById('tabla-equipos');
 const totalEquiposElement = document.getElementById('total-equipos');
-const PUNTUACION_MAXIMA = 6;
+const PUNTUACION_MAXIMA = 10;
 
 // =============================================
 // SISTEMA DE SINCRONIZACIÓN MEJORADO - Mismo método que puntaje
@@ -1258,61 +1264,10 @@ const audiosBanderas = {
 const audioVictoria = document.getElementById('audioVictoria');
 const finishSound = document.getElementById('finishSound');
 
-// Función para reproducir sonidos según banderas capturadas - CORREGIDA
+// Función para reproducir sonidos según banderas capturadas (Deshabilitados audios de la carpeta audios)
 function reproducirSonidoBanderas(equipoId, puntuacionAnterior, nuevaPuntuacion) {
-    console.log(`🔊 SONIDOS: Equipo ${equipoId}: ${puntuacionAnterior} → ${nuevaPuntuacion} puntos`);
-    
-    // Determinar qué bandera(s) se acaba de capturar
-    for (let bandera = puntuacionAnterior + 1; bandera <= nuevaPuntuacion; bandera++) {
-        if (bandera >= 1 && bandera <= 5) {
-            // Obtener el índice del audio a reproducir para ESTA bandera
-            const indiceAudio = contadorAudios[bandera];
-            
-            console.log(`🔊 Bandera ${bandera} capturada - Audio #${indiceAudio + 1}`);
-            
-            // Verificar si hay audio disponible para esta bandera
-            if (audiosBanderas[bandera] && audiosBanderas[bandera][indiceAudio]) {
-                console.log(`🔊 Reproduciendo audio para bandera ${bandera}: ${indiceAudio + 1}/${maxAudiosPorBandera[bandera]}`);
-                
-                // Reproducir el audio correspondiente
-                const audio = audiosBanderas[bandera][indiceAudio];
-                try {
-                    audio.currentTime = 0; // Reiniciar audio
-                    audio.play().catch(e => {
-                        console.log(`❌ Error reproduciendo audio para bandera ${bandera}:`, e);
-                    });
-                } catch (error) {
-                    console.log(`❌ Error con audio bandera ${bandera}:`, error);
-                }
-                
-                // Incrementar contador para la PRÓXIMA vez que se capture esta bandera
-                contadorAudios[bandera]++;
-                
-                // Si llegamos al máximo, reiniciar contador (ciclar)
-                if (contadorAudios[bandera] >= maxAudiosPorBandera[bandera]) {
-                    contadorAudios[bandera] = 0;
-                    console.log(`🔄 Reiniciando ciclo de audios para bandera ${bandera}`);
-                }
-            } else {
-                console.log(`❌ No hay audio disponible para bandera ${bandera}, índice ${indiceAudio}`);
-            }
-        }
-    }
-    
-    // Si llegó a 6 banderas, reproducir sonido de victoria
-    if (nuevaPuntuacion === 6) {
-        setTimeout(() => {
-            console.log('🎉 Reproduciendo sonido de victoria!');
-            try {
-                audioVictoria.currentTime = 0;
-                audioVictoria.play().catch(e => {
-                    console.log('❌ Error reproduciendo sonido de victoria:', e);
-                });
-            } catch (error) {
-                console.log('❌ Error con audio victoria:', error);
-            }
-        }, 1000);
-    }
+    console.log(`🔊 Puntuación actualizada para equipo ${equipoId}: ${puntuacionAnterior} → ${nuevaPuntuacion}`);
+    // Se suprime la reproducción de archivos MP3 de la carpeta audios por especificación
 }
 
 // Función para resetear los sonidos cuando se reinicia el hackathon
@@ -1590,10 +1545,11 @@ function crearFilaEquipo(equipo, index) {
     let claseBadge = '';
     let textoExtra = '';
     
-    if (equipo.puntuacion_total === 6 || equipo.completado) {
+    const esCompleto = (equipo.puntuacion_total >= PUNTUACION_MAXIMA || equipo.desafios_completados >= PUNTUACION_MAXIMA);
+    if (esCompleto) {
         estadoTexto = '✅ FINALIZADO';
         claseBadge = 'badge bg-success p-2';
-        textoExtra = '<br><small class="text-success mt-1 d-block">🎯 6/6 Desafíos</small>';
+        textoExtra = '<br><small class="text-success mt-1 d-block">🎯 10/10 Desafíos</small>';
     } else if (equipo.estado == 1) {
         estadoTexto = '🏁 COMPITIENDO';
         claseBadge = 'badge badge-compitiendo p-2';
@@ -1625,9 +1581,9 @@ function crearFilaEquipo(equipo, index) {
             <small class="text-muted">🚩</small>
         </td>
         <td>
-            ${equipo.tiempo_acumulado > 0 ? 
-                `${formatearTiempo(equipo.tiempo_acumulado)}${equipo.completado ? '<br><small class="text-success">✅ Completado</small>' : ''}` : 
-                '<span class="text-muted">--:--</span>'
+            ${(equipo.puntuacion_total >= PUNTUACION_MAXIMA || equipo.desafios_completados >= PUNTUACION_MAXIMA) ? 
+                `${formatearTiempo(equipo.tiempo_acumulado)}<br><small class="text-success">✅ Completado</small>` : 
+                (equipo.tiempo_acumulado > 0 ? formatearTiempo(equipo.tiempo_acumulado) : '<span class="text-muted">--:--</span>')
             }
         </td>
         <td>
@@ -1646,8 +1602,8 @@ function crearFilaEquipo(equipo, index) {
         </td>
     `;
     
-    // Marcar como completo si llegó a 6 puntos
-    if (equipo.puntuacion_total === 6 || equipo.completado) {
+    // Marcar como completo si llegó a 10 puntos
+    if (equipo.puntuacion_total >= PUNTUACION_MAXIMA || equipo.desafios_completados >= PUNTUACION_MAXIMA) {
         nuevaFila.classList.add('equipo-completo');
     }
     
@@ -1707,16 +1663,17 @@ function actualizarFilaEquipo(fila, equipo, index) {
         celdaPuntuacion.classList.add('puntuacion-cambiando');
         setTimeout(() => celdaPuntuacion.classList.remove('puntuacion-cambiando'), 2000);
         
-        // Disparar locución de voz narrativa de la IA
-        if (typeof sistemaVozIA !== 'undefined' && equipo.puntuacion_total > puntuacionAnterior) {
-            sistemaVozIA.hablar(equipo.nombre_equipo, equipo.puntuacion_total);
+        // Disparar locución de voz a través de la Burbuja Flotante de la IA con frases por bandera
+        if (window.iaAvatarWidget && equipo.puntuacion_total > puntuacionAnterior) {
+            window.iaAvatarWidget.hablarCapturaBandera(equipo.nombre_equipo, equipo.puntuacion_total);
         }
     }
     
     // Actualizar celda de tiempo (5ta columna)
     const celdaTiempo = fila.querySelector('td:nth-child(5)');
+    const esCompletoTiempo = (equipo.puntuacion_total >= PUNTUACION_MAXIMA || equipo.desafios_completados >= PUNTUACION_MAXIMA);
     if (equipo.tiempo_acumulado > 0) {
-        celdaTiempo.innerHTML = `${formatearTiempo(equipo.tiempo_acumulado)}${equipo.completado ? '<br><small class="text-success">✅ Completado</small>' : ''}`;
+        celdaTiempo.innerHTML = `${formatearTiempo(equipo.tiempo_acumulado)}${esCompletoTiempo ? '<br><small class="text-success">✅ Completado</small>' : ''}`;
     } else {
         celdaTiempo.innerHTML = '<span class="text-muted">--:--</span>';
     }
@@ -1728,10 +1685,11 @@ function actualizarFilaEquipo(fila, equipo, index) {
     let claseBadge = '';
     let textoExtra = '';
     
-    if (equipo.puntuacion_total === 6 || equipo.completado) {
+    const esCompletoActualizar = (equipo.puntuacion_total >= PUNTUACION_MAXIMA || equipo.desafios_completados >= PUNTUACION_MAXIMA);
+    if (esCompletoActualizar) {
         estadoTexto = '✅ FINALIZADO';
         claseBadge = 'badge bg-success p-2';
-        textoExtra = '<br><small class="text-success mt-1 d-block">🎯 6/6 Desafíos</small>';
+        textoExtra = '<br><small class="text-success mt-1 d-block">🎯 10/10 Desafíos</small>';
     } else if (equipo.estado == 1) {
         estadoTexto = '🏁 COMPITIENDO';
         claseBadge = 'badge badge-compitiendo p-2';
@@ -1745,8 +1703,8 @@ function actualizarFilaEquipo(fila, equipo, index) {
         ${textoExtra}
     `;
     
-    // Marcar como completo si llegó a 6 puntos
-    if (equipo.puntuacion_total === 6 || equipo.completado) {
+    // Marcar como completo si llegó a 10 puntos
+    if (equipo.puntuacion_total >= PUNTUACION_MAXIMA || equipo.desafios_completados >= PUNTUACION_MAXIMA) {
         fila.classList.add('equipo-completo');
     } else {
         fila.classList.remove('equipo-completo');
@@ -1757,13 +1715,13 @@ function actualizarFilaEquipo(fila, equipo, index) {
 // SISTEMA DE RESULTADOS Y PODIOS - CORREGIDO
 // =============================================
 
-// Función para verificar si hay equipos que completaron los 6 desafíos - ACTUALIZADA
+// Función para verificar si hay equipos que completaron los 10 desafíos - ACTUALIZADA
 function verificarPodioCompleto(ranking) {
     if (!ranking || ranking.length === 0 || podioCompletoMostrado) return;
     
-    // Filtrar equipos que completaron todos los desafíos
+    // Filtrar equipos que completaron los 10 desafíos
     const equiposCompletos = ranking.filter(equipo => 
-        equipo.completado === true || equipo.puntuacion_total === PUNTUACION_MAXIMA
+        equipo.puntuacion_total >= PUNTUACION_MAXIMA || equipo.desafios_completados >= PUNTUACION_MAXIMA
     );
     
     if (equiposCompletos.length > 0) {
@@ -1777,7 +1735,7 @@ function verificarPodioCompleto(ranking) {
                 celdaEstado.innerHTML = `
                     <span class="badge bg-success p-2">✅ FINALIZADO</span>
                     <br>
-                    <small class="text-success mt-1 d-block">🎯 6/6 Desafíos</small>
+                    <small class="text-success mt-1 d-block">🎯 10/10 Desafíos</small>
                 `;
                 fila.classList.add('equipo-completo');
             }
@@ -1837,7 +1795,7 @@ function mostrarPodioCompleto(equiposCompletos) {
                     ${textoPosicion}
                 </h3>
                 <h2 class="fw-bold">${escapeHtml(equipo.nombre_equipo)}</h2>
-                <h4 class="text-success">${equipo.puntuacion_total}/6 Puntos</h4>
+                <h4 class="text-success">${equipo.puntuacion_total}/10 Puntos</h4>
                 <h5 class="text-info">Tiempo: ${formatearTiempo(equipo.tiempo_acumulado)}</h5>
                 <p class="text-muted">¡Completó todos los desafíos!</p>
             </div>
@@ -2004,7 +1962,7 @@ function mostrarEmpateTiempo(ganadores, puntuacion, tiempo) {
         equipoDiv.className = 'equipo-empate mb-3 p-3 bg-light rounded';
         equipoDiv.innerHTML = `
             <h4 class="text-dark mb-1">${escapeHtml(equipo.nombre_equipo)}</h4>
-            <h5 class="text-warning">${puntuacion}/6 Puntos</h5>
+            <h5 class="text-warning">${puntuacion}/10 Puntos</h5>
             <h6 class="text-info">Tiempo: ${formatearTiempo(equipo.tiempo_acumulado)}</h6>
             <span class="badge bg-warning">EMPATE EXACTO</span>
             <small class="d-block text-muted mt-1">Mismo puntaje y mismo tiempo</small>
@@ -2015,7 +1973,7 @@ function mostrarEmpateTiempo(ganadores, puntuacion, tiempo) {
         marcarEquipoComoGanador(equipo.id, 'empate');
     });
     
-    document.getElementById('puntuacionEmpateTiempo').textContent = `${puntuacion}/6 Puntos`;
+    document.getElementById('puntuacionEmpateTiempo').textContent = `${puntuacion}/10 Puntos`;
     
     // Configurar botón de desempate
     document.getElementById('btnIniciarDesempateTiempo').onclick = function() {
@@ -2238,6 +2196,9 @@ if (formReiniciar) {
         notificarCambioEstado('reiniciar');
     });
 }
+
+window.hackathonActivoGlobal = <?php echo json_encode(hackathonEstaActivo()); ?>;
+window.rankingEquiposGlobal = <?php echo json_encode(array_values($ranking)); ?>;
 
 // =============================================
 // NARRATIVA PROGRESIVA Y VOZ IA (ESPAÑOL LATINO)

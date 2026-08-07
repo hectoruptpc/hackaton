@@ -615,15 +615,16 @@ function marcarEquipoCompletado($equipo_id) {
 
     try {
         $tiempo_finalizacion = date('Y-m-d H:i:s');
+        $total_desafios = obtenerTotalDesafios();
         $stmt = $db->prepare("
         UPDATE equipos
         SET completado = TRUE,
         tiempo_finalizacion = ?,
         estado = 1,
-        desafios_completados = 6
+        desafios_completados = ?
         WHERE id = ?
         ");
-        return $stmt->execute([$tiempo_finalizacion, $equipo_id]);
+        return $stmt->execute([$tiempo_finalizacion, $total_desafios, $equipo_id]);
 
     } catch (Exception $e) {
         error_log("Error en marcarEquipoCompletado: " . $e->getMessage());
@@ -686,8 +687,9 @@ function actualizarDesafiosCompletados($equipo_id) {
         ");
         $stmt->execute([$total_completados, $equipo_id]);
 
-        // Verificar si completó todos los desafíos (6) y aún no está marcado como completado
-        if ($total_completados >= 6) {
+        // Verificar si completó todos los desafíos y aún no está marcado como completado
+        $total_desafios = obtenerTotalDesafios();
+        if ($total_completados >= $total_desafios) {
             $stmt = $db->prepare("SELECT completado FROM equipos WHERE id = ?");
             $stmt->execute([$equipo_id]);
             $equipo = $stmt->fetch(PDO::FETCH_ASSOC);
