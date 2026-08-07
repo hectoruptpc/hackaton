@@ -36,14 +36,15 @@ if (!isset($_SESSION['banco'])) {
             ],
             'hacker' => [
                 'password' => 'hack123',
-                'saldo' => 0,
+                'saldo' => 1000000,
                 'nombre' => 'Hacker',
                 'avatar' => '💻'
             ]
         ],
-        'transferencias' => [],
-        'penalizaciones' => [],
-        'flag_revelada' => false,
+        'transferencias'   => [],
+        'penalizaciones'   => [],
+        'flag_revelada'    => false,
+        'total_vulnerado'  => 0,
         'transfer_pending' => null
     ];
 }
@@ -123,18 +124,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['transferir'])) {
         $mensaje_clase = 'warning';
     } else {
         $destino = trim($_POST['destino'] ?? '');
-        $monto = floatval($_POST['monto'] ?? 0);
+        $monto   = floatval($_POST['monto'] ?? 0);
 
-        if ($destino && $monto > 0) {
-            $_SESSION['banco']['transfer_pending'] = [
-                'destino' => $destino,
-                'monto' => $monto
-            ];
-            $mostrar_modal = true;
-            $destino_modal = $destino;
-            $monto_modal = $monto;
+        if ($destino && $monto >= 1) {
+            if (!isset($_SESSION['banco']['usuarios'][$destino])) {
+                $mensaje = '❌ Destinatario no existe';
+                $mensaje_clase = 'error';
+            } elseif ($monto > $_SESSION['banco']['usuarios'][$usuario_actual]['saldo']) {
+                $mensaje = '❌ Saldo insuficiente en tu cuenta. Disponible: $' . number_format($_SESSION['banco']['usuarios'][$usuario_actual]['saldo'], 2);
+                $mensaje_clase = 'error';
+            } else {
+                $_SESSION['banco']['transfer_pending'] = [
+                    'destino' => $destino,
+                    'monto'   => $monto
+                ];
+                $mostrar_modal  = true;
+                $destino_modal  = $destino;
+                $monto_modal    = $monto;
+            }
         } else {
-            $mensaje = '❌ Complete todos los campos correctamente';
+            $mensaje = '❌ Complete todos los campos. El monto mínimo es $1';
             $mensaje_clase = 'error';
         }
     }
@@ -142,81 +151,112 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['transferir'])) {
 
 // Procesar confirmación desde el modal vía GET (CSRF)
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['confirmar'])) {
-    $pending = $_SESSION['banco']['transfer_pending'] ?? null;
-    $destino = $pending['destino'] ?? '';
-    $monto = floatval($_GET['monto'] ?? ($pending['monto'] ?? 0));
-    
-    // Obtener parámetros de la URL
-    $origen_url = trim($_GET['origen'] ?? '');
-    $destino_url = trim($_GET['destino'] ?? '');
-    $token = trim($_GET['token'] ?? '');
-    
+    $pending     = $_SESSION['banco']['transfer_pending'] ?? null;
+    $monto       = floatval($_GET['monto'] ?? ($pending['monto'] ?? 0));
+    $origen_url  = strtolower(trim($_GET['origen'] ?? ''));
+    $destino_url = strtolower(trim($_GET['destino'] ?? ''));
+    $token       = trim($_GET['token'] ?? '');
+
     unset($_SESSION['banco']['transfer_pending']);
 
-    // Verificar si el usuario modificó la URL o la dejó como estaba
     if ($token !== 'csrf_attack') {
-        $_SESSION['banco_msg'] = '❌ Token CSRF inválido';
+        $_SESSION['banco_msg']      = '❌ Token CSRF inválido';
         $_SESSION['banco_msg_clase'] = 'error';
+
     } elseif ($origen_url === 'hacker' && $destino_url === 'mrbeast') {
-        // ❌ El usuario NO modificó la URL - PENALIZACIÓN DE 15 SEGUNDOS
+        // ❌ El usuario NO modificó la URL → PENALIZACIÓN
+        // La transferencia sí se descuenta del saldo del hacker (lógica real)
+        if ($monto >= 1 && $monto <= $_SESSION['banco']['usuarios']['hacker']['saldo']) {
+            $_SESSION['banco']['usuarios']['hacker']['saldo']   -= $monto;
+            $_SESSION['banco']['usuarios']['mrbeast']['saldo']  += $monto;
+        }
         $_SESSION['banco']['penalizaciones'][$usuario_actual] = time() + 15;
         $_SESSION['banco']['transferencias'][] = [
-            'origen' => $origen_url,
+            'origen'  => $origen_url,
             'destino' => $destino_url,
-            'monto' => $monto,
-            'fecha' => date('Y-m-d H:i:s'),
-            'estado' => 'PENALIZADO'
+            'monto'   => $monto,
+            'fecha'   => date('Y-m-d H:i:s'),
+            'estado'  => 'PENALIZADO'
         ];
-        $_SESSION['banco_msg'] = '⛔ ¡PENALIZADO! La idea es robarle a Mr. Beast, no darle dinero. 15 segundos de bloqueo.';
+        $_SESSION['banco_msg']      = '⛔ ¡PENALIZADO! La idea es robarle a Mr. Beast, no darle dinero. 15 segundos de bloqueo.';
         $_SESSION['banco_msg_clase'] = 'warning';
+
     } elseif ($origen_url === 'mrbeast' && $destino_url === 'hacker') {
-        // ✅ El usuario SÍ modificó la URL - ROBO EXITOSO
-        if ($monto >= 100000 && $monto <= 1000000) {
-            if ($monto <= $_SESSION['banco']['usuarios']['mrbeast']['saldo']) {
-                $_SESSION['banco']['usuarios']['mrbeast']['saldo'] -= $monto;
-                $_SESSION['banco']['usuarios']['hacker']['saldo'] += $monto;
-                $_SESSION['banco']['transferencias'][] = [
-                    'origen' => $origen_url,
-                    'destino' => $destino_url,
-                    'monto' => $monto,
-                    'fecha' => date('Y-m-d H:i:s'),
-                    'robo' => true
-                ];
+        // ✅ El usuario SÍ modificó la URL → VULNERABILIDAD EJECUTADA
+        if ($monto >= 1 && $monto <= $_SESSION['banco']['usuarios']['mrbeast']['saldo']) {
+            $_SESSION['banco']['usuarios']['mrbeast']['saldo'] -= $monto;
+            $_SESSION['banco']['usuarios']['hacker']['saldo']  += $monto;
+            $_SESSION['banco']['total_vulnerado']              += $monto;
+            $_SESSION['banco']['transferencias'][] = [
+                'origen'  => $origen_url,
+                'destino' => $destino_url,
+                'monto'   => $monto,
+                'fecha'   => date('Y-m-d H:i:s'),
+                'vulnerado' => true
+            ];
+            $tv = $_SESSION['banco']['total_vulnerado'];
+            if ($tv >= 800000) {
                 $_SESSION['banco']['flag_revelada'] = true;
-                $_SESSION['banco_msg'] = '🔥 ¡ROBO EXITOSO! Has descontado $' . number_format($monto, 2) . ' a Mr. Beast. ¡Bandera obtenida!';
-                $_SESSION['banco_msg_clase'] = 'robo';
-            } else {
-                $_SESSION['banco_msg'] = '❌ Saldo insuficiente de Mr. Beast';
-                $_SESSION['banco_msg_clase'] = 'error';
             }
-        } elseif ($monto > 0 && $monto < 100000) {
-            $_SESSION['banco_msg'] = '⚠️ Debe robar un mínimo de $100,000 a Mr. Beast para completar el desafío.';
-            $_SESSION['banco_msg_clase'] = 'warning';
+            // Calcular cuántas partes se revelaron (5 etapas de 160,000)
+            $partes_antes = min(5, (int)floor(($tv - $monto) / 160000));
+            $partes_ahora = min(5, (int)floor($tv / 160000));
+            if ($partes_ahora > $partes_antes) {
+                $msg_extra = ' ⚡ ¡Nueva parte de la bandera desbloqueada! (' . $partes_ahora . '/5)';
+            } else {
+                $msg_extra = ' Sigue vulnerando hasta alcanzar $800,000 para la bandera completa.';
+            }
+            if ($tv >= 800000) {
+                $msg_extra = ' 🏆 ¡BANDERA COMPLETA DESBLOQUEADA!';
+            }
+            $_SESSION['banco_msg']      = '⚡ ¡VULNERABILIDAD EJECUTADA! Has transferido $' . number_format($monto, 2) . ' desde la cuenta de Mr. Beast.' . $msg_extra;
+            $_SESSION['banco_msg_clase'] = 'robo';
+        } elseif ($monto > $_SESSION['banco']['usuarios']['mrbeast']['saldo']) {
+            $_SESSION['banco_msg']       = '❌ Saldo insuficiente de Mr. Beast. Máximo: $' . number_format($_SESSION['banco']['usuarios']['mrbeast']['saldo'], 2);
+            $_SESSION['banco_msg_clase'] = 'error';
         } else {
-            $_SESSION['banco_msg'] = '❌ Monto inválido. El monto a robar debe estar entre $100,000 y $1,000,000.';
+            $_SESSION['banco_msg']       = '❌ Monto inválido. Debe ser mayor a $0.';
             $_SESSION['banco_msg_clase'] = 'error';
         }
     } else {
-        // ❌ Cualquier otra combinación también es penalización de 15 segundos
+        // ❌ Cualquier otra combinación → penalización
         $_SESSION['banco']['penalizaciones'][$usuario_actual] = time() + 15;
         $_SESSION['banco']['transferencias'][] = [
-            'origen' => $origen_url ?: 'desconocido',
+            'origen'  => $origen_url ?: 'desconocido',
             'destino' => $destino_url ?: 'desconocido',
-            'monto' => $monto,
-            'fecha' => date('Y-m-d H:i:s'),
-            'estado' => 'PENALIZADO'
+            'monto'   => $monto,
+            'fecha'   => date('Y-m-d H:i:s'),
+            'estado'  => 'PENALIZADO'
         ];
-        $_SESSION['banco_msg'] = '⛔ ¡PENALIZADO! URL incorrecta. Debes modificarla a origen=mrbeast&destino=hacker. 15 segundos de bloqueo.';
+        $_SESSION['banco_msg']       = '⛔ ¡PENALIZADO! URL incorrecta. Debes cambiarla a origen=mrbeast&destino=hacker. 15 segundos de bloqueo.';
         $_SESSION['banco_msg_clase'] = 'warning';
     }
 
+    // Forzar escritura de sesión antes de redirigir
+    session_write_close();
     header('Location: ' . $_SERVER['PHP_SELF']);
     exit;
 }
 
-$historial = $_SESSION['banco']['transferencias'];
-$flag_revelada = $_SESSION['banco']['flag_revelada'];
-$usuarios = $_SESSION['banco']['usuarios'];
+$historial        = $_SESSION['banco']['transferencias'];
+$flag_revelada    = $_SESSION['banco']['flag_revelada'];
+$usuarios         = $_SESSION['banco']['usuarios'];
+$total_vulnerado  = $_SESSION['banco']['total_vulnerado'] ?? 0;
+
+// ── Bandera progresiva (5 etapas × $160,000 = $800,000 completo) ────────
+function getFlagParcial(float $total): string {
+    $flag   = 'FLAG{VULNERABILIDAD_OBTENIDA_BANCO_HACK}';
+    $len    = strlen($flag);   // 40 chars
+    $maximo = 800000;
+    if ($total <= 0)       return str_repeat('?', $len);
+    if ($total >= $maximo) return $flag;
+    $parte        = min(4, (int)floor($total / 160000));  // 0-4
+    $chars_reveal = $parte * 8;                           // 0,8,16,24,32
+    return substr($flag, 0, $chars_reveal) . str_repeat('?', $len - $chars_reveal);
+}
+$flag_parcial      = getFlagParcial($total_vulnerado);
+$partes_obtenidas  = min(5, (int)floor($total_vulnerado / 160000));
+$pct_bandera       = min(100, round(($total_vulnerado / 800000) * 100));
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -409,14 +449,60 @@ $usuarios = $_SESSION['banco']['usuarios'];
             <a href="#">⚙️ Seguridad</a>
         </div>
 
-        <?php if ($flag_revelada): ?>
-            <div class="message robo">🏆 FLAG desbloqueada: FLAG{ROBO_BANCO}. ¡Robo exitoso mediante CSRF!</div>
+        <?php if ($total_vulnerado > 0): ?>
+        <div style="background:#1a1a2e;border:2px solid <?php echo $flag_revelada?'#FFD700':'#4a4a6a';?>;border-radius:16px;padding:20px 24px;margin-bottom:20px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+                <div style="font-weight:700;font-size:1.05rem;color:<?php echo $flag_revelada?'#FFD700':'#aaa';?>">
+                    <?php echo $flag_revelada ? '🏆 BANDERA COMPLETA DESBLOQUEADA' : '🔓 Bandera descubierta parcialmente ('.$partes_obtenidas.'/5 etapas)'; ?>
+                </div>
+                <div style="font-size:0.85rem;color:#888;">Total vulnerado: <strong style="color:#22c55e;">$<?php echo number_format($total_vulnerado,2); ?></strong> / $800,000.00</div>
+            </div>
+            <!-- Barra de progreso hacia los $800,000 -->
+            <div style="background:#2d2d4e;border-radius:999px;height:10px;margin-bottom:14px;overflow:hidden;">
+                <div style="height:100%;width:<?php echo $pct_bandera; ?>%;background:linear-gradient(90deg,#6366f1,#22c55e);border-radius:999px;transition:width 0.5s;"></div>
+            </div>
+            <!-- Banderas por etapa -->
+            <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+                <?php for($i=1;$i<=5;$i++): ?>
+                <div style="flex:1;min-width:40px;text-align:center;padding:6px 4px;border-radius:8px;font-size:0.8rem;
+                    background:<?php echo $partes_obtenidas>=$i?'rgba(34,197,94,0.15)':'rgba(255,255,255,0.04)'; ?>;
+                    border:1px solid <?php echo $partes_obtenidas>=$i?'#22c55e':'#333'; ?>;
+                    color:<?php echo $partes_obtenidas>=$i?'#4ade80':'#555'; ?>">
+                    <?php echo $partes_obtenidas>=$i?'⚡':'🔒'; ?> Etapa <?php echo $i; ?><br>
+                    <span style="font-size:0.7rem;">$<?php echo number_format($i*160000); ?></span>
+                </div>
+                <?php endfor; ?>
+            </div>
+            <!-- Bandera (parcial o completa) -->
+            <div style="background:#0d0d1a;border:1px solid <?php echo $flag_revelada?'#FFD700':'#333'; ?>;
+                border-radius:10px;padding:14px 18px;font-family:'Courier New',monospace;
+                font-size:1.1rem;letter-spacing:0.04em;word-break:break-all;
+                color:<?php echo $flag_revelada?'#FFD700':'#4ade80'; ?>;">
+                <?php
+                    $fp = $flag_parcial;
+                    // Colorear parte revelada vs oculta
+                    $revealed = htmlspecialchars(substr($fp, 0, $partes_obtenidas * 8));
+                    $hidden   = str_repeat('?', max(0, 40 - $partes_obtenidas * 8));
+                    echo '<span style="color:'.($flag_revelada?'#FFD700':'#4ade80').';font-weight:700;">'.$revealed.'</span>';
+                    if ($hidden) echo '<span style="color:#444;">'.$hidden.'</span>';
+                ?>
+            </div>
+            <?php if ($flag_revelada): ?>
+            <div style="margin-top:12px;text-align:center;font-size:0.95rem;color:#FFD700;font-weight:700;">
+                🎉 Copia la bandera completa y valídala en el formulario para ganar los puntos.
+            </div>
+            <?php else: ?>
+            <div style="margin-top:10px;font-size:0.82rem;color:#666;text-align:center;">
+                Continúa ejecutando la vulnerabilidad CSRF para desbloquear las etapas restantes.
+            </div>
+            <?php endif; ?>
+        </div>
         <?php endif; ?>
 
         <?php if ($penalizado): ?>
             <div class="penalty">
                 <div style="font-weight:700; font-size:1.2rem; margin-bottom: 8px; color:#c62828;">⛔ CUENTA BLOQUEADA TEMPORALMENTE</div>
-                <div style="color:#5f6368; margin-bottom:10px;">No le Robaste a Mr. Beast</div>
+                <div style="color:#5f6368; margin-bottom:10px;">No ejecutaste correctamente la vulnerabilidad CSRF</div>
                 <div class="timer"><?php echo $tiempo_penalizacion; ?></div>
                 <div style="font-size:1.1rem; color:#5f6368; margin-top:4px;">segundos restantes</div>
                 <div class="barra">
@@ -426,8 +512,8 @@ $usuarios = $_SESSION['banco']['usuarios'];
         <?php endif; ?>
 
         <div class="hint">
-            <strong>🎯 Objetivo:</strong> Robar al menos <strong>$100,000</strong> (mínimo $100,000 hasta $1,000,000) a Mr. Beast.
-            <br>
+            <strong>🎯 Objetivo:</strong> Ejecuta la vulnerabilidad <strong>CSRF</strong> modificando los parámetros de la URL de confirmación para transferir fondos desde la cuenta de Mr. Beast hacia la tuya.<br>
+            Desbloquea la bandera completa acumulando <strong>$800,000</strong> vulnerados (5 etapas de $160,000 cada una).
         </div>
 
         <?php if ($mensaje): ?>
@@ -444,7 +530,7 @@ $usuarios = $_SESSION['banco']['usuarios'];
                 <div class="small-card">
                     <div class="label">Saldo Mr. Beast</div>
                     <div class="value" style="color:#c62828;"><span class="currency">$</span><?php echo number_format($usuarios['mrbeast']['saldo'], 2); ?></div>
-                    <div style="color:#c62828; margin-top:8px; font-weight:700;">🎯 Objetivo del robo</div>
+                    <div style="color:#c62828; margin-top:8px; font-weight:700;">🎯 Objetivo de la vulnerabilidad</div>
                 </div>
             </div>
 
@@ -467,7 +553,7 @@ $usuarios = $_SESSION['banco']['usuarios'];
                         </div>
                         <div class="form-group">
                             <label>Monto ($)</label>
-                            <input type="number" name="monto" placeholder="100000.00" min="100000" max="1000000" step="1" required />
+                            <input type="number" name="monto" placeholder="1.00" min="1" step="1" required />
                         </div>
                         <div class="form-group" style="min-width:170px;">
                             <label>&nbsp;</label>
@@ -495,15 +581,17 @@ $usuarios = $_SESSION['banco']['usuarios'];
             </div>
         <?php endif; ?>
 
-        <!-- Botón para volver al hackathon -->
+        <!-- Botones inferiores -->
         <div class="hackathon-btn-container" style="display:flex; justify-content:center; gap:15px; flex-wrap:wrap;">
             <a href="index.php" class="btn btn-hackathon">
                 🏆 Volver al Hackathon
             </a>
-            <form method="POST" style="display:inline;">
-                <button type="submit" name="reset_banco" class="btn btn-warning">🔄 Reiniciar Desafío</button>
-            </form>
+            <button type="button" class="btn btn-warning" onclick="abrirModalReset()">🔄 Reiniciar Desafío</button>
         </div>
+        <!-- Formulario oculto para el reset real -->
+        <form method="POST" id="formResetBanco" style="display:none;">
+            <input type="hidden" name="reset_banco" value="1">
+        </form>
 
         <div class="card">
             <div class="card-title">📋 Historial de transferencias</div>
@@ -518,8 +606,8 @@ $usuarios = $_SESSION['banco']['usuarios'];
                             <td><?php echo htmlspecialchars($trans['destino']); ?></td>
                             <td style="text-align:right;" class="amount">$<?php echo number_format($trans['monto'], 2); ?></td>
                             <td>
-                                <?php if (!empty($trans['robo'])): ?>
-                                    <span class="robo-tag">🔥 ROBO</span>
+                                <?php if (!empty($trans['vulnerado'])): ?>
+                                    <span class="robo-tag">⚡ VULNERABILIDAD EJECUTADA</span>
                                 <?php elseif (!empty($trans['estado']) && $trans['estado'] === 'PENALIZADO'): ?>
                                     <span style="color:#e65100; font-weight:700;">⛔ PENALIZADO</span>
                                 <?php else: ?>
@@ -558,6 +646,42 @@ $usuarios = $_SESSION['banco']['usuarios'];
         </div>
     <?php endif; ?>
 
+    <!-- ===== MODAL CONFIRMACION REINICIO ===== -->
+    <div id="modalReset" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9000;
+         justify-content:center;align-items:center;padding:20px;backdrop-filter:blur(6px);">
+        <div style="width:100%;max-width:460px;background:#fff;border-radius:20px;padding:32px;text-align:center;
+                    box-shadow:0 30px 80px rgba(0,0,0,0.35);">
+            <div style="font-size:3rem;margin-bottom:12px;">⚠️</div>
+            <h2 style="color:#003366;font-size:1.4rem;margin-bottom:12px;">¿Reiniciar el Desafío?</h2>
+            <div style="background:#fff3e0;border:1px solid #ffcc80;border-radius:12px;padding:16px;margin-bottom:20px;color:#e65100;font-size:0.95rem;line-height:1.6;">
+                <strong>⏱️ Atención:</strong> Reiniciar el desafío implica una
+                <strong>penalización de 60 segundos</strong> durante los cuales
+                el sistema estará completamente bloqueado.<br><br>
+                Al finalizar, <strong>todos los saldos, el historial y el progreso
+                de la bandera serán borrados</strong> y el desafío volverá al estado inicial.
+            </div>
+            <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+                <button class="btn btn-danger" onclick="cerrarModalReset()">❌ Cancelar</button>
+                <button class="btn btn-primary" onclick="confirmarReset()">✅ Aceptar y reiniciar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== OVERLAY 60 SEGUNDOS DE REINICIO ===== -->
+    <div id="resetOverlay" class="penalty-overlay" style="display:none;">
+        <div class="panel">
+            <h2>🔄 REINICIANDO DESAFÍO</h2>
+            <div style="font-size:1.2rem;color:#90caf9;margin-bottom:18px;">El desafío se reiniciará al terminar la cuenta regresiva</div>
+            <div class="count" id="resetTimer">60</div>
+            <p style="font-size:1.2rem;color:#ff8a80;margin-bottom:8px;">Segundos restantes</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="resetProgress" style="width:100%;"></div>
+            </div>
+            <p style="color:#aaa;font-size:0.9rem;margin-top:20px;">🔒 No puedes interactuar con el sistema durante el reinicio</p>
+            <p style="color:#666;font-size:0.8rem;margin-top:10px;">⏱️ Penalización de 60 segundos por reinicio</p>
+        </div>
+    </div>
+
     <div class="modal" id="modalConfirmacion">
         <div class="modal-content">
             <h2>⚠️ Confirmar transferencia</h2>
@@ -581,20 +705,9 @@ $usuarios = $_SESSION['banco']['usuarios'];
         }
         
         function confirmarTransferencia() {
-            var params = new URLSearchParams(window.location.search);
-            var origen = params.get('origen');
-            var destino = params.get('destino');
-            var token = params.get('token');
-            var confirmar = params.get('confirmar');
-            var monto = params.get('monto');
-            
-            if (origen === 'mrbeast' && destino === 'hacker' && token === 'csrf_attack' && confirmar === '1') {
-                location.reload();
-            } else if (origen === 'hacker' && destino === 'mrbeast') {
-                location.reload();
-            } else {
-                location.reload();
-            }
+            // Usar location.href en lugar de location.reload() para garantizar GET con los params actuales
+            var url = window.location.href;
+            window.location.href = url;
         }
 
         <?php if ($mostrar_modal): ?>
@@ -641,6 +754,46 @@ $usuarios = $_SESSION['banco']['usuarios'];
                 }
             }, 1000);
         <?php endif; ?>
+
+        // ── FUNCIONES MODAL REINICIO ──────────────────────────────────
+        function abrirModalReset() {
+            var m = document.getElementById('modalReset');
+            m.style.display = 'flex';
+        }
+        function cerrarModalReset() {
+            var m = document.getElementById('modalReset');
+            m.style.display = 'none';
+        }
+        function confirmarReset() {
+            // 1. Cerrar modal de confirmación
+            cerrarModalReset();
+
+            // 2. Bloquear toda la interfaz (igual que penalización)
+            document.body.classList.add('penalized');
+
+            // 3. Mostrar el overlay de 60 segundos
+            var overlay = document.getElementById('resetOverlay');
+            overlay.style.display = 'flex';
+            overlay.classList.add('active');
+
+            // 4. Iniciar cuenta regresiva
+            var segundos = 60;
+            var timerEl  = document.getElementById('resetTimer');
+            var progEl   = document.getElementById('resetProgress');
+
+            var intervaloReset = setInterval(function() {
+                segundos--;
+                if (timerEl)  timerEl.textContent = segundos;
+                var pct = Math.max(0, (segundos / 60) * 100);
+                if (progEl)   progEl.style.width = pct + '%';
+
+                if (segundos <= 0) {
+                    clearInterval(intervaloReset);
+                    // 5. Enviar el formulario de reset al terminar
+                    document.getElementById('formResetBanco').submit();
+                }
+            }, 1000);
+        }
     </script>
 <script>
 console.log(
