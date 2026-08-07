@@ -299,8 +299,8 @@ $pct_bandera       = min(100, round(($total_vulnerado / 800000) * 100));
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🏦 Banco HACK - Desafío CSRF</title>
-    <link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v14">
-    <script src="conf/ia_avatar.js?v=2026_v14" defer></script>
+    <link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v17">
+    <script src="conf/ia_avatar.js?v=2026_v17" defer></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: linear-gradient(135deg, #001a3a 0%, #002d5a 50%, #001a3a 100%); font-family: 'Segoe UI', sans-serif; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }

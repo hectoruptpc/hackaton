@@ -6,8 +6,8 @@ session_start();
 <head>
     <meta charset="UTF-8">
     <title>API Lab</title>
-    <link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v14">
-    <script src="conf/ia_avatar.js?v=2026_v14" defer></script>
+    <link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v17">
+    <script src="conf/ia_avatar.js?v=2026_v17" defer></script>
     <style>
         * {
             margin: 0;
