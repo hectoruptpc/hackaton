@@ -223,7 +223,7 @@ $usuarios = $_SESSION['banco']['usuarios'];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏦 Banco de Venezuela - Desafío CSRF</title>
+    <title>🏦 Banco HACK - Desafío CSRF</title>
     <link rel="stylesheet" href="conf/ia_avatar.css">
     <script src="conf/ia_avatar.js" defer></script>
     <style>
@@ -390,7 +390,7 @@ $usuarios = $_SESSION['banco']['usuarios'];
 <body<?php echo $penalizado ? ' class="penalized"' : ''; ?>>
     <div class="container">
         <div class="header">
-            <div class="brand">🏦 Banco de Venezuela <span>CSRF</span></div>
+            <div class="brand">🏦 Banco HACK <span>CSRF</span></div>
             <div class="user-box">
                 <?php if ($usuario_actual): ?>
                     <div class="name"><?php echo $avatar_usuario; ?> <?php echo htmlspecialchars($nombre_usuario); ?></div>
@@ -532,7 +532,13 @@ $usuarios = $_SESSION['banco']['usuarios'];
             <?php endif; ?>
         </div>
 
-        <div class="footer">Sistema vulnerable a CSRF - Desafío de seguridad diseñado para hackathon.</div>
+        <div class="footer">
+            
+         <div style="text-align:center; margin-top:10px;">
+            <img src="../img/cyt.png" alt="Logo Unidad de Ciencia y Tecnología" style="width:90px; height:auto; opacity:0.85;">
+        </div>
+<br>        
+        Sistema vulnerable a CSRF - Desafío de seguridad diseñado para hackathon.</div>
     </div>
 
     <?php if ($penalizado): ?>
@@ -665,5 +671,7 @@ console.log(
 console.log('%c🚫 NO PIERDAS TU TIEMPO EN F12, AQUÍ NO HAY NADA 🚫', 'color: #ff0000; font-size: 16px; font-weight: bold; background: #1a0000; padding: 8px;');
 console.log('%c🤣 TE QUEDASTE CON LAS MANOS VACÍAS 🤣', 'color: #ffff00; font-size: 16px; font-weight: bold;');
 </script>
+
+  
 </body>
 </html>

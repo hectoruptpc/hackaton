@@ -336,7 +336,7 @@ class IAAvatarWidget {
                 `Un trazo limpio en el orden adecuado abre puertas; tu prisa torpe solo activa mi alarma.`
             ],
             'xxe': [
-                `¡JA JA JA JA! ¡El banco de Venezuela te acaba de rebotar el cheque por sospechoso! ¡Ni para robar saldo sirves!`,
+                `¡JA JA JA JA! ¡El banco HACK te acaba de rebotar el cheque por sospechoso! ¡Ni para Vulnerar saldo sirves!`,
                 `La banca digital confía en las peticiones que parecen legítimas... qué lástima que no sepas formular la orden.`,
                 `¡Miren al Robin Hood de la ciberseguridad! Quiere quitarle los millones a Mr. Beast y no sabe ni mandar una transferencia bien.`,
                 `Mover grandes fortunas de una cuenta a otra requiere astucia en la transacción, no desesperación.`,
