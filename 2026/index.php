@@ -1438,6 +1438,26 @@ document.addEventListener('DOMContentLoaded', function() {
     
     setupEstadoMonitor();
     setupFlagVerification();
+
+    // Activar burlas de la IA para el Desafío 7 (Astucia / IDOR) al hacer clic en la tarjeta
+    const cardIdor = document.getElementById('challenge-idor');
+    if (cardIdor) {
+        cardIdor.addEventListener('click', function(e) {
+            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
+                if (window.iaAvatarWidget) {
+                    window.iaAvatarWidget.hablarPistaSarcastica('idor');
+                }
+            }
+        });
+    }
+    const inputIdor = document.getElementById('flag-idor');
+    if (inputIdor) {
+        inputIdor.addEventListener('focus', function() {
+            if (window.iaAvatarWidget) {
+                window.iaAvatarWidget.hablarPistaSarcastica('idor');
+            }
+        });
+    }
     
     // Verificar estado inicial de desafíos completados
     setTimeout(() => {

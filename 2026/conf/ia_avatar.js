@@ -98,8 +98,13 @@ class IAAvatarWidget {
             if (desafio && desafio !== 'index') {
                 this.hablarPistaSarcastica(desafio);
             } else if (this.esPaginaIndex()) {
-                const nivel = this.obtenerNivelEnojoEquipoActual();
-                this.hacerBurla(nivel);
+                // En el index, alternar entre burlas del desafío 7 (Astucia) y burlas generales del equipo
+                if (Math.random() < 0.6) {
+                    this.hablarPistaSarcastica('idor');
+                } else {
+                    const nivel = this.obtenerNivelEnojoEquipoActual();
+                    this.hacerBurla(nivel);
+                }
             } else {
                 this.hacerBurla();
             }
@@ -349,6 +354,16 @@ class IAAvatarWidget {
                 `Una clave que cambia constantemente no espera a quien no sabe auditar el tráfico en tiempo real.`,
                 `¡JAJAJAJA! ¡El desafío dinámico te está haciendo bailar al ritmo del reloj! ¡Apúrate antes de que expire el universo!`,
                 `¿Abrumado por la velocidad de la matriz? El origen de la ruta está escondido en la propia conversación del servidor.`
+            ],
+            'idor': [
+                `¡JAJAJAJAJAJAJA! ¡Miren esa cara de desconcierto absoluto! ¡No tienes NINGUNA idea de qué hacer aquí!`,
+                `¿Buscando algo que ni tú sabes qué es? Tu confusión me resulta extremadamente entretenida.`,
+                `¡Espectacular! Llevas 10 minutos haciendo clics desesperados por todas partes a ver si suena la flauta. ¡PATÉTICO!`,
+                `La ceguera digital es el mayor defecto de los competidores impulsivos. Sigue buscando a ciegas.`,
+                `¡Jajaja! Tu nivel de desorientación es tan alto que hasta los componentes del DOM se están burlando de ti.`,
+                `Qué divertido es verte dudar frente a una pantalla limpia. No tienes la menor idea de qué hacer.`,
+                `¡JAJAJAJA! Te quedaste mirando la pantalla con la boca abierta. ¿Esperas que el espíritu del Hackathon te haga el trabajo?`,
+                `Tus movimientos son totalmente erráticos. Ni siquiera sabes por dónde empezar a buscar.`
             ],
             'index': [
                 `¡JAJAJAJAJAJAJA! ¡Miren esa cara de desconcierto absoluto! ¡No tienes NINGUNA idea de qué hacer aquí!`,
