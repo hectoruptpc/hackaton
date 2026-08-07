@@ -6,7 +6,7 @@
 
 session_start();
 
-define('TIEMPO_CAMBIO', 120); // 120 segundos (2 minutos) de validez
+define('TIEMPO_CAMBIO', 300); // 300 segundos (5 minutos) de validez
 
 function generarCodigo() {
     return bin2hex(random_bytes(8)); // 16 caracteres hexadecimales
@@ -109,7 +109,7 @@ function obtenerPista($nivel) {
         2 => "📦 Copia la URL secreta y ábrela en una nueva pestaña de tu navegador:<br><code>http://localhost/hackaton/2026/challenge_dynamic.php?api_gateway=v2_token_endpoint&auth=UPTPC-2026-FINAL</code>",
         3 => "🔑 En la nueva pestaña verás un texto JSON con el campo 'payload' (ejemplo: <code>\"payload\": \"NGY4YTU5...\"</code>). Copia ese valor.",
         4 => "⚡ El campo 'payload' está codificado en Base64. Debes decodificarlo para obtener el código de acceso.",
-        5 => "🎯 Copia la clave hexadecimal de 16 caracteres decodificada, vuelve a esta pestaña y pégala en el campo de texto antes de que venza el temporizador de 2 minutos."
+        5 => "🎯 Copia la clave hexadecimal de 16 caracteres decodificada, vuelve a esta pestaña y pégala en el campo de texto antes de que venza el temporizador de " . floor(TIEMPO_CAMBIO / 60) . " minuto(s)."
     ];
     return $pistas[$nivel] ?? "Inspecciona los encabezados HTTP de la respuesta.";
 }
@@ -560,7 +560,7 @@ $historial = $_SESSION['dynamic_challenge']['historial_codigos'];
                 <div style="flex:1;">
                     <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
                         <span style="font-size:0.75rem; color:#8b949e; text-transform:uppercase; letter-spacing:1px;">
-                            ⏰ Expiración del código (2 minutos)
+                            ⏰ Expiración del código (<?php echo floor(TIEMPO_CAMBIO / 60); ?> minuto(s))
                         </span>
                         <span style="font-size:0.75rem; color:#00ff66;">
                             <?php echo $cambio_reciente ? '🔄 ¡CÓDIGO RENOVADO!' : '⏳ Token Rotativo Activo'; ?>
@@ -589,7 +589,7 @@ $historial = $_SESSION['dynamic_challenge']['historial_codigos'];
                     ████-████-████-████
                 </div>
                 <p style="margin-top:15px; font-size:0.8rem; color:#8b949e;">
-                    El código cambia cada 2 minutos. Revisa las cabeceras HTTP en DevTools (F12) o consulta las pistas.
+                    El código cambia cada <?php echo floor(TIEMPO_CAMBIO / 60); ?> minuto(s). Revisa las cabeceras HTTP en DevTools (F12) o consulta las pistas.
                 </p>
             </div>
         </div>
@@ -719,5 +719,11 @@ console.log(
 console.log('%c🚫 AQUÍ NO HAY PISTAS, EL TIEMPO CORRE Y LA CONSOLA NO TE SALVARÁ 🚫', 'color: #ff0000; font-size: 16px; font-weight: bold; background: #1a0000; padding: 8px;');
 console.log('%c🤣 TE QUEDAN POCOS SEGUNDOS Y SEGUÍAS PERDIENDO EL TIEMPO EN F12 🤣', 'color: #ffff00; font-size: 16px; font-weight: bold;');
 </script>
+
+ <footer>
+         <div style="text-align:center; margin-top:10px;">
+            <img src="../img/cyt.png" alt="Logo Unidad de Ciencia y Tecnología" style="width:90px; height:auto; opacity:0.85;">
+        </div>
+        </footer>
 </body>
 </html>
