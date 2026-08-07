@@ -858,8 +858,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['file_upload']) ? 'completed-challenge' : ''; ?>" id="challenge-file_upload">
                         <div class="card-body">
                             <h5 class="card-title text-primary">5. API REST Vulnerable</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">API Hacking (1 🚩)</h6>
-                            <p class="card-text">¡WAOS! Esta API no valida tokens correctamente.</p>
+                            <h6 class="card-subtitle mb-2 text-muted">Inyección Lógica & SQL (1 🚩)</h6>
+                            <p class="card-text">Audita el panel de la API REST. El endpoint <strong>POST /login</strong> no filtra el campo de usuario. Aplica una inyección lógica (SQL Injection) en el JSON para saltarte la autenticación y obtener la bandera.</p>
                             
                             <a href="api_lab.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">

@@ -306,14 +306,13 @@ class IAAvatarWidget {
                 `Los comandos responden a quien conoce la clave completa... fragmentada en el camino.`
             ],
             'file_upload': [
-                `¡JA JA JA JA! ¡La API te acaba de responder un NO gigante en la cara! ¿No te da vergüenza seguirle rogando?`,
-                `Una API responde a lo que pides... si sabes cambiar el tono de tu petición o la identidad que finges.`,
-                `¡Miren a este maestro del engaño! Intenta disfrazar su petición de admin pero se le nota la costura a tres kilómetros.`,
-                `El servidor web es crédulo ante quien sabe alterar las cabeceras de su propia voz.`,
-                `¡Ja ja ja ! Cambias dos palabritas en la petición y esperas que el servidor web te despliegue la alfombra roja. ¡Iluso!`,
-                `Peticiones rechazadas... qué trágico cuando no sabes cómo hacerte pasar por una autoridad legítima.`,
-                `¡Alerta de suplantación fallida! Eres tan malo fingiendo ser administrador que hasta mi filtro de spam te tiene compasión.`,
-                `Las puertas traseras de una interfaz se abren cambiando las formas, no insistiendo en lo mismo.`
+                `¡JAJAJAJA! ¡La API te acaba de responder un NO gigante en la cara! ¿No te da vergüenza seguirle rogando?`,
+                `Una API de login responde a quien sabe alterar la sintaxis lógica de la petición de usuario...`,
+                `¡Miren a este auditor novato! Cree que adivinando contraseñas va a entrar... ¡La puerta de la API cede cuando rompes la validación con una comilla!`,
+                `Las peticiones JSON de autenticación son vulnerables a condiciones que siempre evalúan verdadero... qué lástima que no sepas formular la orden.`,
+                `¡Jajaja! Cambias dos palabritas en el JSON y esperas que el servidor te despliegue la alfombra roja. ¡Iluso!`,
+                `¿Buscando la bandera de la API? Audita la validación del parámetro de usuario en el login y haz que la condición lógica siempre resulte cierta.`,
+                `¡Alerta de auditoría fallida! Si la consulta interna del backend no filtra tus caracteres, una condición verdadera te entregará todo.`
             ],
             'broken_auth': [
                 `¡JA JA JA JA! ¿Aún mirando la fotito como si fuera una obra del Museo del Louvre? ¡No es un cuadro de Van Gogh, es un archivo!`,
