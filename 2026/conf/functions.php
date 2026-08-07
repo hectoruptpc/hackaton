@@ -270,7 +270,7 @@ function obtenerConfiguracionDesafios() {
             'tiempo' => 15 * 60
         ],
         'command_injection' => [
-            'flag' => 'FLAG{SERVER_TERMINAL_MASTER}',
+            'flag' => 'FLAG{SERVER_TERMINAL_MASTER_2026}',
             'puntos' => 1,
             'tiempo' => 15 * 60
         ],
@@ -615,15 +615,16 @@ function marcarEquipoCompletado($equipo_id) {
 
     try {
         $tiempo_finalizacion = date('Y-m-d H:i:s');
+        $total_desafios = obtenerTotalDesafios();
         $stmt = $db->prepare("
         UPDATE equipos
         SET completado = TRUE,
         tiempo_finalizacion = ?,
         estado = 1,
-        desafios_completados = 6
+        desafios_completados = ?
         WHERE id = ?
         ");
-        return $stmt->execute([$tiempo_finalizacion, $equipo_id]);
+        return $stmt->execute([$tiempo_finalizacion, $total_desafios, $equipo_id]);
 
     } catch (Exception $e) {
         error_log("Error en marcarEquipoCompletado: " . $e->getMessage());
@@ -686,8 +687,9 @@ function actualizarDesafiosCompletados($equipo_id) {
         ");
         $stmt->execute([$total_completados, $equipo_id]);
 
-        // Verificar si completó todos los desafíos (6) y aún no está marcado como completado
-        if ($total_completados >= 6) {
+        // Verificar si completó todos los desafíos y aún no está marcado como completado
+        $total_desafios = obtenerTotalDesafios();
+        if ($total_completados >= $total_desafios) {
             $stmt = $db->prepare("SELECT completado FROM equipos WHERE id = ?");
             $stmt->execute([$equipo_id]);
             $equipo = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -1037,13 +1039,13 @@ function verificarPatronBiometrico($patron) {
         $_SESSION['intentos_biometricos']++;
 
         if ($_SESSION['intentos_biometricos'] >= 3) {
-            $_SESSION['bloqueado_hasta'] = time() + 60;
+            $_SESSION['bloqueado_hasta'] = time() + 15;
             $_SESSION['intentos_biometricos'] = 0;
             return [
                 'exito' => false,
                 'bloqueado' => true,
-                'tiempo_restante' => 60,
-                'mensaje' => '⚠️ DEMASIADOS INTENTOS.<br>🔒 Sistema bloqueado 60 segundos.'
+                'tiempo_restante' => 15,
+                'mensaje' => '⚠️ DEMASIADOS INTENTOS.<br>🔒 Sistema bloqueado 15 segundos.'
             ];
         }
 
@@ -1066,12 +1068,27 @@ function obtenerEstadoBiometrico() {
         'tiempo_restante' => 0
     ];
 
-    if (isset($_SESSION['bloqueado_hasta']) && time() < $_SESSION['bloqueado_hasta']) {
-        $estado['bloqueado'] = true;
-        $estado['tiempo_restante'] = $_SESSION['bloqueado_hasta'] - time();
+    if (isset($_SESSION['bloqueado_hasta'])) {
+        $restante = $_SESSION['bloqueado_hasta'] - time();
+        if ($restante > 0) {
+            $estado['bloqueado'] = true;
+            $estado['tiempo_restante'] = $restante;
+        } else {
+            unset($_SESSION['bloqueado_hasta']);
+            $_SESSION['intentos_biometricos'] = 0;
+            $estado['intentos'] = 0;
+        }
     }
 
     return $estado;
+}
+
+/**
+ * Obtener el número total de desafíos configurados dinámicamente en el sistema
+ */
+function obtenerTotalDesafios() {
+    $config = obtenerConfiguracionDesafios();
+    return is_array($config) ? count($config) : 6;
 }
 
 ?>

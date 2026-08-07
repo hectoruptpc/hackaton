@@ -47,6 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🔓 CRYPTO CHALLENGE | Élite Hackathon 🔓</title>
+    <link rel="stylesheet" href="conf/ia_avatar.css">
+    <script src="conf/ia_avatar.js" defer></script>
     <style>
         * {
             margin: 0;

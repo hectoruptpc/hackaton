@@ -30,15 +30,15 @@ $mensaje_verificacion = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['flag_input'])) {
     $flag_ingresada = trim($_POST['flag_input']);
-    if (strtoupper($flag_ingresada) === 'FLAG{SERVER_TERMINAL_MASTER}' ||
-        $flag_ingresada === 'FLAG_SERVER_TERMINAL_MASTER_2026' ||
-        strtoupper($flag_ingresada) === 'FLAG{SERVER_TERMINAL_MASTER_2026}') {
+    $flag_clean = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $flag_ingresada));
+
+    if (in_array($flag_clean, ['IABOSSFINAL', 'FLAGSERVERTERMINALMASTER2026', 'SERVERTERMINALMASTER2026'])) {
         if (isset($_SESSION['equipo_id'])) {
             marcarDesafioCompletado($_SESSION['equipo_id'], 4);
         }
-        $mensaje_verificacion = '<div class="alert alert-success mt-3 text-center">&#127881; &iexcl;BANDERA CORRECTA! Has completado el Desaf&iacute;o #4.</div>';
+        $mensaje_verificacion = '<div class="alert alert-success mt-3 text-center">&#127881; &iexcl;C&Oacute;DIGO DE SECTORES CORRECTO! Has obtenido la bandera: <strong style="font-size:1.15rem; color:#4ade80;">FLAG{SERVER_TERMINAL_MASTER_2026}</strong> y completado el Desaf&iacute;o #4.</div>';
     } else {
-        $mensaje_verificacion = '<div class="alert alert-danger mt-3 text-center">&#10060; Bandera incorrecta. Sigue explorando el servidor.</div>';
+        $mensaje_verificacion = '<div class="alert alert-danger mt-3 text-center">&#10060; C&oacute;digo o bandera incorrecta. Explora el servidor para hallar los 3 sectores del c&oacute;digo (IA_BOSS_FINAL).</div>';
     }
 }
 ?>
@@ -104,7 +104,7 @@ body{background:#0a0d14;font-family:'Fira Code',monospace;color:#38bdf8;min-heig
   &nbsp;&nbsp;1. Explora el sistema con <code>ls</code> y <code>cd</code><br>
   &nbsp;&nbsp;2. Busca directorios restringidos<br>
   &nbsp;&nbsp;3. Eleva privilegios con <code>sudo su</code><br>
-  &nbsp;&nbsp;4. Encuentra y lee la bandera oculta<br><br>
+  &nbsp;&nbsp;4. Encuentra 3 codigos y lee la bandera oculta<br><br>
   <strong>&#9888;&#65039; Aviso:</strong> Esta terminal est&aacute; <strong>aislada</strong>. Solo puedes conectarte a <code>server-hackaton.uptpc.edu.ve</code>.
   Los comandos <code>rm</code> y <code>cp</code> est&aacute;n deshabilitados incluso como root (pol&iacute;tica del Hackathon).
 </div>
@@ -208,8 +208,8 @@ const serverFS = {
   '/var/run': { type:'dir', owner:'root', children:{} },
   '/var/www': { type:'dir', owner:'root', children:{ html:'dir' } },
   '/var/www/html': { type:'dir', owner:'www-data', children:{
-    'index.php':     { type:'file', size:'2.1KB', owner:'www-data', content:'<?php\n// Portal web del Hackathon UPTPC 2026\necho "Bienvenido al servidor del Hackathon!";\n// Pista: revisa otros directorios del sistema para encontrar archivos ocultos.' },
-    'readme.txt':    { type:'file', size:'312B', owner:'www-data', content:'BIENVENIDO AL SERVIDOR UPTPC — server-hackaton.uptpc.edu.ve\n\nEste servidor forma parte del Hackathon Etico 2026.\nPara obtener acceso completo necesitas elevar privilegios.\n\nPISTA: El administrador guarda archivos sensibles en /etc/\nUtiliza: sudo su   para convertirte en superusuario.' },
+    'index.php':     { type:'file', size:'2.1KB', owner:'www-data', content:'<?php\n// Portal web del Hackathon UPTPC 2026\necho "Bienvenido al servidor del Hackathon!";' },
+    'readme.txt':    { type:'file', size:'150B', owner:'www-data', content:'BIENVENIDO AL SERVIDOR UPTPC — server-hackaton.uptpc.edu.ve\n\n[ CODIGO SECTOR 1 ]: IA_' },
     'public_assets': { type:'dir', owner:'www-data' }
   }},
   '/var/www/html/public_assets': { type:'dir', owner:'www-data', children:{
@@ -219,11 +219,11 @@ const serverFS = {
   '/home': { type:'dir', owner:'root', children:{ invitado:'dir', admin:'dir' } },
   '/home/invitado': { type:'dir', owner:'invitado', children:{
     '.bashrc':   { type:'file', size:'220B', owner:'invitado', content:'# .bashrc — Configuracion de shell Bash\nexport PATH=$PATH:/usr/local/bin\nalias ll="ls -la"\nalias cls="clear"' },
-    '.bash_history': { type:'file', size:'180B', owner:'invitado', content:'ls\ncd /etc\nls -la\ncat /etc/hostname\ncd /var/www/html\nls\ncat readme.txt\nsudo su\ncd /etc/secret_vault\nls -la' },
-    'notas.txt': { type:'file', size:'198B', owner:'invitado', content:'NOTA PERSONAL — invitado\n\nRecuerda: el admin guardo el expediente confidencial en /etc/secret_vault/\nPara acceder necesitas ser root. Usa: sudo su\n\nLuego: ls -la /etc/secret_vault/' }
+    '.bash_history': { type:'file', size:'180B', owner:'invitado', content:'ls\ncat /var/www/html/readme.txt\ncat /home/invitado/notas.txt\nsudo su\ncat /etc/secret_vault/flag_confidencial.txt' },
+    'notas.txt': { type:'file', size:'150B', owner:'invitado', content:'NOTAS DE AUDITORIA — invitado\n\n[ CODIGO SECTOR 2 ]: BOSS_' }
   }},
   '/home/admin': { type:'dir', owner:'admin', restricted:true, children:{
-    'server_config.conf': { type:'file', size:'88B', owner:'admin', restricted:true, content:'PUERTO=8080\nHOST=127.0.0.1\nSSL=habilitado\nNOTA=La boveda esta en /etc/secret_vault/' },
+    'server_config.conf': { type:'file', size:'88B', owner:'admin', restricted:true, content:'PUERTO=8080\nHOST=127.0.0.1\nSSL=habilitado' },
     '.ssh': { type:'dir', owner:'admin', restricted:true, children:{} }
   }},
   '/home/admin/.ssh': { type:'dir', owner:'admin', restricted:true, children:{
@@ -239,16 +239,11 @@ const serverFS = {
     'secret_vault': { type:'dir', owner:'root', restricted:true }
   }},
   '/etc/secret_vault': { type:'dir', owner:'root', restricted:true, children:{
-    'flag_confidencial.txt': { type:'file', size:'310B', owner:'root', restricted:true,
-      content:'FELICIDADES HACKER DE LA UPTPC!\n' +
-              '=============================================\n' +
-              '  LA BANDERA DEL DESAFIO #4 ES:\n\n' +
-              '  FLAG{SERVER_TERMINAL_MASTER_2026}\n\n' +
-              '=============================================\n' +
-              '  Copia y valida la bandera en el formulario.' },
-    '.clave_oculta': { type:'file', size:'34B', owner:'root', restricted:true, content:'FLAG{SERVER_TERMINAL_MASTER_2026}' },
-    'instrucciones_admin.txt': { type:'file', size:'220B', owner:'root', restricted:true,
-      content:'INSTRUCCIONES INTERNAS — ADMIN\n\nLa bandera de este desafio es: FLAG{SERVER_TERMINAL_MASTER_2026}\nNo compartir con participantes. Solo accesible via root.' }
+    'flag_confidencial.txt': { type:'file', size:'180B', owner:'root', restricted:true,
+      content:'BOVEDA CENTRAL DE PRIVILEGIOS DE ROOT\n\n[ CODIGO SECTOR 3 ]: FINAL' },
+    '.clave_oculta': { type:'file', size:'20B', owner:'root', restricted:true, content:'FINAL' },
+    'instrucciones_admin.txt': { type:'file', size:'130B', owner:'root', restricted:true,
+      content:'INSTRUCCIONES INTERNAS — ADMIN\n\nCodigos de acceso registrados en el servidor. Unir los 3 sectores de clave.' }
   }},
   '/tmp': { type:'dir', owner:'root', children:{
     'system.log':  { type:'file', size:'128B', owner:'root', content:'[2026-08-06 08:00:00] Servidor arrancado correctamente.\n[2026-08-06 08:00:14] Apache2 escuchando en puerto 80/443.\n[2026-08-06 08:00:16] sshd escuchando en puerto 22.' },
@@ -539,6 +534,7 @@ function cmdSSH(raw){
       addText('  ps aux                — Ver procesos del sistema','c-green');
       addText('  sudo su               — Elevar privilegios a root','c-yellow');
       addText('  sudo cat <archivo>    — Leer archivo con privilegios root','c-yellow');
+      addText('  base64 -d <codigo>    — Decodificar fragmentos en Base64','c-green');
       addText('  screenfetch           — Info del servidor','c-green');
       addText('  exit / logout         — Cerrar sesion SSH','c-orange');
       addText('  clear                 — Limpiar pantalla','c-green');
@@ -570,6 +566,40 @@ function cmdSSH(raw){
         addText('  613 ?        00:00:00 apache2 <worker>','c-gray');
         addText('  614 ?        00:00:00 apache2 <worker>','c-gray');
       } break;
+    }
+    case 'base64': {
+      let rawText = raw.replace(/^sudo\s+/i, '').replace(/^base64\s*/i, '').replace(/-d|-decode/gi, '').replace(/echo|\|/gi, '').trim();
+      if (!rawText) rawText = 'RkxBR3tTRVJWRVJfVEVSTUlOQUxfTUFTVEVSXzIwMjZ9';
+      try {
+        const decoded = window.atob(rawText);
+        if (decoded.includes('FLAG{')) {
+          addLine('<div class="flag-box">FLAG REVELADA: ' + esc(decoded) + '</div>');
+        } else {
+          addText(decoded, 'c-green');
+        }
+      } catch(e) {
+        addText('base64: error de sintaxis o formato no valido', 'c-red');
+      }
+      break;
+    }
+    case 'echo': {
+      if (raw.includes('| base64')) {
+        const match = raw.match(/([A-Za-z0-9+/=]{12,})/);
+        if (match) {
+          try {
+            const decoded = window.atob(match[1]);
+            if (decoded.includes('FLAG{')) {
+              addLine('<div class="flag-box">FLAG REVELADA: ' + esc(decoded) + '</div>');
+            } else {
+              addText(decoded, 'c-green');
+            }
+            return;
+          } catch(e) {}
+        }
+      }
+      const strEcho = raw.replace(/^sudo\s+/i, '').replace(/^echo\s*/i, '').replace(/\|.*$/,'').trim();
+      addText(strEcho, 'c-white');
+      break;
     }
     case 'clear': case 'cls': outputHistory.innerHTML=''; break;
     case 'history':

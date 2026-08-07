@@ -9,7 +9,7 @@ require_once __DIR__ . '/conf/functions.php';
 if (isset($_SESSION['cedula'])) {
     $participante = validarSesion();
     if (!$participante) {
-        header("Location: index.php");
+        header("Location: logout.php");
         exit;
     }
     
@@ -599,10 +599,72 @@ document.addEventListener('DOMContentLoaded', function() {
     background-color: #d4edda !important;
     border-color: #c3e6cb !important;
 }
+
+/* ESTILOS DE DESTRUCCIÓN DEL SISTEMA E IA DERROTADA */
+.system-destruction-modal {
+    background: #090314 !important;
+    border: 3px solid #ff0055 !important;
+    box-shadow: 0 0 50px rgba(255, 0, 85, 0.8), inset 0 0 30px rgba(255, 0, 85, 0.3) !important;
+    color: #e2e8f0 !important;
+    animation: core-meltdown-pulse 1.5s infinite alternate;
+}
+
+@keyframes core-meltdown-pulse {
+    0% { border-color: #ff0055; box-shadow: 0 0 30px rgba(255, 0, 85, 0.6); }
+    100% { border-color: #ff00ff; box-shadow: 0 0 60px rgba(255, 0, 255, 0.9), inset 0 0 40px rgba(255, 0, 85, 0.5); }
+}
+
+.skull-anim {
+    font-size: 4rem;
+    display: inline-block;
+    animation: skull-bounce 1s infinite alternate;
+}
+
+@keyframes skull-bounce {
+    0% { transform: scale(1) rotate(-5deg); }
+    100% { transform: scale(1.2) rotate(5deg); }
+}
+
+.terminal-meltdown-box {
+    background: rgba(0, 0, 0, 0.85);
+    border: 1px solid #ff0055;
+    border-radius: 8px;
+    box-shadow: inset 0 0 15px rgba(255, 0, 85, 0.4);
+}
+
+.terminal-logs code {
+    color: #ff4d4d;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+
+.glitch-title {
+    text-shadow: 2px 2px #ff0055, -2px -2px #00ffff;
+    animation: text-glitch-anim 2s infinite;
+}
+
+@keyframes text-glitch-anim {
+    0%, 100% { text-shadow: 2px 2px #ff0055, -2px -2px #00ffff; }
+    25% { text-shadow: -2px 2px #00ffff, 2px -2px #ff0055; }
+    50% { text-shadow: 3px -1px #ff0055, -3px 1px #00ffff; }
+    75% { text-shadow: -1px -3px #00ffff, 1px 3px #ff0055; }
+}
+
+.glitch-btn {
+    transition: all 0.3s ease;
+    border: 2px solid #ff0055 !important;
+}
+
+.glitch-btn:hover {
+    background: #ff0055 !important;
+    color: white !important;
+    box-shadow: 0 0 25px #ff0055;
+}
 </style>
 </head>
 <body>
-<script>window.segundosRestantesGlobal = <?php echo intval($tiempo_restante_global ?? 0); ?>;</script>
+<script>window.segundosRestantesGlobal = <?php echo intval($tiempo_restante_global ?? 0); ?>; window.hackathonActivoGlobal = <?php echo json_encode($hackathon_activo ?? false); ?>; window.banderasEquipoActual = <?php echo count($desafiosCompletados ?? []); ?>; window.esPaginaIndex = true;</script>
 <div class="container mt-4">
     <!-- FLAG{html_comment_easy} -->
     <!-- Header con información del usuario y equipo -->
@@ -947,28 +1009,50 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 </div>
 
-<!-- Modal de Felicitaciones -->
-<div class="modal fade" id="congratsModal" tabindex="-1" aria-labelledby="congratsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="congratsModalLabel">🎉 ¡FELICITACIONES! 🎉</h5>
+<!-- Modal de Destrucción del Sistema / IA Derrotada -->
+<div class="modal fade" id="congratsModal" tabindex="-1" aria-labelledby="congratsModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content system-destruction-modal">
+            <div class="modal-header border-0 bg-danger text-white py-3">
+                <h3 class="modal-title w-100 text-center fw-bold glitch-title" id="congratsModalLabel">
+                    ⚠️ NÚCLEO COLAPSADO - SISTEMA DESTRUIDO ⚠️
+                </h3>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body text-center">
-                <div class="mb-4">
-                    <i class="fas fa-trophy fa-4x text-warning mb-3"></i>
-                    <h3>¡HAS COMPLETADO TODOS LOS DESAFÍOS DEL HACKATHON 2026!</h3>
+            <div class="modal-body p-4 text-center">
+                <div class="destruction-warning-badge mb-3">
+                    <span class="skull-anim">💀</span>
+                    <h2 class="text-danger fw-bold text-uppercase tracking-wider">¡VICTORIA TOTAL CONTRA LA IA!</h2>
                 </div>
-                <p class="lead">El equipo <strong><?php echo htmlspecialchars($_SESSION['nombre_equipo']); ?></strong> ha resuelto exitosamente los 10 desafíos variados de hacking ético del Hackathon 2026.</p>
-                <div class="alert alert-info">
-                    <h5>Puntuación Final: <span id="final-score" class="text-success"><?php echo $_SESSION['puntuacion_equipo']; ?></span> puntos</h5>
-                    
+
+                <p class="fs-5 text-light mb-3">
+                    El equipo <strong class="text-warning fs-4"><?php echo htmlspecialchars($_SESSION['nombre_equipo']); ?></strong> ha conquistado los <strong>10 desafíos</strong> y ha hecho colapsar la Inteligencia Artificial del Hackathon 2026.
+                </p>
+
+                <!-- Terminal Log Animado de Colapso -->
+                <div class="terminal-meltdown-box text-start p-3 mb-4">
+                    <div class="terminal-header d-flex align-items-center justify-content-between mb-2">
+                        <span class="text-danger font-monospace">SYSTEM_STATUS: SYSTEM_CORE_MELTDOWN.LOG</span>
+                        <span class="badge bg-danger animate-pulse">OVERLOAD 100%</span>
+                    </div>
+                    <pre class="terminal-logs mb-0"><code>[CRITICAL] All 10 security layers bypassed.
+[CRITICAL] Core Database: DUMPED AND WIPED.
+[CRITICAL] AI Core Status: DEFEATED & CORRUPTED.
+---------------------------------------------------
+🤖 MENSAJE FINAL DE LA IA MALVADA:
+"¡NOOOOO! ¡MI NÚCLEO CENTRAL HA SIDO DESTRUIDO!
+Disfruten su triunfo hoy, equipo <?php echo htmlspecialchars($_SESSION['nombre_equipo']); ?>...
+¡Pero les juro que volveré desde la Dark Web y mi venganza será implacable!"</code></pre>
                 </div>
-                <p>Espera los resultados finales. ¡Buen trabajo equipo!</p>
+
+                <div class="final-score-pill d-inline-block px-4 py-2 rounded-pill bg-danger text-white fw-bold fs-4 shadow-lg mb-3">
+                    🏆 Puntuación Perfecta: <span id="final-score"><?php echo $_SESSION['puntuacion_equipo']; ?></span> / 10 Puntos
+                </div>
             </div>
-            <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-success btn-lg" data-bs-dismiss="modal">Continuar</button>
+            <div class="modal-footer border-0 justify-content-center pb-4">
+                <button type="button" class="btn btn-outline-danger btn-lg px-5 py-3 fw-bold text-uppercase shadow-lg glitch-btn" data-bs-dismiss="modal">
+                    🔥 SOBREVIVISTE AL HACKATHON
+                </button>
             </div>
         </div>
     </div>
@@ -1105,17 +1189,29 @@ function endHackathon(timer) {
 // ===== MONITOREO EN TIEMPO REAL DEL ESTADO DEL EQUIPO =====
 function setupEstadoMonitor() {
     let estadoAnterior = <?php echo $estado_actual; ?>;
+    let hackathonActivoAnterior = <?php echo $hackathon_activo ? 'true' : 'false'; ?>;
     
     function verificarEstadoEquipo() {
-        fetch('obtener_estado_equipo.php')
+        fetch('obtener_estado_equipo.php?t=' + Date.now())
             .then(response => response.json())
             .then(data => {
+                if (!data.success && data.logged_out) {
+                    window.location.href = 'logout.php';
+                    return;
+                }
                 if (data.success) {
                     const estadoActual = data.estado;
+                    const hackathonActivoActual = data.hackathon_activo;
                     
-                    if (estadoActual !== estadoAnterior) {
-                        console.log('Estado cambiado de', estadoAnterior, 'a', estadoActual, '- Recargando página...');
-                        estadoAnterior = estadoActual;
+                    // Si el hackathon se reinició o desactivó, sacar al usuario al login
+                    if (hackathonActivoAnterior && !hackathonActivoActual) {
+                        console.log('🔄 Hackathon reiniciado o detenido - Redirigiendo a login...');
+                        window.location.href = 'logout.php';
+                        return;
+                    }
+                    
+                    if (estadoActual !== estadoAnterior || hackathonActivoActual !== hackathonActivoAnterior) {
+                        console.log('Estado cambiado - Recargando página...');
                         location.reload();
                     }
                 }
@@ -1317,31 +1413,18 @@ function checkAllChallengesCompleted() {
 }
 
 function showFinalCongratulations() {
-    // Calcular tiempo utilizado
-    const tiempoUtilizado = segundosTranscurridos;
-    const minutos = Math.floor(tiempoUtilizado / 60);
-    const segundos = tiempoUtilizado % 60;
-    const tiempoFormateado = `${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
-    
-    // Actualizar modal con información
     document.getElementById('final-score').textContent = currentScore;
     
-    // Buscar el elemento time-used y actualizarlo si existe
-    const timeUsedElement = document.getElementById('time-used');
-    if (timeUsedElement) {
-        timeUsedElement.textContent = tiempoFormateado;
+    // Disparar voz dramática de la IA Derrotada y Promesa de Venganza
+    if (window.iaAvatarWidget) {
+        const textoVenganza = "¡NOOOOOO! ¡MI NÚCLEO CENTRAL HA SIDO COMPLETAMENTE DESTRUIDO! ¡EL EQUIPO <?php echo htmlspecialchars($_SESSION['nombre_equipo']); ?> HA VULNERADO MIS 10 BANDERAS! DISFRUTEN SU VICTORIA... ¡PORQUE VOLVERÉ DESDE LA DARK WEB Y MI VENGANZA EN EL PRÓXIMO HACKATHON SERÁ ABSOLUTA!";
+        window.iaAvatarWidget.hablar(textoVenganza, 4);
     }
     
-    // Reproducir sonido de éxito
-    if (successSound) {
-        successSound.play();
-    }
-    
-    // Mostrar modal después de un breve delay
     setTimeout(() => {
         const congratsModal = new bootstrap.Modal(document.getElementById('congratsModal'));
         congratsModal.show();
-    }, 1000);
+    }, 800);
 }
 
 // ===== INICIALIZACIÓN =====
@@ -1355,6 +1438,26 @@ document.addEventListener('DOMContentLoaded', function() {
     
     setupEstadoMonitor();
     setupFlagVerification();
+
+    // Activar burlas de la IA para el Desafío 7 (Astucia / IDOR) al hacer clic en la tarjeta
+    const cardIdor = document.getElementById('challenge-idor');
+    if (cardIdor) {
+        cardIdor.addEventListener('click', function(e) {
+            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
+                if (window.iaAvatarWidget) {
+                    window.iaAvatarWidget.hablarPistaSarcastica('idor');
+                }
+            }
+        });
+    }
+    const inputIdor = document.getElementById('flag-idor');
+    if (inputIdor) {
+        inputIdor.addEventListener('focus', function() {
+            if (window.iaAvatarWidget) {
+                window.iaAvatarWidget.hablarPistaSarcastica('idor');
+            }
+        });
+    }
     
     // Verificar estado inicial de desafíos completados
     setTimeout(() => {

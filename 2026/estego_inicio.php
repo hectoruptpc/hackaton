@@ -39,6 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mensaje'])) {
 <head>
     <meta charset="UTF-8">
     <title>🔍 AGENTE: ESTEGANOGRAFÍA</title>
+    <link rel="stylesheet" href="conf/ia_avatar.css">
+    <script src="conf/ia_avatar.js" defer></script>
     <style>
         * {
             margin: 0;
