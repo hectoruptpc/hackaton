@@ -345,12 +345,12 @@ class IAAvatarWidget {
                 `Los saldos cambian para quien sabe manipular la corriente de datos desde la sombra.`
             ],
             'race_condition': [
-                `¡JA JA JA JA! ¡El reloj te está devorando vivo! ¡El código cambia cada 2 minutos y tú sigues procesando a 1 kilobyte por hora!`,
+                `¡JA JA JA JA! ¡El reloj te está devorando vivo! ¡El código cambia cada 5 minutos y tú sigues procesando a 1 kilobyte por hora!`,
                 `El tiempo vuela y el código muta... si no escuchas el eco de las respuestas del servidor, el reloj te devorará.`,
                 `¡Miren cómo corre el temporizador en rojo! Tic-tac, tic-tac... ¡Tu cerebro va más lento que una conexión dial-up de los 90!`,
                 `Las cabeceras de red susurran verdades que los hackers lentos nunca llegan a leer a tiempo.`,
                 `¡Ja ja ja ! Se te venció el token en la cara. Mientras tú leías la primera letra, el servidor ya cambió la clave tres veces.`,
-                `Una clave que cambia constantemente no espera a quien no sabe auditar el tráfico en tiempo real.`,
+                `Una clave que cambia constantemente no espera a quien no sabe auditar el tráfico en tiempo real.`
                 `¡JA JA JA JA! ¡El desafío dinámico te está haciendo bailar al ritmo del reloj! ¡Apúrate antes de que expire el universo!`,
                 `¿Abrumado por la velocidad de la matriz? El origen de la ruta está escondido en la propia conversación del servidor.`
             ],
