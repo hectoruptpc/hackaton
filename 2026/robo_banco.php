@@ -66,20 +66,36 @@ if ($usuario_actual && isset($_SESSION['banco']['usuarios'][$usuario_actual])) {
     $avatar_usuario = '👤';
 }
 
+// ── Verificar penalización global persistente (a través de reinicios y recargas) ──
 $penalizado = false;
 $tiempo_penalizacion = 0;
-if ($usuario_actual && isset($_SESSION['banco']['penalizaciones'][$usuario_actual])) {
-    $tiempo_restante = $_SESSION['banco']['penalizaciones'][$usuario_actual] - time();
-    if ($tiempo_restante > 0) {
+
+if (isset($_SESSION['penalizacion_global_banco'])) {
+    $tiempo_restante_global = $_SESSION['penalizacion_global_banco'] - time();
+    if ($tiempo_restante_global > 0) {
         $penalizado = true;
-        $tiempo_penalizacion = $tiempo_restante;
+        $tiempo_penalizacion = $tiempo_restante_global;
+    } else {
+        unset($_SESSION['penalizacion_global_banco']);
+    }
+}
+
+if ($usuario_actual && isset($_SESSION['banco']['penalizaciones'][$usuario_actual])) {
+    $tiempo_restante_user = $_SESSION['banco']['penalizaciones'][$usuario_actual] - time();
+    if ($tiempo_restante_user > 0) {
+        $penalizado = true;
+        $tiempo_penalizacion = max($tiempo_penalizacion, $tiempo_restante_user);
     } else {
         unset($_SESSION['banco']['penalizaciones'][$usuario_actual]);
     }
 }
 
 if (isset($_POST['reset_banco']) || isset($_GET['reset_banco'])) {
+    $pen_glob = $_SESSION['penalizacion_global_banco'] ?? null;
     unset($_SESSION['banco'], $_SESSION['banco_usuario']);
+    if ($pen_glob && ($pen_glob - time() > 0)) {
+        $_SESSION['penalizacion_global_banco'] = $pen_glob;
+    }
     header('Location: ' . $_SERVER['PHP_SELF']);
     exit;
 }
@@ -115,6 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     }
 }
 
+// 1. FORMULARIO INICIAL POST: SIEMPRE ABRE EL MODAL DE CONFIRMACIÓN (NUNCA PENALIZA AQUÍ)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['transferir'])) {
     if (!$usuario_actual) {
         $mensaje = '⚠️ Debes iniciar sesión primero';
@@ -130,10 +147,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['transferir'])) {
             if (!isset($_SESSION['banco']['usuarios'][$destino])) {
                 $mensaje = '❌ Destinatario no existe';
                 $mensaje_clase = 'error';
-            } elseif ($monto > $_SESSION['banco']['usuarios'][$usuario_actual]['saldo']) {
-                $mensaje = '❌ Saldo insuficiente en tu cuenta. Disponible: $' . number_format($_SESSION['banco']['usuarios'][$usuario_actual]['saldo'], 2);
-                $mensaje_clase = 'error';
             } else {
+                // SIEMPRE abrir modal sin importar el monto
                 $_SESSION['banco']['transfer_pending'] = [
                     'destino' => $destino,
                     'monto'   => $monto
@@ -149,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['transferir'])) {
     }
 }
 
-// Procesar confirmación desde el modal vía GET (CSRF)
+// 2. CONFIRMACIÓN VÍA GET (CSRF): AQUÍ ES DONDE SE EVALÚA Y OCURRE LA PENALIZACIÓN
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['confirmar'])) {
     $pending     = $_SESSION['banco']['transfer_pending'] ?? null;
     $monto       = floatval($_GET['monto'] ?? ($pending['monto'] ?? 0));
@@ -159,18 +174,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['confirmar'])) {
 
     unset($_SESSION['banco']['transfer_pending']);
 
-    if ($token !== 'csrf_attack') {
+    if ($monto > 160000) {
+        // ❌ MONTO DEMASIADO ALTO → PENALIZACIÓN PERSISTENTE DE 15 SEGUNDOS
+        $_SESSION['penalizacion_global_banco'] = time() + 15;
+        if ($usuario_actual) {
+            $_SESSION['banco']['penalizaciones'][$usuario_actual] = time() + 15;
+        }
+        $_SESSION['banco']['transferencias'][] = [
+            'origen'  => $origen_url ?: 'desconocido',
+            'destino' => $destino_url ?: 'desconocido',
+            'monto'   => $monto,
+            'fecha'   => date('Y-m-d H:i:s'),
+            'estado'  => 'PENALIZADO'
+        ];
+        $_SESSION['banco_msg']       = '⛔ ¡PENALIZADO! Transacción sospechosa detectada. Su transferencia es sospechosa por monto muy alto. 15 segundos de bloqueo.';
+        $_SESSION['banco_msg_clase'] = 'warning';
+    } elseif ($token !== 'csrf_attack') {
         $_SESSION['banco_msg']      = '❌ Token CSRF inválido';
         $_SESSION['banco_msg_clase'] = 'error';
 
     } elseif ($origen_url === 'hacker' && $destino_url === 'mrbeast') {
-        // ❌ El usuario NO modificó la URL → PENALIZACIÓN
-        // La transferencia sí se descuenta del saldo del hacker (lógica real)
-        if ($monto >= 1 && $monto <= $_SESSION['banco']['usuarios']['hacker']['saldo']) {
-            $_SESSION['banco']['usuarios']['hacker']['saldo']   -= $monto;
-            $_SESSION['banco']['usuarios']['mrbeast']['saldo']  += $monto;
+        // ❌ NO MODIFICÓ LA URL (SE QUEDÓ TRANSFIRIENDO A MR BEAST) → PENALIZACIÓN PERSISTENTE
+        $_SESSION['penalizacion_global_banco'] = time() + 15;
+        if ($usuario_actual) {
+            $_SESSION['banco']['penalizaciones'][$usuario_actual] = time() + 15;
+            if ($monto >= 1 && $monto <= $_SESSION['banco']['usuarios']['hacker']['saldo']) {
+                $_SESSION['banco']['usuarios']['hacker']['saldo']   -= $monto;
+                $_SESSION['banco']['usuarios']['mrbeast']['saldo']  += $monto;
+            }
         }
-        $_SESSION['banco']['penalizaciones'][$usuario_actual] = time() + 15;
         $_SESSION['banco']['transferencias'][] = [
             'origen'  => $origen_url,
             'destino' => $destino_url,
@@ -182,7 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['confirmar'])) {
         $_SESSION['banco_msg_clase'] = 'warning';
 
     } elseif ($origen_url === 'mrbeast' && $destino_url === 'hacker') {
-        // ✅ El usuario SÍ modificó la URL → VULNERABILIDAD EJECUTADA
+        // ✅ MODIFICÓ LA URL CORRECTAMENTE → VULNERABILIDAD EJECUTADA
         if ($monto >= 1 && $monto <= $_SESSION['banco']['usuarios']['mrbeast']['saldo']) {
             $_SESSION['banco']['usuarios']['mrbeast']['saldo'] -= $monto;
             $_SESSION['banco']['usuarios']['hacker']['saldo']  += $monto;
@@ -219,8 +251,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['confirmar'])) {
             $_SESSION['banco_msg_clase'] = 'error';
         }
     } else {
-        // ❌ Cualquier otra combinación → penalización
-        $_SESSION['banco']['penalizaciones'][$usuario_actual] = time() + 15;
+        // ❌ OTRA COMBINACIÓN O URL MAL FORMADA → PENALIZACIÓN PERSISTENTE
+        $_SESSION['penalizacion_global_banco'] = time() + 15;
+        if ($usuario_actual) {
+            $_SESSION['banco']['penalizaciones'][$usuario_actual] = time() + 15;
+        }
         $_SESSION['banco']['transferencias'][] = [
             'origen'  => $origen_url ?: 'desconocido',
             'destino' => $destino_url ?: 'desconocido',
@@ -264,8 +299,8 @@ $pct_bandera       = min(100, round(($total_vulnerado / 800000) * 100));
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🏦 Banco HACK - Desafío CSRF</title>
-    <link rel="stylesheet" href="conf/ia_avatar.css">
-    <script src="conf/ia_avatar.js" defer></script>
+    <link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v18">
+    <script src="conf/ia_avatar.js?v=2026_v18" defer></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: linear-gradient(135deg, #001a3a 0%, #002d5a 50%, #001a3a 100%); font-family: 'Segoe UI', sans-serif; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
@@ -455,21 +490,20 @@ $pct_bandera       = min(100, round(($total_vulnerado / 800000) * 100));
                 <div style="font-weight:700;font-size:1.05rem;color:<?php echo $flag_revelada?'#FFD700':'#aaa';?>">
                     <?php echo $flag_revelada ? '🏆 BANDERA COMPLETA DESBLOQUEADA' : '🔓 Bandera descubierta parcialmente ('.$partes_obtenidas.'/5 etapas)'; ?>
                 </div>
-                <div style="font-size:0.85rem;color:#888;">Total vulnerado: <strong style="color:#22c55e;">$<?php echo number_format($total_vulnerado,2); ?></strong> / $800,000.00</div>
+                <div style="font-size:0.85rem;color:#888;">Total vulnerado: <strong style="color:#22c55e;">$<?php echo number_format($total_vulnerado,2); ?></strong></div>
             </div>
-            <!-- Barra de progreso hacia los $800,000 -->
+            <!-- Barra de progreso -->
             <div style="background:#2d2d4e;border-radius:999px;height:10px;margin-bottom:14px;overflow:hidden;">
                 <div style="height:100%;width:<?php echo $pct_bandera; ?>%;background:linear-gradient(90deg,#6366f1,#22c55e);border-radius:999px;transition:width 0.5s;"></div>
             </div>
             <!-- Banderas por etapa -->
             <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
                 <?php for($i=1;$i<=5;$i++): ?>
-                <div style="flex:1;min-width:40px;text-align:center;padding:6px 4px;border-radius:8px;font-size:0.8rem;
+                <div style="flex:1;min-width:40px;text-align:center;padding:10px 4px;border-radius:8px;font-size:0.85rem;
                     background:<?php echo $partes_obtenidas>=$i?'rgba(34,197,94,0.15)':'rgba(255,255,255,0.04)'; ?>;
                     border:1px solid <?php echo $partes_obtenidas>=$i?'#22c55e':'#333'; ?>;
                     color:<?php echo $partes_obtenidas>=$i?'#4ade80':'#555'; ?>">
-                    <?php echo $partes_obtenidas>=$i?'⚡':'🔒'; ?> Etapa <?php echo $i; ?><br>
-                    <span style="font-size:0.7rem;">$<?php echo number_format($i*160000); ?></span>
+                    <?php echo $partes_obtenidas>=$i?'⚡':'🔒'; ?> Etapa <?php echo $i; ?>
                 </div>
                 <?php endfor; ?>
             </div>
@@ -512,8 +546,9 @@ $pct_bandera       = min(100, round(($total_vulnerado / 800000) * 100));
         <?php endif; ?>
 
         <div class="hint">
-            <strong>🎯 Objetivo:</strong> Ejecuta la vulnerabilidad <strong>CSRF</strong> modificando los parámetros de la URL de confirmación para transferir fondos desde la cuenta de Mr. Beast hacia la tuya.<br>
-            Desbloquea la bandera completa acumulando <strong>$800,000</strong> vulnerados (5 etapas de $160,000 cada una).
+            <strong>🎯 Objetivo:</strong> Ejecuta la vulnerabilidad <strong>CSRF</strong> para transferir fondos desde la cuenta de Mr. Beast hacia la tuya.<br>
+            ⚠️ <strong>Políticas de Seguridad Banco Hack:</strong> Las transacciones excesivas o por montos demasiado altos activarán la alarma anti-fraude y bloquearán la cuenta por 15 segundos.<br>
+            Desbloquea la bandera completa ejecutando transferencias progresivas hasta revelar la última etapa.
         </div>
 
         <?php if ($mensaje): ?>
@@ -553,7 +588,7 @@ $pct_bandera       = min(100, round(($total_vulnerado / 800000) * 100));
                         </div>
                         <div class="form-group">
                             <label>Monto ($)</label>
-                            <input type="number" name="monto" placeholder="1.00" min="1" step="1" required />
+                            <input type="number" name="monto" placeholder="Monto ($)" min="1" step="1" required />
                         </div>
                         <div class="form-group" style="min-width:170px;">
                             <label>&nbsp;</label>
@@ -634,7 +669,7 @@ $pct_bandera       = min(100, round(($total_vulnerado / 800000) * 100));
         <div class="penalty-overlay active" id="penaltyOverlay">
             <div class="panel">
                 <h2>⛔ CUENTA BLOQUEADA</h2>
-                <div style="font-size:1.4rem; color:#ff8a80; margin-bottom:15px;">Penalización por no sacar dinero de Mr. Beast y haberselo dado</div>
+                <div style="font-size:1.4rem; color:#ff8a80; margin-bottom:15px;">Su transferencia es sospechosa por monto muy alto</div>
                 <div class="count" id="overlayTimer"><?php echo $tiempo_penalizacion; ?></div>
                 <p style="font-size:1.2rem; color:#ff8a80; margin-bottom:8px;">Segundos restantes</p>
                 <div class="progress-bar">
@@ -655,7 +690,7 @@ $pct_bandera       = min(100, round(($total_vulnerado / 800000) * 100));
             <h2 style="color:#003366;font-size:1.4rem;margin-bottom:12px;">¿Reiniciar el Desafío?</h2>
             <div style="background:#fff3e0;border:1px solid #ffcc80;border-radius:12px;padding:16px;margin-bottom:20px;color:#e65100;font-size:0.95rem;line-height:1.6;">
                 <strong>⏱️ Atención:</strong> Reiniciar el desafío implica una
-                <strong>penalización de 60 segundos</strong> durante los cuales
+                <strong>penalización de 15 segundos</strong> durante los cuales
                 el sistema estará completamente bloqueado.<br><br>
                 Al finalizar, <strong>todos los saldos, el historial y el progreso
                 de la bandera serán borrados</strong> y el desafío volverá al estado inicial.
@@ -667,18 +702,18 @@ $pct_bandera       = min(100, round(($total_vulnerado / 800000) * 100));
         </div>
     </div>
 
-    <!-- ===== OVERLAY 60 SEGUNDOS DE REINICIO ===== -->
+    <!-- ===== OVERLAY 15 SEGUNDOS DE REINICIO ===== -->
     <div id="resetOverlay" class="penalty-overlay" style="display:none;">
         <div class="panel">
             <h2>🔄 REINICIANDO DESAFÍO</h2>
             <div style="font-size:1.2rem;color:#90caf9;margin-bottom:18px;">El desafío se reiniciará al terminar la cuenta regresiva</div>
-            <div class="count" id="resetTimer">60</div>
+            <div class="count" id="resetTimer">15</div>
             <p style="font-size:1.2rem;color:#ff8a80;margin-bottom:8px;">Segundos restantes</p>
             <div class="progress-bar">
                 <div class="progress-fill" id="resetProgress" style="width:100%;"></div>
             </div>
             <p style="color:#aaa;font-size:0.9rem;margin-top:20px;">🔒 No puedes interactuar con el sistema durante el reinicio</p>
-            <p style="color:#666;font-size:0.8rem;margin-top:10px;">⏱️ Penalización de 60 segundos por reinicio</p>
+            <p style="color:#666;font-size:0.8rem;margin-top:10px;">⏱️ Penalización de 15 segundos por reinicio</p>
         </div>
     </div>
 
@@ -729,6 +764,7 @@ $pct_bandera       = min(100, round(($total_vulnerado / 800000) * 100));
         <?php endif; ?>
 
         <?php if ($penalizado): ?>
+            document.body.classList.add('penalized');
             var tiempo = <?php echo $tiempo_penalizacion; ?>;
             var tiempoInicial = tiempo;
             var timer = document.querySelector('.penalty .timer');
@@ -736,6 +772,7 @@ $pct_bandera       = min(100, round(($total_vulnerado / 800000) * 100));
             var overlayTimer = document.getElementById('overlayTimer');
             var overlayProgress = document.getElementById('overlayProgress');
             var overlay = document.getElementById('penaltyOverlay');
+            if (overlay) overlay.classList.add('active');
             
             var intervalo = setInterval(function() {
                 tiempo--;
@@ -771,20 +808,20 @@ $pct_bandera       = min(100, round(($total_vulnerado / 800000) * 100));
             // 2. Bloquear toda la interfaz (igual que penalización)
             document.body.classList.add('penalized');
 
-            // 3. Mostrar el overlay de 60 segundos
+            // 3. Mostrar el overlay de 15 segundos
             var overlay = document.getElementById('resetOverlay');
             overlay.style.display = 'flex';
             overlay.classList.add('active');
 
             // 4. Iniciar cuenta regresiva
-            var segundos = 60;
+            var segundos = 15;
             var timerEl  = document.getElementById('resetTimer');
             var progEl   = document.getElementById('resetProgress');
 
             var intervaloReset = setInterval(function() {
                 segundos--;
                 if (timerEl)  timerEl.textContent = segundos;
-                var pct = Math.max(0, (segundos / 60) * 100);
+                var pct = Math.max(0, (segundos / 15) * 100);
                 if (progEl)   progEl.style.width = pct + '%';
 
                 if (segundos <= 0) {

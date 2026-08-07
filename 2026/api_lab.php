@@ -6,8 +6,8 @@ session_start();
 <head>
     <meta charset="UTF-8">
     <title>API Lab</title>
-    <link rel="stylesheet" href="conf/ia_avatar.css">
-    <script src="conf/ia_avatar.js" defer></script>
+    <link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v18">
+    <script src="conf/ia_avatar.js?v=2026_v18" defer></script>
     <style>
         * {
             margin: 0;
@@ -233,7 +233,18 @@ session_start();
 <div class="container">
     <div class="header">
         <h1>>_ API_LAB</h1>
-        <p>interfaz de pruebas</p>
+        <p>interfaz de pruebas de la unidad de ciencia y tecnología</p>
+    </div>
+
+    <!-- Panel de Misión y Objetivo del Desafío -->
+    <div style="background:#0a0d18; border:1px solid #00ffcc; border-radius:8px; padding:15px; margin-bottom:25px; text-align:left;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="color:#00ffcc; font-weight:bold; font-size:13px; font-family:monospace;">🎯 OBJETIVO DEL DESAFÍO: INYECCIÓN LÓGICA / SQL EN API REST</span>
+            <span style="background:#00ffcc; color:#000; padding:2px 8px; font-size:10px; font-weight:bold; border-radius:4px;">RETO #5</span>
+        </div>
+        <p style="color:#e2e8f0; font-size:12px; margin:0; line-height:1.6;">
+            <strong>Misión:</strong> El backend de esta API REST procesa la autenticación en el endpoint <strong>POST /login</strong> concatenando el parámetro de usuario sin sanitizar. Tu objetivo es realizar una <strong>Inyección Lógica (SQL Injection)</strong> en la casilla de <code>usuario</code> (utilizando comillas <code>'</code> y operadores de comparación lógica como <code>OR</code>) para romper la validación del login y hacer que el servidor devuelva la <strong>Bandera (FLAG)</strong> de acceso.
+        </p>
     </div>
 
     <div class="url-bar">
@@ -266,14 +277,15 @@ session_start();
             </div>
         </div>
 
-        <div class="card">
-            <div class="card-header">
+        <div class="card" style="border: 1px solid #00ffcc;">
+            <div class="card-header" style="background:#102220;">
                 <span class="method post">POST</span>
                 <span class="endpoint">/login</span>
+                <span style="color:#00ffcc; font-size:10px; margin-left:auto; font-weight:bold;">⚡ VULNERABLE A INYECCIÓN</span>
             </div>
             <div class="card-body">
-                <div class="desc">autenticación de usuarios</div>
-                <input type="text" id="loginUser" placeholder="usuario" value="admin">
+                <div class="desc" style="color:#00ffcc;">autenticación de usuarios (Inyecta SQL/Lógica en usuario)</div>
+                <input type="text" id="loginUser" placeholder="usuario (e.g. admin' OR '1'='1)" value="admin">
                 <input type="password" id="loginPass" placeholder="contraseña" value="admin123">
                 <button onclick="login()">ejecutar</button>
                 <div id="resp_login" class="response"></div>
@@ -315,10 +327,10 @@ session_start();
             <span>▼</span>
         </div>
         <div class="hint-content">
-            <p>💡 "La base de datos a veces confía demasiado en lo que le dices."</p>
-            <p>💡 "Hay una comilla que puede abrir muchas puertas."</p>
-            <p>💡 "El error no siempre es un error. A veces es una invitación."</p>
-            <p>💡 "Los administradores a veces dejan mensajes secretos en sus sistemas de login."</p>
+            <p>💡 "El endpoint POST /login procesa parámetros JSON de usuario sin filtrar adecuadamente la entrada."</p>
+            <p>💡 "Una comilla simple <code>'</code> en el campo de usuario puede alterar la sintaxis lógica de verificación del backend."</p>
+            <p>💡 "Si logras que la condición de validación interna evalúe como verdadera (lógica booleana), el servidor entregará la Bandera."</p>
+            <p>💡 "No necesitas adivinar la contraseña si la verificación del usuario siempre resulta cierta."</p>
         </div>
     </div>
 

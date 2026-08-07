@@ -182,9 +182,9 @@ if (isset($_SESSION['cedula'])) {
         <meta charset="UTF-8">
         <title>Inicio Hackaton</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="conf/ia_avatar.css">
+        <link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v18">
         <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
-        <script src="conf/ia_avatar.js" defer></script>
+        <script src="conf/ia_avatar.js?v=2026_v18" defer></script>
 
         <style>
             .hero-section { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 60px 0; border-radius: 15px; }
@@ -586,9 +586,9 @@ document.addEventListener('DOMContentLoaded', function() {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hackathon Universitario: Desafío de Seguridad</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="conf/ia_avatar.css">
+<link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v18">
 <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
-<script src="conf/ia_avatar.js" defer></script>
+<script src="conf/ia_avatar.js?v=2026_v18" defer></script>
 
 <style>
 .card-challenge {
@@ -858,8 +858,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="card card-challenge shadow <?php echo isset($desafiosCompletados['file_upload']) ? 'completed-challenge' : ''; ?>" id="challenge-file_upload">
                         <div class="card-body">
                             <h5 class="card-title text-primary">5. API REST Vulnerable</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">API Hacking (1 🚩)</h6>
-                            <p class="card-text">¡WAOS! Esta API no valida tokens correctamente.</p>
+                            <h6 class="card-subtitle mb-2 text-muted">Inyección Lógica & SQL (1 🚩)</h6>
+                            <p class="card-text">Audita el panel de la API REST. El endpoint <strong>POST /login</strong> no filtra el campo de usuario. Aplica una inyección lógica (SQL Injection) en el JSON para saltarte la autenticación y obtener la bandera.</p>
                             
                             <a href="api_lab.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">

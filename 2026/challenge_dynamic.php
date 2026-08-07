@@ -167,8 +167,8 @@ $historial = $_SESSION['dynamic_challenge']['historial_codigos'];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🔥 DESAFÍO FINAL 2026: Código Dinámico - UPTPC</title>
-    <link rel="stylesheet" href="conf/ia_avatar.css">
-    <script src="conf/ia_avatar.js" defer></script>
+    <link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v18">
+    <script src="conf/ia_avatar.js?v=2026_v18" defer></script>
     <!-- PISTA DE CIBERSEGURIDAD EN CÓDIGO FUENTE:
          Abre la pestaña Red (Network) en DevTools (F12) e inspecciona los Response Headers HTTP para descubrir la URL del Gateway Secreto.
     -->
