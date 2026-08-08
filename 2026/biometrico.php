@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once __DIR__ . '/../conf/functions.php';
+require_once __DIR__ . '/conf/functions.php';
 
 $resultado_html = '';
 $mostrar_resultado = false;
@@ -27,9 +27,9 @@ if (isset($_SESSION['biometrico_msg'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🔐 Autenticación Biométrica</title>
-    <link rel="stylesheet" href="../conf/ia_avatar.css?v=2026_v18">
-    <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
-    <script src="../conf/ia_avatar.js?v=2026_v18" defer></script>
+    <link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v18">
+    <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
+    <script src="conf/ia_avatar.js?v=2026_v18" defer></script>
     <style>
         * {
             margin: 0;
@@ -48,7 +48,7 @@ if (isset($_SESSION['biometrico_msg'])) {
         }
 
         .container {
-            max-width: 800px;
+            max-width: 900px;
             width: 100%;
             background: rgba(10, 10, 15, 0.95);
             border: 2px solid #00ccff;
@@ -520,7 +520,7 @@ if (isset($_SESSION['biometrico_msg'])) {
             padding: 15px;
             border-top: 1px solid #1a2a3a;
             font-size: 10px;
-            color: #334455;
+            color: #f7fafc;
             margin-top: 20px;
             letter-spacing: 1px;
             position: relative;
@@ -618,7 +618,7 @@ if (isset($_SESSION['biometrico_msg'])) {
         </button>
     </form>
 
-    <button class="btn-volver" onclick="window.location.href='../index.php'">← VOLVER AL HACKATHON</button>
+    <button class="btn-volver" onclick="window.location.href='index.php'">← VOLVER AL HACKATHON</button>
 
     <?php if ($mostrar_resultado): ?>
         <div id="resultado" class="resultado 
@@ -628,12 +628,10 @@ if (isset($_SESSION['biometrico_msg'])) {
         </div>
     <?php endif; ?>
 
-    <footer>
-        <div style="text-align:center; margin-top:10px;">
-            <img src="../../img/cyt.png" alt="Logo Unidad de Ciencia y Tecnología" style="width:90px; height:auto; opacity:0.85;">
-        </div>
-        🔐 Autenticación Biométrica • Hackathon Carabobo 2026
-    </footer>
+    <?php
+require_once __DIR__ . '/conf/footer.php';
+echo $footer;
+?>
 </div>
 
 <script>
@@ -782,7 +780,7 @@ const intervalo = setInterval(function() {
 <?php endif; ?>
 
 setInterval(function() {
-    fetch('../obtener_estado_biometrico.php')
+    fetch('obtener_estado_biometrico.php')
         .then(response => response.json())
         .then(data => {
             if (data.intentos !== undefined && contadorIntentos) {
@@ -797,5 +795,7 @@ setInterval(function() {
         .catch(error => console.log('Error al actualizar contador'));
 }, 3000);
 </script>
+
+
 </body>
 </html>

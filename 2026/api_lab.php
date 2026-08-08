@@ -1,15 +1,12 @@
 <?php
 session_start();
+// ── Cabecera modular ─────────────────────────────────────────────────────────
+$page_title = 'API Lab — Hackathon UPTPC 2026';
+require_once __DIR__ . '/conf/header.php';
+echo $header;
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>API Lab</title>
-    <link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v18">
-    <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
-    <script src="conf/ia_avatar.js?v=2026_v18" defer></script>
-    <style>
+<!-- Estilos específicos del Desafío API Lab -->
+<style>
         * {
             margin: 0;
             padding: 0;
@@ -228,9 +225,8 @@ session_start();
             color: #ffffff;
             font-size: 10px;
         }
-    </style>
-</head>
-<body>
+</style>
+
 <div class="container">
     <div class="header">
         <h1>>_ API_LAB</h1>
@@ -340,12 +336,7 @@ session_start();
     </div>
 
     <button class="btn-volver" onclick="window.location.href='index.php'">← volver</button>
-   <footer>
-         <div style="text-align:center; margin-top:10px;">
-            <img src="../img/cyt.png" alt="Logo Unidad de Ciencia y Tecnología" style="width:90px; height:auto; opacity:0.85;">
-        </div>
-        Laboratorio de pruebas | explora, prueba, encuentra la flag
-        </footer>
+
 </div>
 
 <script>
@@ -451,5 +442,10 @@ console.log(
 console.log('%c🚫 LA CONSOLA NO TE VA A DAR LA FLAG, SIGUE INTENTANDO 🚫', 'color: #ff0000; font-size: 16px; font-weight: bold; background: #1a0000; padding: 8px;');
 console.log('%c🤣 QUÉ FÁCIL SERÍA SI ESTUVIERA EN F12, ¿VERDAD? 🤣', 'color: #ffff00; font-size: 16px; font-weight: bold;');
 </script>
-</body>
-</html>
+<?php
+require_once __DIR__ . '/conf/footer.php';
+echo $footer;
+?>
+<footer>
+    "Laboratorio de pruebas | explora, prueba, encuentra la flag
+"</footer>

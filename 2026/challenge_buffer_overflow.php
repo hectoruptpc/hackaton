@@ -41,20 +41,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['input_data'])) {
     }
 }
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💀 Buffer Overflow Challenge | Hackathon 💀</title>
+<?php
+// ── Cabecera modular ─────────────────────────────────────────────────────────
+$page_title = '💀 Buffer Overflow Challenge | Hackathon UPTPC 2026 💀';
+$extra_head = '
+    <!-- Bootstrap 5.1.3 — versión específica de este desafío -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v18">
-    <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
-    <script src="conf/ia_avatar.js?v=2026_v18" defer></script>
     <style>
         body {
             background: linear-gradient(135deg, #0a0e1a 0%, #0a0e1a 100%);
-            font-family: 'Courier New', monospace;
+            font-family: \'Courier New\', monospace;
             color: #0f0;
         }
         .terminal {
@@ -62,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['input_data'])) {
             border: 2px solid #0f0;
             border-radius: 10px;
             padding: 20px;
-            font-family: 'Courier New', monospace;
+            font-family: \'Courier New\', monospace;
             box-shadow: 0 0 20px rgba(0,255,0,0.3);
         }
         .terminal-header {
@@ -84,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['input_data'])) {
             background: #001100;
             border: 1px solid #0f0;
             color: #0f0;
-            font-family: 'Courier New', monospace;
+            font-family: \'Courier New\', monospace;
         }
         textarea:focus {
             background: #002200;
@@ -112,9 +108,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['input_data'])) {
         .text-muted {
             color: #0a0 !important;
         }
-    </style>
-</head>
-<body>
+    </style>';
+require_once __DIR__ . '/conf/header.php';
+echo $header;
+?>
     <div class="container mt-5">
         <div class="row justify-content-center">
             <div class="col-lg-10">
@@ -270,11 +267,7 @@ Solo personal autorizado puede ingresar.
             </div>
         </div>
     </div>
-    <footer>
-         <div style="text-align:center; margin-top:10px;">
-            <img src="../img/cyt.png" alt="Logo Unidad de Ciencia y Tecnología" style="width:90px; height:auto; opacity:0.85;">
-        </div>
-        </footer>
+
 <script>
 console.log(
 '%c' + 
@@ -316,5 +309,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
-</body>
-</html>
+<?php
+require_once __DIR__ . '/conf/footer.php';
+echo $footer;
+?>

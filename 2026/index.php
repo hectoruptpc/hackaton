@@ -2,7 +2,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 session_start();
-header('X-Secret-Flag: FLAG{http_header_secret}');
+header('X-Secret-Flag: FLAG{HTTP_HEADER_SECRET}');
 require_once __DIR__ . '/conf/functions.php';
 
 // 1. Si ya está en sesión, calcula el tiempo y muestra dashboard
@@ -175,26 +175,17 @@ if (isset($_SESSION['cedula'])) {
     unset($_SESSION['form_errors']);
     unset($_SESSION['access_errors']); 
     unset($_SESSION['admin_errors']);
-    ?>
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <title>Inicio Hackaton</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v18">
-        <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
-        <script src="conf/ia_avatar.js?v=2026_v18" defer></script>
-
-        <style>
-            .hero-section { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 60px 0; border-radius: 15px; }
-            .member-form { border: 1px solid #dee2e6; border-radius: 5px; padding: 15px; margin-bottom: 15px; }
-            .optional-member { background-color: #f8f9fa; }
-            .admin-section { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); color: white; }
-            .hidden { display: none !important; }
-        </style>
-    </head>
-    <body>
+    $page_title = 'Inicio Hackathon UPTPC 2026';
+    $extra_head = '    <style>
+        .hero-section { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 60px 0; border-radius: 15px; }
+        .member-form { border: 1px solid #dee2e6; border-radius: 5px; padding: 15px; margin-bottom: 15px; }
+        .optional-member { background-color: #f8f9fa; }
+        .admin-section { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); color: white; }
+        .hidden { display: none !important; }
+    </style>';
+    require_once __DIR__ . '/conf/header.php';
+    echo $header;
+?>
     <div class="container mt-4">
         <!-- FLAG{source_code_secret} -->
         <div class="text-center mb-3">
@@ -304,7 +295,7 @@ if (isset($_SESSION['cedula'])) {
                             </div>
                             
                             <div class="text-center mb-3">
-                                <small class="text-muted" onclick="alert('FLAG{login_clickable_secret}')" style="cursor: default;">¿Olvidaste tu contraseña?</small>
+                                <small class="text-muted" onclick="alert('FLAG{LOGIN_CLICKABLE_SECRET}')" style="cursor: default;">¿Olvidaste tu contraseña?</small>
                             </div>
                             
                             <div id="access-alert-container" class="mb-3"></div>
@@ -444,7 +435,7 @@ if (isset($_SESSION['cedula'])) {
 
 
 
-   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Bootstrap JS ya incluido por conf/header.php -->
 <script>
 // Modales
 const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
@@ -568,8 +559,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-    </body>
-    </html>
+    <?php
+    require_once __DIR__ . '/conf/footer.php';
+    echo $footer;
+    ?>
     <?php
     exit;
 }
@@ -579,17 +572,14 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- DASHBOARD PRINCIPAL (Cuando hay sesión activa) -->
 <!-- =========================================== -->
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hackathon Universitario: Desafío de Seguridad</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v18">
-<link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
-<script src="conf/ia_avatar.js?v=2026_v18" defer></script>
-
+<?php
+// ── Cabecera modular (Dashboard con sesión activa) ───────────────────────────────
+$page_title = 'Hackathon Universitario: Desafío de Seguridad UPTPC 2026';
+// Los estilos del dashboard se colocan como style tag después del header
+require_once __DIR__ . '/conf/header.php';
+echo $header;
+?>
+<!-- Estilos específicos del Dashboard principal -->
 <style>
 .card-challenge {
     min-height: 250px;
@@ -844,7 +834,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <h6 class="card-subtitle mb-2 text-muted">Linux CLI & Privilegios (1 🚩)</h6>
                             <p class="card-text">Explora el servidor web con comandos ls, cd y cat, eleva privilegios con sudo su y encuentra los 4 fragmentos de la bandera.</p>
                             
-                            <a href="desafio_4/inicio.php" class="btn btn-primary">Acceder al Desafío</a>
+                            <a href="desafio4.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
                                 <input type="text" class="form-control" id="flag-command_injection" placeholder="Ingresa la bandera" 
                                     <?php echo isset($desafiosCompletados['command_injection']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
@@ -927,7 +917,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <h6 class="card-subtitle mb-2 text-muted">Autenticación Biométrica (1 🚩)</h6>
                             <p class="card-text">Para acceder a los archivos clasificados, deberás replicar el patrón correcto en la cuadrícula 3x3.</p>
                             
-                            <a href="biometrico/biometrico.php" class="btn btn-primary">Acceder al Desafío</a>
+                            <a href="biometrico.php" class="btn btn-primary">Acceder al Desafío</a>
                             <div class="mt-3">
                                 <input type="text" class="form-control" id="flag-biometrico" placeholder="Ingresa la bandera" 
                                     <?php echo isset($desafiosCompletados['biometrico']) ? 'value="✅ COMPLETADO" disabled' : ''; ?>>
@@ -1469,5 +1459,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 500);
 });
 </script>
-</body>
-</html>
+<?php
+require_once __DIR__ . '/conf/footer.php';
+echo $footer;
+?>

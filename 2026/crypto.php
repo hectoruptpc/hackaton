@@ -39,17 +39,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $feedback = $result['feedback'];
     $feedback_class = $result['class'];
 }
+// ── Cabecera modular ─────────────────────────────────────────────────────────
+$page_title = '🔓 CRYPTO CHALLENGE | Élite Hackathon UPTPC 2026 🔓';
+require_once __DIR__ . '/conf/header.php';
+echo $header;
 ?>
-
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔓 CRYPTO CHALLENGE | Élite Hackathon 🔓</title>
-    <link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v18">
-    <script src="conf/ia_avatar.js?v=2026_v18" defer></script>
-    <style>
+<!-- Estilos específicos del desafío Crypto -->
+<style>
         * {
             margin: 0;
             padding: 0;
@@ -318,9 +314,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             .crypto-label span:first-child { font-size: 1rem; }
             button { font-size: 1rem; }
         }
-    </style>
-</head>
-<body>
+</style>
 
 <div class="container">
     <h1>⚡ DESAFIO::ENCRIPTACION ⚡</h1>
@@ -446,5 +440,7 @@ if(preBlock && preBlock.innerText.length > 3000) {
     preBlock.style.maxHeight = "400px";
 }
 </script>
-</body>
-</html>
+<?php
+require_once __DIR__ . '/conf/footer.php';
+echo $footer;
+?>

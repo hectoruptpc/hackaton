@@ -4,15 +4,13 @@
 // Unidad de Ciencia y Tecnología — UPTPC 2026
 // ============================================================
 session_start();
+// ── Cabecera modular ─────────────────────────────────────────────────────────
+$page_title = '📖 Documentación Técnica de Desafíos — Hackathon 2026 UPTPC';
+require_once __DIR__ . '/conf/header.php';
+echo $header;
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📖 Documentación Técnica de Desafíos — Hackathon 2026 UPTPC</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <style>
+<!-- Estilos específicos de la Documentación de Desafíos -->
+<style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #090d16 linear-gradient(135deg, #070a10 0%, #0f172a 100%);
@@ -218,9 +216,9 @@ session_start();
             background: #7dd3fc;
             box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
         }
-    </style>
-</head>
-<body>
+</style>
+<!-- Google Fonts: Fira Code & Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
 
 <div class="container">
 
@@ -554,5 +552,7 @@ session_start();
 
 </div>
 
-</body>
-</html>
+<?php
+require_once __DIR__ . '/conf/footer.php';
+echo $footer;
+?>

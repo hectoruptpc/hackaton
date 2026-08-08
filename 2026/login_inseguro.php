@@ -32,17 +32,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Procesar el login usando la función del backend
     $mensaje = procesarLogin($usuario, $contrasena);
 }
+// ── Cabecera modular ─────────────────────────────────────────────────────────
+$page_title = 'Desafío: Login Inseguro | Hackathon UPTPC 2026';
+require_once __DIR__ . '/conf/header.php';
+echo $header;
 ?>
-
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Desafío: Login</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v18">
-<script src="conf/ia_avatar.js?v=2026_v18" defer></script>
+<!-- Estilos específicos del Desafío Login -->
 <style>
 body {
     background: linear-gradient(135deg, #f3f8ff 0%, #eef4ff 45%, #f7fbff 100%);
@@ -78,8 +73,7 @@ body {
 }
 .btn-outline-light:hover { color: #0f4c81!important; }
 </style>
-</head>
-<body>
+<!-- PISTA DEL DESAFÍO: Busca las credenciales ocultas en el código fuente -->
 <!-- 
 ==============================================
 CREDENCIALES PARA EL DESAFÍO
@@ -310,5 +304,7 @@ CREDENCIALES PARA EL DESAFÍO
 Contraseña: passwordsegura
 ==============================================
 -->
-</body>
-</html>
+<?php
+require_once __DIR__ . '/conf/footer.php';
+echo $footer;
+?>

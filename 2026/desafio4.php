@@ -14,14 +14,14 @@
  */
 
 session_start();
-require_once __DIR__ . '/../conf/functions.php';
+require_once __DIR__ . '/conf/functions.php';
 
 if (!function_exists('marcarDesafioCompletado')) {
     function marcarDesafioCompletado($equipo_id, $desafio_id) {
         if (session_status() !== PHP_SESSION_ACTIVE) session_start();
         $_SESSION['desafio_' . intval($desafio_id) . '_completado'] = true;
         $logLine = sprintf("[%s] Equipo:%s Desafio:%s\n", date('Y-m-d H:i:s'), $equipo_id, $desafio_id);
-        @file_put_contents(__DIR__ . '/../conf/desafios.log', $logLine, FILE_APPEND | LOCK_EX);
+        @file_put_contents(__DIR__ . '/conf/desafios.log', $logLine, FILE_APPEND | LOCK_EX);
         return true;
     }
 }
@@ -50,9 +50,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['flag_input'])) {
 <title>Desafio 4: Terminal Kali Linux — UPTPC Hackathon 2026</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
-<link rel="stylesheet" href="../conf/ia_avatar.css">
-<script src="../conf/ia_avatar.js" defer></script>
+<link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
+<link rel="stylesheet" href="conf/ia_avatar.css">
+<script src="conf/ia_avatar.js" defer></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0a0d14;font-family:'Fira Code',monospace;color:#38bdf8;min-height:100vh;padding:28px 15px}
@@ -156,7 +156,7 @@ body{background:#0a0d14;font-family:'Fira Code',monospace;color:#38bdf8;min-heig
 </div>
 
 <div class="text-center mt-4">
-  <a href="../index.php" class="btn btn-outline-secondary px-4 py-2" style="border-radius:12px;">&#127968; Volver al Dashboard del Hackathon</a>
+  <a href="index.php" class="btn btn-outline-secondary px-4 py-2" style="border-radius:12px;">&#127968; Volver al Dashboard del Hackathon</a>
 </div>
 
 </div><!-- /container-cli -->
@@ -1329,5 +1329,10 @@ cliInput.addEventListener('keydown', function(e){
 document.getElementById('terminalBody').addEventListener('click',()=>cliInput.focus());
 updatePrompt();
 </script>
+<?php
+require_once __DIR__ . '/conf/footer.php';
+echo $footer;
+?>
+
 </body>
 </html>

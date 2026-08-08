@@ -131,17 +131,13 @@ if (!isset($_SESSION['ultima_verificacion_puntuaciones'])) {
 if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
     $_SESSION['ultima_verificacion_tiempo'] = date('Y-m-d H:i:s');
 }
+// ── Cabecera modular ─────────────────────────────────────────────────────────
+$page_title = 'Ranking de Equipos — Hackathon UPTPC 2026';
+require_once __DIR__ . '/conf/header.php';
+echo $header;
 ?>
-
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Ranking de Equipos - Hackathon</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v18">
-    <script src="conf/ia_avatar.js?v=2026_v18" defer></script>
-    <style>
+<!-- Estilos específicos del Panel de Equipos -->
+<style>
         .top-1 { background-color: #FFD700 !important; }
         .top-2 { background-color: #C0C0C0 !important; }
         .top-3 { background-color: #CD7F32 !important; }
@@ -441,9 +437,8 @@ if (!isset($_SESSION['ultima_verificacion_tiempo'])) {
 
 
 
-    </style>
-</head>
-<body>
+</style>
+
 <?php if (isset($_SESSION['hackathon_just_started']) && $_SESSION['hackathon_just_started']): ?>
     <script>window.hackathonJustStarted = true;</script>
     <?php unset($_SESSION['hackathon_just_started']); ?>
@@ -2410,5 +2405,7 @@ function toggleSilencioIA() {
 
 </script>
 
-</body>
-</html>
+<?php
+require_once __DIR__ . '/conf/footer.php';
+echo $footer;
+?>

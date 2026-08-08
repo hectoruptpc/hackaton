@@ -292,17 +292,15 @@ function getFlagParcial(float $total): string {
 $flag_parcial      = getFlagParcial($total_vulnerado);
 $partes_obtenidas  = min(5, (int)floor($total_vulnerado / 160000));
 $pct_bandera       = min(100, round(($total_vulnerado / 800000) * 100));
+// ── Cabecera modular ─────────────────────────────────────────────────────────
+$page_title = '🏦 Banco HACK - Desafío CSRF | Hackathon UPTPC 2026';
+// La clase del body es dinámica según si hay penalización activa
+$body_attrs = $penalizado ? 'class="penalized"' : '';
+require_once __DIR__ . '/conf/header.php';
+echo $header;
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏦 Banco HACK - Desafío CSRF</title>
-    <link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v18">
-    <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
-    <script src="conf/ia_avatar.js?v=2026_v18" defer></script>
-    <style>
+<!-- Estilos específicos del Desafío Banco CSRF -->
+<style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: linear-gradient(135deg, #001a3a 0%, #002d5a 50%, #001a3a 100%); font-family: 'Segoe UI', sans-serif; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
         .container { width: 100%; max-width: 980px; background: #fff; border-radius: 18px; padding: 30px; box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35); }
@@ -454,16 +452,15 @@ $pct_bandera       = min(100, round(($total_vulnerado / 800000) * 100));
         .modal-warning .url-label { font-weight: 700; color: #c62828; display: block; margin-bottom: 6px; }
         .modal-warning .url-text { font-family: 'Courier New', monospace; font-size: 0.85rem; word-break: break-all; background: #ffcdd2; padding: 8px; border-radius: 8px; color: #b71c1c; }
         .modal-buttons { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
-        .footer { text-align: center; font-size: 0.8rem; color: #666; margin-top: 20px; }
+        .footer { text-align: center; font-size: 0.8rem; color: #000000; margin-top: 20px; }
         .url-bar { background: #263238; color: #FFD700; padding: 10px 14px; border-radius: 10px; font-family: 'Courier New', monospace; font-size: 0.9rem; margin-bottom: 16px; word-break: break-all; border: 2px solid #FFD700; }
         .url-bar .label { color: #90a4ae; text-transform: uppercase; font-size: 0.7rem; }
         .url-bar .highlight { color: #ff5252; font-weight: 700; }
         .hackathon-btn-container { text-align: center; margin: 20px 0; padding: 15px; background: linear-gradient(135deg, #f3e5f5, #e1bee7); border-radius: 16px; border: 2px solid #9c27b0; }
         .hackathon-btn-container .btn-hackathon { font-size: 1.1rem; padding: 16px 40px; }
         @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .form-row { flex-direction: column; align-items: stretch; } }
-    </style>
-</head>
-<body<?php echo $penalizado ? ' class="penalized"' : ''; ?>>
+</style>
+
     <div class="container">
         <div class="header">
             <div class="brand">🏦 Banco HACK <span>CSRF</span></div>
@@ -657,13 +654,15 @@ $pct_bandera       = min(100, round(($total_vulnerado / 800000) * 100));
         </div>
 
         <div class="footer">
-            
-         <div style="text-align:center; margin-top:10px;">
-            <img src="../img/cyt.png" alt="Logo Unidad de Ciencia y Tecnología" style="width:90px; height:auto; opacity:0.85;">
-        </div>
-<br>        
+
+<hr>        
         Sistema vulnerable a CSRF - Desafío de seguridad diseñado para hackathon.</div>
-    </div>
+  <br>
+<?php
+require_once __DIR__ . '/conf/footer.php';
+echo $footer;
+?>
+  </div>
 
     <?php if ($penalizado): ?>
         <!-- OVERLAY DE BLOQUEO TOTAL -->
@@ -863,6 +862,3 @@ console.log('%c🚫 NO PIERDAS TU TIEMPO EN F12, AQUÍ NO HAY NADA 🚫', 'color
 console.log('%c🤣 TE QUEDASTE CON LAS MANOS VACÍAS 🤣', 'color: #ffff00; font-size: 16px; font-weight: bold;');
 </script>
 
-  
-</body>
-</html>

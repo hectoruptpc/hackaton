@@ -285,7 +285,7 @@ function obtenerConfiguracionDesafios() {
             'tiempo' => 15 * 60
         ],
         'idor' => [
-            'flag' => 'FLAG{login_clickable_secret}',
+            'flag' => 'FLAG{LOGIN_CLICKABLE_SECRET}',
             'puntos' => 1,
             'tiempo' => 15 * 60
         ],

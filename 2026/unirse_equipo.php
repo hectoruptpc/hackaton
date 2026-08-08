@@ -43,16 +43,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['codigo_equipo'], $_PO
         mostrarAlerta('Error al registrar participante.');
     }
 }
+// ── Cabecera modular ─────────────────────────────────────────────────────────
+$page_title = 'Unirse a Equipo — Hackathon UPTPC 2026';
+require_once __DIR__ . '/conf/header.php';
+echo $header;
 ?>
-
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Unirse a Equipo - Hackathon</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
 <div class="container mt-5">
     <div class="text-center mb-3">
         <img src="img/img.jpg" alt="Logo Hackathon" style="max-width:800px;">
@@ -95,5 +90,7 @@ document.getElementById('cedula').addEventListener('input', function() {
     this.value = this.value.replace(/\D/g, '');
 });
 </script>
-</body>
-</html>
+<?php
+require_once __DIR__ . '/conf/footer.php';
+echo $footer;
+?>

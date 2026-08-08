@@ -160,21 +160,18 @@ $intentos_actual = $_SESSION['dynamic_challenge']['intentos'];
 $pista_actual = $_SESSION['dynamic_challenge']['pista_actual'];
 $flag_obtenida = $_SESSION['dynamic_challenge']['flag_obtenida'];
 $historial = $_SESSION['dynamic_challenge']['historial_codigos'];
+// ── Cabecera modular ─────────────────────────────────────────────────────────
+$page_title = '🔥 DESAFÍO FINAL 2026: Código Dinámico - UPTPC';
+require_once __DIR__ . '/conf/header.php';
+echo $header;
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔥 DESAFÍO FINAL 2026: Código Dinámico - UPTPC</title>
-    <link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v18">
-    <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
-    <script src="conf/ia_avatar.js?v=2026_v18" defer></script>
-    <!-- PISTA DE CIBERSEGURIDAD EN CÓDIGO FUENTE:
-         Abre la pestaña Red (Network) en DevTools (F12) e inspecciona los Response Headers HTTP para descubrir la URL del Gateway Secreto.
-    -->
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
-    <style>
+<!-- PISTA DE CIBERSEGURIDAD EN CÓDIGO FUENTE:
+     Abre la pestaña Red (Network) en DevTools (F12) e inspecciona los Response Headers HTTP para descubrir la URL del Gateway Secreto.
+-->
+<!-- Estilos específicos del Desafío Dinámico Final -->
+<!-- Google Fonts: Fira Code & Orbitron -->
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             background: #08090d linear-gradient(135deg, #050608 0%, #0d1117 50%, #161b22 100%); 
@@ -507,9 +504,8 @@ $historial = $_SESSION['dynamic_challenge']['historial_codigos'];
             .title { font-size: 1.6rem; }
             .code-encrypted-text { font-size: 1.5rem; letter-spacing: 3px; }
         }
-    </style>
-</head>
-<body>
+</style>
+
 
     <div class="container">
         <div class="header">
@@ -722,9 +718,8 @@ console.log('%c🤣 TE QUEDAN POCOS SEGUNDOS Y SEGUÍAS PERDIENDO EL TIEMPO EN F
 </script>
 
  <footer>
-         <div style="text-align:center; margin-top:10px;">
-            <img src="../img/cyt.png" alt="Logo Unidad de Ciencia y Tecnología" style="width:90px; height:auto; opacity:0.85;">
-        </div>
+<?php
+require_once __DIR__ . '/conf/footer.php';
+echo $footer;
+?>
         </footer>
-</body>
-</html>

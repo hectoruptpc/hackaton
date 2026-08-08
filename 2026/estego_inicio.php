@@ -33,16 +33,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mensaje'])) {
     $resultado_html = $resultado['mensaje'];
     $mostrar_resultado = true;
 }
+// ── Cabecera modular ─────────────────────────────────────────────────────────
+$page_title = '🔍 AGENTE: ESTEGANOGRAFÍA | Hackathon UPTPC 2026';
+require_once __DIR__ . '/conf/header.php';
+echo $header;
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>🔍 AGENTE: ESTEGANOGRAFÍA</title>
-    <link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v18">
-    <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
-    <script src="conf/ia_avatar.js?v=2026_v18" defer></script>
-    <style>
+<!-- Estilos específicos del desafío de Esteganografía -->
+<style>
         * {
             margin: 0;
             padding: 0;
@@ -62,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mensaje'])) {
         .dossier {
             max-width: 900px;
             width: 100%;
-            background: #0a0a0f;
+            background: #000000;
             border: 1px solid #8b0000;
             border-radius: 5px;
             box-shadow: 0 0 30px rgba(139, 0, 0, 0.3);
@@ -251,16 +248,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mensaje'])) {
             border-radius: 3px;
         }
 
+        .btn-descargar {
+            background: linear-gradient(95deg, #0a2a0a, #1a4a1a);
+            border: 1px solid #0f0;
+            color: #0f0;
+            padding: 12px 30px;
+            font-family: monospace;
+            font-weight: bold;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 15px;
+            box-sizing: border-box;
+        }
+
+        .btn-descargar:hover {
+            background: linear-gradient(95deg, #1a4a1a, #2a6a2a);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+            color: #fff;
+            letter-spacing: 2px;
+        }
+
         footer {
             text-align: center;
             padding: 15px;
             border-top: 1px solid #1a1a1a;
             font-size: 10px;
-            color: #333;
+            color: #f7f4f4;
         }
-    </style>
-</head>
-<body>
+</style>
 <div class="dossier">
     <div class="dossier-header">
         <h1>🔍 AGENTE: <span>NEGRO</span></h1>
@@ -275,6 +294,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mensaje'])) {
             <img src="hacker.png" alt="Evidencia fotográfica">
             <div class="marca-agua">EVIDENCIA #404-23</div>
         </div>
+
+        <a href="hacker.png" download="hacker.png" class="btn-descargar">
+            📥 DESCARGAR IMAGEN ORIGINAL (hacker.png)
+        </a>
 
         <div class="info-panel">
             <label>📟 INFORME DE INTELIGENCIA:</label>
@@ -299,9 +322,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mensaje'])) {
         <?php endif; ?>
     </div>
        <footer>
-         <div style="text-align:center; margin-top:10px;">
-            <img src="../img/cyt.png" alt="Logo Unidad de Ciencia y Tecnología" style="width:90px; height:auto; opacity:0.85;">
-        </div>
+<?php
+require_once __DIR__ . '/conf/footer.php';
+echo $footer;
+?>
 <br>
         Gobierno de los Hacker | Todos los derechos reservados | Este documento es clasificado
     </footer>
@@ -345,5 +369,3 @@ console.log('%c🚫  NO HAY NADA QUE VER AQUÍ, REVISA LA IMAGEN  🚫', 'color:
 console.log('%c🤣  TE CREÍSTE MUY LISTO, ¿VERDAD?  🤣', 'color: #ffff00; font-size: 18px; font-weight: bold; text-shadow: 2px 2px 4px #ff0000;');
 console.log('%c😎  No pierdas tu tiempo aquí, analiza la imagen  😎', 'color: #00ff99; font-size: 20px; font-weight: bold; background: #002211; padding: 10px; border: 2px solid #00ff99;');
 </script>
-</body>
-</html>
