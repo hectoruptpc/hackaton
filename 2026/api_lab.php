@@ -7,6 +7,7 @@ session_start();
     <meta charset="UTF-8">
     <title>API Lab</title>
     <link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v18">
+    <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
     <script src="conf/ia_avatar.js?v=2026_v18" defer></script>
     <style>
         * {
@@ -277,7 +278,7 @@ session_start();
             </div>
         </div>
 
-        <div class="card" style="border: 1px solid #00ffcc;">
+        <div class="card" style="border: 4px solid #00ffcc;">
             <div class="card-header" style="background:#102220;">
                 <span class="method post">POST</span>
                 <span class="endpoint">/login</span>
