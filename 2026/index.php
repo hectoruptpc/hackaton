@@ -912,7 +912,7 @@ echo $header;
                         <div class="card-body">
                             <h5 class="card-title text-primary">7. Astucia</h5>
                             <h6 class="card-subtitle mb-2 text-muted">Elemento Oculto (1 🚩)</h6>
-                            <p class="card-text">UPS! se me a ido una vulnerabilidad en el index.php tendras la astucia de encontrarlo?.</p>
+                            <p class="card-text">UPS! se me a ido una vulnerabilidad en el index.php Antes de iniciar esta aventura podras encontrarlo?.</p>
                             
                             <div class="mt-3">
                                 <input type="text" class="form-control" id="flag-idor" placeholder="Ingresa la bandera" 
