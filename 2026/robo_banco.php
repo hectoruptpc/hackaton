@@ -300,6 +300,7 @@ $pct_bandera       = min(100, round(($total_vulnerado / 800000) * 100));
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🏦 Banco HACK - Desafío CSRF</title>
     <link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v18">
+    <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
     <script src="conf/ia_avatar.js?v=2026_v18" defer></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }

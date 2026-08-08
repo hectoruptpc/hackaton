@@ -40,6 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mensaje'])) {
     <meta charset="UTF-8">
     <title>🔍 AGENTE: ESTEGANOGRAFÍA</title>
     <link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v18">
+    <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
     <script src="conf/ia_avatar.js?v=2026_v18" defer></script>
     <style>
         * {
