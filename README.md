@@ -95,3 +95,7 @@ Unidad de Ciencia y Tecnología
 **José Herrera**  
 Coordinador  
 Unidad de Ciencia y Tecnología
+
+**César Prieto**  
+Rector  
+UPTPC

@@ -47,6 +47,16 @@ Este informe presenta una visión técnica y actualizada del Hackathon 2026, ali
 - **Descripción:** El reto requiere inferir un patrón de desbloqueo a partir de restricciones, pistas y comportamiento del sistema.
 - **Habilidades requeridas:** razonamiento lógico, reconocimiento de patrones, combinatoria y análisis de secuencias.
 
+### 9. CSRF (Cross-Site Request Forgery)
+- **Categoría:** Seguridad Web / Client-Side Attacks
+- **Descripción:** Simula una plataforma bancaria vulnerable a falsificación de peticiones en sitios cruzados, requiriendo forzar transferencias no autorizadas hacia una cuenta controlada por el atacante.
+- **Habilidades requeridas:** Ingeniería de vectores de ataque, forjado de solicitudes HTTP, manipulación de cookies de sesión, evasión de controles Cross-Origin y explotación de vulnerabilidades CSRF.
+
+### 10. Código Dinámico
+- **Categoría:** Programación / Scripting & Automation
+- **Descripción:** Presenta un sistema de autenticación con tokens dinámicos dependientes del tiempo, exigiendo la automatización del proceso de captura y envío para la obtención de la bandera antes de su expiración.
+- **Habilidades requeridas:** Scripting automatizado (Python/JavaScript), manejo de peticiones de alta velocidad (HTTP/S), parsing dinámico, manipulación de tokens temporales y lógica de temporización.
+
 ---
 
 ## Habilidades transversales del 2026
@@ -58,6 +68,8 @@ Las competencias más relevantes para esta edición son:
 - Análisis forense básico y extracción de información oculta.
 - Razonamiento lógico y resolución de retos de naturaleza multi-etapa.
 - Inspección de sistemas, identificación de pistas y experimentación técnica.
+- Falsificación de peticiones en entorno web y gestión de cookies/sesiones.
+- Automatización mediante scripting para interacciones con tokens temporales y de alta velocidad.
 
 ---
 
@@ -66,8 +78,11 @@ Las competencias más relevantes para esta edición son:
 2. Fortalecer las bases de ocultación de información y análisis de medios digitales.
 3. Reforzar conceptos fundamentales de memoria, explotación y control de flujo.
 4. Desarrollar habilidades de deducción para resolver escenarios encadenados y de investigación.
+5. Estudiar vectores de ataque del lado del cliente, específicamente la explotación de vulnerabilidades CSRF y mecanismos de protección (tokens anti-CSRF, SameSite).
+6. Desarrollar destreza en scripting con librerías de automatización HTTP (ej. `requests` en Python) para el manejo de payloads y tokens dinámicos dependientes del tiempo.
 
 ---
 
 ## Nota final
 Este informe refleja únicamente los retos que se encuentran creados y disponibles en la versión 2026 del proyecto, sin incluir desafíos pendientes ni propuestas no implementadas.
+
