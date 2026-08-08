@@ -209,10 +209,10 @@ const serverFS = {
   '/var/run': { type:'dir', owner:'root', children:{} },
   '/var/www': { type:'dir', owner:'root', children:{ html:'dir' } },
   '/var/www/html': { type:'dir', owner:'www-data', children:{
-    'index.php':     { type:'file', size:'2.1KB', owner:'www-data', content:'<?php\n// Portal web del Hackathon UPTPC 2026\necho "Bienvenido al servidor del Hackathon!";' },
+    'index.php':     { type:'file', size:'2.1KB', owner:'www-data', content:'\u003c\u003fphp\n// Portal web del Hackathon UPTPC 2026\necho "Bienvenido al servidor del Hackathon!";' },
     'readme.txt':    { type:'file', size:'150B', owner:'www-data', content:'BIENVENIDO AL SERVIDOR UPTPC — server-hackaton.uptpc.edu.ve\n\n[ CODIGO SECTOR 1 ]: IA_' },
     'public_assets': { type:'dir', owner:'www-data' }
-  }},
+  }}, 
   '/var/www/html/public_assets': { type:'dir', owner:'www-data', children:{
     'logo.png':   { type:'file', size:'28.4KB', owner:'www-data', content:'[Datos binarios PNG - imagen no legible en terminal]' },
     'styles.css': { type:'file', size:'6.2KB',  owner:'www-data', content:'/* Hoja de estilos del portal UPTPC */' }
