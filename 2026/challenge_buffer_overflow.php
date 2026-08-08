@@ -24,6 +24,7 @@ require_once 'conf/functions.php';
 
 $mensaje = "";
 $show_input = true;
+$bandera_solucion = obtenerFlagDesafio('buffer_overflow');
 
 // Procesar el input del usuario
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['input_data'])) {
@@ -154,7 +155,7 @@ Solo personal autorizado puede ingresar.
                             <h6 class="mb-2">🏁 Solución del ejercicio</h6>
                             <p class="mb-1"><strong>Bandera:</strong></p>
                             <div class="p-2 rounded" style="background:#000; border:1px solid #0f0; font-family:monospace; word-break:break-all;">
-                                FLAG{BUFFER_OVERFLOW_EXPLOIT}
+                                <?php echo htmlspecialchars($bandera_solucion); ?>
                             </div>
                         </div>
                     <?php endif; ?>

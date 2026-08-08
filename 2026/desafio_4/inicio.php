@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['flag_input'])) {
         }
         $mensaje_verificacion = '<div class="alert alert-success mt-3 text-center">&#127881; &iexcl;C&Oacute;DIGO DE SECTORES CORRECTO! Has obtenido la bandera: <strong style="font-size:1.15rem; color:#4ade80;">FLAG{SERVER_TERMINAL_MASTER_2026}</strong> y completado el Desaf&iacute;o #4.</div>';
     } else {
-        $mensaje_verificacion = '<div class="alert alert-danger mt-3 text-center">&#10060; C&oacute;digo o bandera incorrecta. Explora el servidor para hallar los 3 sectores del c&oacute;digo (IA_BOSS_FINAL).</div>';
+        $mensaje_verificacion = '<div class="alert alert-danger mt-3 text-center">&#10060; C&oacute;digo o bandera incorrecta. Explora el servidor para hallar los 3 sectores del c&oacute;digo.</div>';
     }
 }
 ?>
@@ -50,6 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['flag_input'])) {
 <title>Desafio 4: Terminal Kali Linux — UPTPC Hackathon 2026</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
 <link rel="stylesheet" href="../conf/ia_avatar.css">
 <script src="../conf/ia_avatar.js" defer></script>
 <style>
@@ -267,9 +268,6 @@ function scroll(){ terminalBody.scrollTop=terminalBody.scrollHeight; }
 // ── Prompt ───────────────────────────────────────────────────
 function updatePrompt(){
   if(estado.fase==='local'){
-    // Kali prompt de dos lineas: 
-    // ┌──(hacker㉿kali)-[~]
-    // └─$
     promptLabel.innerHTML =
       '<span class="c-kali">\u250c\u2500\u2500(</span>'+
       '<span class="c-kali" style="font-weight:700;">'+esc(estado.usuario)+'</span>'+
@@ -408,12 +406,11 @@ function cmdLocal(raw){
       addLine('<span class="c-kali">\u250c\u2500 COMANDOS DISPONIBLES EN KALI LINUX \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510</span>');
       addText('  screenfetch / neofetch       — Informacion del sistema Kali','c-green');
       addText('  ssh usuario@host             — Conectar al servidor via SSH','c-green');
-      addText('  whoami                       — Usuario actual','c-green');
-      addText('  pwd                          — Directorio actual','c-green');
+      addText('  find / locate / grep         — Busqueda de archivos en el sistema','c-green');
+      addText('  whoami / pwd / id            — Usuario y directorio actual','c-green');
       addText('  ls / ls -la                  — Listar archivos','c-green');
       addText('  cd <ruta>                    — Cambiar de directorio','c-green');
-      addText('  uname -a                     — Info del kernel','c-green');
-      addText('  ifconfig / ip a              — Ver interfaces de red','c-green');
+      addText('  uname -a / ifconfig / ip a   — Kernel y red','c-green');
       addText('  clear                        — Limpiar pantalla','c-green');
       addLine('<span class="c-kali">\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518</span>');
       addLine('');
@@ -525,14 +522,18 @@ function cmdSSH(raw){
   switch(cmd){
     case 'help':
       addLine('<span class="c-green">\u250c\u2500 COMANDOS EN EL SERVIDOR \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510</span>');
-      addText('  ls [-la] [ruta]       — Listar archivos y directorios','c-green');
-      addText('  cd <directorio>       — Cambiar directorio (cd .., cd /etc, cd ~)','c-green');
+      addText('  ls [-la] [-R] [ruta]  — Listar archivos (soporta -R recursivo)','c-green');
+      addText('  find [ruta] [opciones]— Buscar archivos (find / -name "*.txt" 2>/dev/null)','c-green');
+      addText('  locate <patron>       — Busqueda de archivos en el sistema','c-green');
+      addText('  grep [-i] [-r] <pat>  — Filtrar o buscar texto en archivos','c-green');
       addText('  cat <archivo>         — Leer contenido de un archivo','c-green');
+      addText('  cd <directorio>       — Cambiar directorio (cd .., cd /etc, cd ~)','c-green');
       addText('  pwd                   — Ruta actual','c-green');
       addText('  whoami / id           — Usuario activo','c-green');
       addText('  uname -a              — Informacion del sistema','c-green');
       addText('  ps aux                — Ver procesos del sistema','c-green');
       addText('  sudo su               — Elevar privilegios a root','c-yellow');
+      addText('  sudo find ...         — Buscar archivos con privilegios root','c-yellow');
       addText('  sudo cat <archivo>    — Leer archivo con privilegios root','c-yellow');
       addText('  base64 -d <codigo>    — Decodificar fragmentos en Base64','c-green');
       addText('  screenfetch           — Info del servidor','c-green');
@@ -754,19 +755,566 @@ function cmdSSH(raw){
   }
 }
 
-// ── Listener del input ────────────────────────────────────────
+// ── SISTEMA DE BÚSQUEDA Y RECURSOS LINUX (find, locate, grep, ls -R) ──────────
+
+function resolveLocal(p){
+  if(!p||p==='.') return estado.dirLocal==='~'?'/home/hacker':estado.dirLocal;
+  if(p==='~') return '/home/hacker';
+  if(p.startsWith('/')) return p;
+  return '/home/hacker/'+p.replace(/^\.\//,'');
+}
+
+const localFS = {
+  '/': { type:'dir', children:{ home:'dir', etc:'dir', usr:'dir', var:'dir' } },
+  '/home': { type:'dir', children:{ hacker:'dir' } },
+  '/home/hacker': { type:'dir', children:{ Escritorio:'dir', '.bashrc':'file' } },
+  '/home/hacker/Escritorio': { type:'dir', children:{ 'notas_kali.txt':'file' } }
+};
+
+const localFileContents = {
+  '/home/hacker/Escritorio/notas_kali.txt': 'NOTAS DE KALI LINUX — HACKATHON UPTPC 2026\n\nPara buscar archivos en el servidor del Hackathon, primero conéctate vía SSH:\n  ssh invitado@server-hackaton.uptpc.edu.ve'
+};
+
+function collectFSItems(isSSH, startPath, isRoot, suppressErrors) {
+  const fs = isSSH ? serverFS : localFS;
+  const rootPath = isSSH ? resolveSSH(startPath) : resolveLocal(startPath);
+  const items = [];
+  const errors = [];
+
+  function walk(currentPath) {
+    const dirObj = fs[currentPath];
+    if(!dirObj) return;
+
+    if(dirObj.restricted && !isRoot && !estado.esRoot) {
+      if(!suppressErrors) {
+        errors.push(`find: '${currentPath}': Permiso denegado`);
+      }
+      return;
+    }
+
+    const children = dirObj.children || {};
+    for(const name in children) {
+      const fullPath = (currentPath === '/' ? '' : currentPath) + '/' + name;
+      const childVal = children[name];
+
+      if(fs[fullPath]) {
+        const childDir = fs[fullPath];
+        const isRestr = childDir.restricted && !isRoot && !estado.esRoot;
+        items.push({
+          path: fullPath,
+          name: name,
+          type: 'dir',
+          owner: childDir.owner || 'root',
+          restricted: !!childDir.restricted,
+          content: '',
+          size: '4096B'
+        });
+        if(isRestr) {
+          if(!suppressErrors) {
+            errors.push(`find: '${fullPath}': Permiso denegado`);
+          }
+        } else {
+          walk(fullPath);
+        }
+      } else {
+        const fileObj = typeof childVal === 'string' ? { type: childVal } : childVal;
+        const isRestr = fileObj.restricted && !isRoot && !estado.esRoot;
+        if(isRestr) {
+          if(!suppressErrors) {
+            errors.push(`find: '${fullPath}': Permiso denegado`);
+          }
+        } else {
+          let cont = fileObj.content || (localFileContents[fullPath] || '');
+          items.push({
+            path: fullPath,
+            name: name,
+            type: fileObj.type || 'file',
+            owner: fileObj.owner || 'root',
+            restricted: !!fileObj.restricted,
+            content: cont,
+            size: fileObj.size || '100B'
+          });
+        }
+      }
+    }
+  }
+
+  const startObj = fs[rootPath];
+  if(!startObj) {
+    if(!suppressErrors) {
+      errors.push(`find: '${startPath}': No existe el archivo o directorio`);
+    }
+  } else if(startObj.type === 'file') {
+    const name = rootPath.substring(rootPath.lastIndexOf('/') + 1);
+    items.push({
+      path: rootPath,
+      name: name,
+      type: 'file',
+      owner: startObj.owner || 'root',
+      restricted: !!startObj.restricted,
+      content: startObj.content || '',
+      size: startObj.size || '100B'
+    });
+  } else {
+    walk(rootPath);
+  }
+
+  return { items, errors };
+}
+
+function globToRegex(pattern, caseInsensitive = false) {
+  let p = pattern
+    .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+    .replace(/\*/g, '.*')
+    .replace(/\?/g, '.');
+  return new RegExp('^' + p + '$', caseInsensitive ? 'i' : '');
+}
+
+function execFind(rawArgs, isSSH, isRoot, suppressErrors) {
+  let execCmd = null;
+  let argsString = rawArgs;
+
+  const execMatch = argsString.match(/-exec\s+(.+?)\s+(\\|;|\+)/i);
+  if(execMatch) {
+    execCmd = execMatch[1].trim();
+    argsString = argsString.replace(/-exec\s+.+?(\\|;|\+)/gi, '');
+  }
+
+  const tokens = argsString.trim().split(/\s+/).filter(Boolean);
+
+  const paths = [];
+  let namePattern = null;
+  let isCaseInsensitive = false;
+  let typeFilter = null;
+
+  for(let i = 0; i < tokens.length; i++) {
+    const tok = tokens[i];
+    if(tok === '-name' && i + 1 < tokens.length) {
+      namePattern = tokens[++i].replace(/^["']|["']$/g, '');
+    } else if(tok === '-iname' && i + 1 < tokens.length) {
+      namePattern = tokens[++i].replace(/^["']|["']$/g, '');
+      isCaseInsensitive = true;
+    } else if(tok === '-type' && i + 1 < tokens.length) {
+      typeFilter = tokens[++i].toLowerCase();
+    } else if(!tok.startsWith('-')) {
+      paths.push(tok);
+    }
+  }
+
+  if(paths.length === 0) {
+    paths.push(isSSH ? estado.dirSSH : estado.dirLocal);
+  }
+
+  const outputLines = [];
+
+  paths.forEach(p => {
+    const { items, errors } = collectFSItems(isSSH, p, isRoot, suppressErrors);
+    if(errors.length > 0 && !suppressErrors) {
+      outputLines.push(...errors);
+    }
+
+    let regex = namePattern ? globToRegex(namePattern, isCaseInsensitive) : null;
+
+    items.forEach(it => {
+      if(regex && !regex.test(it.name)) return;
+      if(typeFilter === 'f' && it.type !== 'file') return;
+      if(typeFilter === 'd' && it.type !== 'dir') return;
+
+      if(execCmd) {
+        const finalCmd = execCmd.replace(/\{\}/g, it.path);
+        if(finalCmd.startsWith('cat')) {
+          if(it.content) {
+            outputLines.push(it.content);
+          } else {
+            outputLines.push(`cat: ${it.path}: Archivo vacio o sin acceso`);
+          }
+        } else if(finalCmd.startsWith('ls')) {
+          const perms = it.type === 'dir' ? 'drwxr-xr-x' : '-rw-r--r--';
+          outputLines.push(`${perms} 1 ${it.owner} ${it.owner} ${it.size} ago 6 08:00 ${it.path}`);
+        } else {
+          outputLines.push(`${it.path}`);
+        }
+      } else {
+        outputLines.push(it.path);
+      }
+    });
+  });
+
+  if(!isSSH && outputLines.length > 0) {
+    outputLines.push('<span class="c-yellow">Pista: Estás en Kali local. Para explorar el servidor del Hackathon:</span>');
+    outputLines.push('<span class="c-green">  ssh invitado@server-hackaton.uptpc.edu.ve</span>');
+  }
+
+  return outputLines;
+}
+
+function execLocate(rawArgs, isSSH, isRoot, suppressErrors) {
+  const query = rawArgs.trim().replace(/^["']|["']$/g, '');
+  if(!query) return ['locate: patron de busqueda requerido'];
+
+  const { items } = collectFSItems(isSSH, '/', isRoot, true);
+  const regex = globToRegex(query.includes('*') ? query : `*${query}*`, true);
+
+  const matched = items.filter(it => regex.test(it.path) || regex.test(it.name)).map(it => it.path);
+
+  if(!isSSH && matched.length > 0) {
+    matched.push('<span class="c-yellow">Pista: Estás en Kali local. Para explorar el servidor objetivo:</span>');
+    matched.push('<span class="c-green">  ssh invitado@server-hackaton.uptpc.edu.ve</span>');
+  }
+
+  return matched.length > 0 ? matched : ['locate: no se encontraron coincidencias'];
+}
+
+function execGrep(rawArgs, inputLines, isSSH, isRoot, suppressErrors) {
+  const tokens = rawArgs.trim().split(/\s+/).filter(Boolean);
+
+  let isCaseInsensitive = false;
+  let isRecursive = false;
+  let invertMatch = false;
+  let pattern = null;
+  const targetFiles = [];
+
+  for(let i = 0; i < tokens.length; i++) {
+    const tok = tokens[i];
+    if(tok.startsWith('-')) {
+      if(tok.includes('i')) isCaseInsensitive = true;
+      if(tok.includes('r') || tok.includes('R')) isRecursive = true;
+      if(tok.includes('v')) invertMatch = true;
+      if(tok === '-e' && i + 1 < tokens.length) {
+        pattern = tokens[++i];
+      }
+    } else if(!pattern) {
+      pattern = tok.replace(/^["']|["']$/g, '');
+    } else {
+      targetFiles.push(tok);
+    }
+  }
+
+  if(!pattern) return ['grep: patron de busqueda requerido'];
+
+  let regex;
+  try {
+    regex = new RegExp(pattern, isCaseInsensitive ? 'i' : '');
+  } catch(e) {
+    regex = new RegExp(pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), isCaseInsensitive ? 'i' : '');
+  }
+
+  const outputLines = [];
+
+  if(inputLines && Array.isArray(inputLines)) {
+    inputLines.forEach(line => {
+      const match = regex.test(line);
+      if((match && !invertMatch) || (!match && invertMatch)) {
+        outputLines.push(line);
+      }
+    });
+  } else {
+    const startPath = targetFiles[0] || (isSSH ? estado.dirSSH : estado.dirLocal);
+    const { items } = collectFSItems(isSSH, startPath, isRoot, suppressErrors);
+
+    items.forEach(it => {
+      if(it.type === 'file' && it.content) {
+        const lines = it.content.split('\n');
+        lines.forEach(l => {
+          const match = regex.test(l);
+          if((match && !invertMatch) || (!match && invertMatch)) {
+            outputLines.push(`${it.path}:${l}`);
+          }
+        });
+      }
+    });
+  }
+
+  return outputLines;
+}
+
+function execLsRecursive(rawArgs, isSSH, isRoot, suppressErrors) {
+  const startPath = rawArgs.replace(/-R|--recursive/gi, '').trim() || '/';
+  const { items, errors } = collectFSItems(isSSH, startPath, isRoot, suppressErrors);
+
+  const outputLines = [];
+  if(errors.length > 0 && !suppressErrors) {
+    outputLines.push(...errors);
+  }
+
+  items.forEach(it => {
+    outputLines.push(it.path);
+  });
+
+  return outputLines;
+}
+
+function executePipeline(rawCmd, isSSH) {
+  let suppressErrors = false;
+  let cleanCmd = rawCmd;
+
+  if(/2>\s*\/dev\/null/i.test(cleanCmd)) {
+    suppressErrors = true;
+    cleanCmd = cleanCmd.replace(/2>\s*\/dev\/null/gi, '');
+  }
+  if(/>\s*\/dev\/null/i.test(cleanCmd)) {
+    cleanCmd = cleanCmd.replace(/>\s*\/dev\/null/gi, '');
+  }
+  if(/2>&1/i.test(cleanCmd)) {
+    cleanCmd = cleanCmd.replace(/2>&1/gi, '');
+  }
+  cleanCmd = cleanCmd.trim();
+
+  let isRoot = estado.esRoot;
+  if(cleanCmd.toLowerCase().startsWith('sudo ')) {
+    isRoot = true;
+    cleanCmd = cleanCmd.substring(5).trim();
+  }
+
+  const stages = cleanCmd.split('|').map(s => s.trim()).filter(Boolean);
+  if(stages.length === 0) return;
+
+  let currentLines = null;
+  let handledByEngine = false;
+
+  for(let i = 0; i < stages.length; i++) {
+    const stageStr = stages[i];
+    const tokens = stageStr.split(/\s+/);
+    const mainCmd = tokens[0].toLowerCase();
+    const argsStr = stageStr.substring(tokens[0].length).trim();
+
+    if(mainCmd === 'find') {
+      handledByEngine = true;
+      currentLines = execFind(argsStr, isSSH, isRoot, suppressErrors);
+    } else if(mainCmd === 'locate') {
+      handledByEngine = true;
+      currentLines = execLocate(argsStr, isSSH, isRoot, suppressErrors);
+    } else if(mainCmd === 'grep') {
+      handledByEngine = true;
+      currentLines = execGrep(argsStr, currentLines, isSSH, isRoot, suppressErrors);
+    } else if(mainCmd === 'ls' && (stageStr.includes('-R') || stageStr.includes('--recursive'))) {
+      handledByEngine = true;
+      currentLines = execLsRecursive(argsStr, isSSH, isRoot, suppressErrors);
+    } else if(mainCmd === 'sort') {
+      handledByEngine = true;
+      if(currentLines && Array.isArray(currentLines)) {
+        const reverse = argsStr.includes('-r');
+        currentLines.sort((a, b) => reverse ? b.localeCompare(a) : a.localeCompare(b));
+      }
+    } else if(mainCmd === 'wc') {
+      handledByEngine = true;
+      if(currentLines && Array.isArray(currentLines)) {
+        currentLines = [String(currentLines.length)];
+      }
+    } else if(mainCmd === 'head') {
+      handledByEngine = true;
+      if(currentLines && Array.isArray(currentLines)) {
+        const countMatch = argsStr.match(/-n\s*(\d+)/);
+        const count = countMatch ? parseInt(countMatch[1]) : 10;
+        currentLines = currentLines.slice(0, count);
+      }
+    } else if(mainCmd === 'tail') {
+      handledByEngine = true;
+      if(currentLines && Array.isArray(currentLines)) {
+        const countMatch = argsStr.match(/-n\s*(\d+)/);
+        const count = countMatch ? parseInt(countMatch[1]) : 10;
+        currentLines = currentLines.slice(-count);
+      }
+    } else if(mainCmd === 'whereis' || mainCmd === 'which') {
+      handledByEngine = true;
+      const target = argsStr.trim() || 'find';
+      currentLines = [`/usr/bin/${target}`];
+    } else {
+      if(i === 0) {
+        if(isSSH) {
+          cmdSSH(isRoot && !stageStr.startsWith('sudo') ? 'sudo ' + stageStr : stageStr);
+        } else {
+          cmdLocal(stageStr);
+        }
+        return;
+      }
+    }
+  }
+
+  if(handledByEngine && currentLines && Array.isArray(currentLines)) {
+    currentLines.forEach(line => {
+      if(typeof line === 'string') {
+        if(line.includes('FLAG{')) {
+          addLine('<div class="flag-box">' + esc(line) + '</div>');
+        } else if(line.startsWith('find:') || line.startsWith('grep:') || line.startsWith('ls:')) {
+          addText(line, 'c-red');
+        } else {
+          addText(line, 'c-white');
+        }
+      }
+    });
+  }
+}
+
+// ── FUNCIÓN AUXILIAR: Encontrar prefijo común ─────────────────
+function findCommonPrefix(strings) {
+  if(!strings || strings.length === 0) return '';
+  if(strings.length === 1) return strings[0];
+  
+  let prefix = strings[0];
+  for(let i = 1; i < strings.length; i++){
+    while(strings[i].indexOf(prefix) !== 0){
+      prefix = prefix.slice(0, -1);
+      if(prefix === '') return '';
+    }
+  }
+  return prefix;
+}
+
+// ── Listener del input con TAB mejorado ────────────────────────
 cliInput.addEventListener('keydown', function(e){
+  // ── AUTOCOMPLETADO CON TAB MEJORADO ──────────────────────────
+  if(e.key === 'Tab'){
+    e.preventDefault();
+    
+    const inputValue = this.value;
+    const cursorPos = this.selectionStart;
+    const commandLine = inputValue.slice(0, cursorPos);
+    const args = commandLine.split(/\s+/);
+    const lastArg = args[args.length - 1] || '';
+    const cmd = args[0] ? args[0].toLowerCase() : '';
+    
+    // Si estamos en modo SSH
+    if(estado.fase === 'ssh'){
+      if(cmd === 'cd'){
+        const currentDir = estado.dirSSH;
+        const dirObj = serverFS[currentDir];
+        const children = dirObj ? dirObj.children || {} : {};
+        
+        const directories = Object.keys(children).filter(name => {
+          const item = children[name];
+          const isDir = typeof item === 'string' ? item === 'dir' : item.type === 'dir';
+          const isRestricted = typeof item === 'string' ? false : !!item.restricted;
+          if(isRestricted && !estado.esRoot) return false;
+          return isDir && name !== '.' && name !== '..';
+        });
+        
+        const prefix = lastArg || '';
+        const matches = directories.filter(dir => dir.startsWith(prefix));
+        
+        if(matches.length === 1){
+          const match = matches[0];
+          const parts = inputValue.split(/\s+/);
+          parts[parts.length - 1] = match;
+          this.value = parts.join(' ') + (match.endsWith('/') ? '' : '/');
+          this.selectionStart = this.selectionEnd = this.value.length;
+        } else if(matches.length > 1){
+          const commonPrefix = findCommonPrefix(matches);
+          if(commonPrefix.length > prefix.length){
+            const parts = inputValue.split(/\s+/);
+            parts[parts.length - 1] = commonPrefix;
+            this.value = parts.join(' ');
+            this.selectionStart = this.selectionEnd = this.value.length;
+          } else {
+            addLine('');
+            const columns = Math.ceil(matches.length / 4);
+            for(let i = 0; i < matches.length; i += columns){
+              const row = matches.slice(i, i + columns).map(d => 
+                d.endsWith('/') ? d : d + '/'
+              ).join('  ');
+              addLine('<span class="c-gray">' + row + '</span>');
+            }
+            addLine(promptLabel.innerHTML + '<span class="c-white">' + esc(inputValue) + '</span>');
+            scroll();
+          }
+        }
+        return;
+      }
+      
+      if(['ls', 'cat', 'less', 'more', 'head', 'tail', 'find', 'locate', 'grep'].includes(cmd)){
+        const currentDir = estado.dirSSH;
+        const dirObj = serverFS[currentDir];
+        const children = dirObj ? dirObj.children || {} : {};
+        
+        const items = Object.keys(children).filter(name => {
+          const item = children[name];
+          const isRestricted = typeof item === 'string' ? false : !!item.restricted;
+          if(isRestricted && !estado.esRoot) return false;
+          return name !== '.' && name !== '..';
+        });
+        
+        const prefix = lastArg || '';
+        const matches = items.filter(item => item.startsWith(prefix));
+        
+        if(matches.length === 1){
+          const match = matches[0];
+          const item = children[match];
+          const isDir = typeof item === 'string' ? item === 'dir' : item.type === 'dir';
+          const parts = inputValue.split(/\s+/);
+          parts[parts.length - 1] = match;
+          this.value = parts.join(' ') + (isDir ? '/' : '');
+          this.selectionStart = this.selectionEnd = this.value.length;
+        } else if(matches.length > 1){
+          const commonPrefix = findCommonPrefix(matches);
+          if(commonPrefix.length > prefix.length){
+            const parts = inputValue.split(/\s+/);
+            parts[parts.length - 1] = commonPrefix;
+            this.value = parts.join(' ');
+            this.selectionStart = this.selectionEnd = this.value.length;
+          } else {
+            addLine('');
+            const columns = Math.ceil(matches.length / 4);
+            for(let i = 0; i < matches.length; i += columns){
+              const row = matches.slice(i, i + columns).map(item => {
+                const it = children[item];
+                const isDir = typeof it === 'string' ? it === 'dir' : it.type === 'dir';
+                return (isDir ? '<span class="c-blue">' + item + '/</span>' : 
+                              '<span class="c-white">' + item + '</span>');
+              }).join('  ');
+              addLine(row);
+            }
+            addLine(promptLabel.innerHTML + '<span class="c-white">' + esc(inputValue) + '</span>');
+            scroll();
+          }
+        }
+        return;
+      }
+    }
+    
+    if(estado.fase === 'local'){
+      if(cmd === 'ssh' && !inputValue.includes('@')){
+        this.value = 'ssh invitado@' + SERVIDOR_SSH;
+        this.selectionStart = this.selectionEnd = this.value.length;
+        return;
+      }
+      
+      const localCommands = [
+        'help', 'screenfetch', 'neofetch', 'whoami', 'pwd', 'id', 
+        'uname', 'ifconfig', 'ip', 'ls', 'cd', 'clear', 'cls', 'ssh',
+        'find', 'locate', 'grep'
+      ];
+      
+      const prefix = cmd || '';
+      const matches = localCommands.filter(c => c.startsWith(prefix));
+      
+      if(matches.length === 1 && prefix.length > 0){
+        const match = matches[0];
+        const newValue = inputValue.replace(new RegExp('^' + prefix), match);
+        this.value = newValue;
+        this.selectionStart = this.selectionEnd = this.value.length;
+      } else if(matches.length > 1 && prefix.length > 0){
+        const commonPrefix = findCommonPrefix(matches);
+        if(commonPrefix.length > prefix.length){
+          const newValue = inputValue.replace(new RegExp('^' + prefix), commonPrefix);
+          this.value = newValue;
+          this.selectionStart = this.selectionEnd = this.value.length;
+        }
+      }
+    }
+  }
+  
+  // ── ENTER ──────────────────────────────────────────────────────
   if(e.key==='Enter'){
     const raw=this.value.trim();
     this.value='';
     if(raw){ estado.historial.push(raw); estado.histIdx=estado.historial.length; }
-    // Mostrar prompt + comando
     addLine(promptLabel.innerHTML+'<span class="c-white">'+esc(raw)+'</span>');
     if(!raw){ scroll(); return; }
-    if(estado.fase==='local') cmdLocal(raw);
-    else cmdSSH(raw);
+    executePipeline(raw, estado.fase==='ssh');
     scroll();
   }
+  
+  // ── FLECHAS ARRIBA/ABAJO (historial) ──────────────────────
   if(e.key==='ArrowUp'){
     e.preventDefault();
     if(estado.histIdx>0){ estado.histIdx--; this.value=estado.historial[estado.histIdx]||''; }
@@ -775,12 +1323,6 @@ cliInput.addEventListener('keydown', function(e){
     e.preventDefault();
     if(estado.histIdx<estado.historial.length-1){ estado.histIdx++; this.value=estado.historial[estado.histIdx]||''; }
     else{ estado.histIdx=estado.historial.length; this.value=''; }
-  }
-  if(e.key==='Tab'){
-    e.preventDefault();
-    const v=this.value;
-    if((v.startsWith('ssh ')||v==='ssh')&&!v.includes('@')){ this.value='ssh invitado@'+SERVIDOR_SSH; }
-    else if(v.startsWith('cd ')&&estado.fase==='ssh'&&v.length===3){ this.value='cd /'; }
   }
 });
 

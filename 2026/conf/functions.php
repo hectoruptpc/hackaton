@@ -308,6 +308,16 @@ function obtenerConfiguracionDesafios() {
 }
 
 /**
+ * Obtener la flag de un desafío específico
+ * @param string $desafio Nombre del desafío
+ * @return string La flag o un mensaje de error
+ */
+function obtenerFlagDesafio($desafio) {
+    $config = obtenerConfiguracionDesafios();
+    return $config[$desafio]['flag'] ?? 'FLAG_NO_ENCONTRADA';
+}
+
+/**
  * Obtener configuración del hackathon
  */
 function obtenerConfiguracionHackathon() {
