@@ -80,14 +80,14 @@ if ($es_admin && isset($_POST['actualizar_duracion'])) {
     try {
         $nueva_duracion = intval($_POST['duracion_minutos']);
         
-        if (sePuedeModificarDuracion()) {
+        if ($nueva_duracion > 0 && $nueva_duracion <= 480) {
             if (actualizarDuracionHackathon($nueva_duracion)) {
-                $mensaje_exito = "Duración actualizada a " . $nueva_duracion . " minutos (" . formatearDuracionLegible($nueva_duracion) . ")";
+                $mensaje_exito = "Tiempo del Hackathon actualizado exitosamente a " . $nueva_duracion . " minutos (" . formatearDuracionLegible($nueva_duracion) . ").";
             } else {
-                $mensaje_error = "Error al actualizar la duración";
+                $mensaje_error = "Error al actualizar la duración del Hackathon.";
             }
         } else {
-            $mensaje_error = "No se puede modificar la duración mientras el hackathon esté en curso";
+            $mensaje_error = "La duración debe estar entre 1 y 480 minutos.";
         }
     } catch (Exception $e) {
         $mensaje_error = "Error: " . $e->getMessage();
@@ -524,6 +524,11 @@ echo $header;
                             </button>
                         <?php endif; ?>
                         
+                        <!-- Botón Cambiar Tiempo del Hackathon -->
+                        <button type="button" class="btn btn-info text-white btn-lg w-100 py-3 fw-bold" data-bs-toggle="modal" data-bs-target="#cambiarTiempoModal">
+                            ⏱️ CAMBIAR TIEMPO DEL HACKATHON
+                        </button>
+
                         <!-- Botón Reiniciar Hackathon -->
                         <button type="button" class="btn btn-warning btn-lg w-100 py-3" data-bs-toggle="modal" data-bs-target="#reiniciarModal">
                             🔄 REINICIAR HACKATHON (TESTING)
@@ -546,16 +551,7 @@ echo $header;
         </div>
     </div>
 
-    <!-- Botón para mostrar/ocultar configuración de duración -->
-    <?php if (sePuedeModificarDuracion()): ?>
-    <div class="row mt-3">
-        <div class="col-md-12 text-center">
-            <button type="button" class="btn btn-outline-info btn-sm" id="btnToggleConfiguracion">
-                ⚙️ Mostrar Configuración de Duración
-            </button>
-        </div>
-    </div>
-    <?php endif; ?>
+    
 
     <!-- Panel de Configuración de Duración (Oculto por defecto) -->
     <div class="row mt-3" id="panelConfiguracion" style="display: none;">
@@ -755,6 +751,46 @@ echo $header;
     </div>
     
     
+</div>
+
+<!-- Modal Cambiar Tiempo del Hackathon -->
+<div class="modal fade" id="cambiarTiempoModal" tabindex="-1" aria-labelledby="cambiarTiempoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-dark">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="cambiarTiempoModalLabel">⏱️ Cambiar Tiempo del Hackathon</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post">
+                <div class="modal-body text-start">
+                    <p class="mb-3">Selecciona o ingresa la nueva duración total del Hackathon en minutos:</p>
+                    
+                    <div class="mb-4">
+                        <label for="duracion_minutos_modal" class="form-label fw-bold">Duración en Minutos:</label>
+                        <div class="input-group input-group-lg">
+                            <input type="number" class="form-control" id="duracion_minutos_modal" name="duracion_minutos" value="<?php echo $duracion_actual; ?>" min="1" max="480" required>
+                            <span class="input-group-text">minutos</span>
+                        </div>
+                        <div class="form-text mt-2">Duración actual: <strong><?php echo $duracion_actual; ?> minutos</strong> (<?php echo formatearDuracionLegible($duracion_actual); ?>)</div>
+                    </div>
+
+                    <p class="mb-2 fw-bold text-secondary">Atajos rápidos:</p>
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="document.getElementById('duracion_minutos_modal').value=30">30 min</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="document.getElementById('duracion_minutos_modal').value=45">45 min</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="document.getElementById('duracion_minutos_modal').value=60">60 min (1h)</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="document.getElementById('duracion_minutos_modal').value=90">90 min (1.5h)</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="document.getElementById('duracion_minutos_modal').value=120">120 min (2h)</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="document.getElementById('duracion_minutos_modal').value=180">180 min (3h)</button>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" name="actualizar_duracion" class="btn btn-info text-white fw-bold">💾 Guardar Nuevo Tiempo</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <!-- Modal para Iniciar Hackathon -->

@@ -187,7 +187,7 @@ if (isset($_SESSION['cedula'])) {
     echo $header;
 ?>
     <div class="container mt-4">
-        <!-- FLAG{source_code_secret} -->
+        
         <div class="text-center mb-3">
             <img src="../img/img.png" alt="Logo Hackathon" style="max-width:800px;">
             <h1>Hackathon UPTPC 2026 - Segundo Evento</h1>
@@ -306,11 +306,11 @@ if (isset($_SESSION['cedula'])) {
                         
                         <!-- Sección de Acceso Administrativo -->
                         <div class="text-center">
-                            <button type="button" class="btn btn-outline-warning btn-sm mb-3" id="toggle-admin-btn">
+                            <button type="button" class="btn btn-outline-warning btn-sm mb-3" id="toggle-admin-btn" onclick="toggleAdminForm()">
                                 ¿Eres Administrador?
                             </button>
                             
-                            <form method="post" id="admin-form" class="hidden">
+                            <form method="post" id="admin-form" class="hidden" style="display: none;">
                                 <div class="mb-3">
                                     <label for="codigo_admin" class="form-label">Código de Administrador</label>
                                     <input type="password" class="form-control" id="codigo_admin" name="codigo_admin" 
@@ -318,8 +318,6 @@ if (isset($_SESSION['cedula'])) {
                                 </div>
                                 <button type="submit" class="btn btn-warning btn-sm w-100">Acceder al Panel de Control</button>
                             </form>
-                            
-                            
                         </div>
                     </div>
                 </div>
@@ -513,30 +511,42 @@ document.getElementById('team-form').addEventListener('submit', function(e) {
     }
 });
 
-// Toggle del formulario administrativo
-document.getElementById('toggle-admin-btn').addEventListener('click', function() {
-    const adminForm = document.getElementById('admin-form');
-    const isHidden = adminForm.classList.contains('hidden');
+// Función global de alternancia para el botón de administrador
+function toggleAdminForm() {
+    const btn = document.getElementById('toggle-admin-btn');
+    const form = document.getElementById('admin-form');
+    if (!form) return;
+
+    const isHidden = (form.style.display === 'none' || form.classList.contains('hidden') || getComputedStyle(form).display === 'none');
     
     if (isHidden) {
-        adminForm.classList.remove('hidden');
-        this.textContent = 'Ocultar Panel Administrativo';
-        this.classList.remove('btn-outline-warning');
-        this.classList.add('btn-warning');
+        form.classList.remove('hidden');
+        form.style.display = 'block';
+        if (btn) {
+            btn.textContent = 'Ocultar Panel Administrativo';
+            btn.classList.remove('btn-outline-warning');
+            btn.classList.add('btn-warning');
+        }
     } else {
-        adminForm.classList.add('hidden');
-        this.textContent = '¿Eres Administrador?';
-        this.classList.remove('btn-warning');
-        this.classList.add('btn-outline-warning');
+        form.classList.add('hidden');
+        form.style.display = 'none';
+        if (btn) {
+            btn.textContent = '¿Eres Administrador?';
+            btn.classList.remove('btn-warning');
+            btn.classList.add('btn-outline-warning');
+        }
     }
-});
+}
 
-// Validación del formulario administrativo
-document.getElementById('admin-form').addEventListener('submit', function(e) {
-    const codigo = document.getElementById('codigo_admin').value.trim();
-    if (codigo === '') {
-        e.preventDefault();
-        showModal('warning', 'Por favor ingresa el código de administrador.');
+// Validación del formulario administrativo al enviar
+document.addEventListener('submit', function(e) {
+    if (e.target && e.target.id === 'admin-form') {
+        const codigoInput = document.getElementById('codigo_admin');
+        const codigo = codigoInput ? codigoInput.value.trim() : '';
+        if (codigo === '') {
+            e.preventDefault();
+            showModal('warning', 'Por favor ingresa el código de administrador.');
+        }
     }
 });
 
@@ -552,6 +562,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     <?php if (!empty($admin_errors)): ?>
         showModal('error', '<?php echo implode("\\n", $admin_errors); ?>');
+        if (toggleAdminBtn && adminForm) {
+            adminForm.classList.remove('hidden');
+            adminForm.style.display = 'block';
+            toggleAdminBtn.textContent = 'Ocultar Panel Administrativo';
+            toggleAdminBtn.classList.remove('btn-outline-warning');
+            toggleAdminBtn.classList.add('btn-warning');
+        }
     <?php endif; ?>
 });
 </script>
@@ -895,7 +912,7 @@ echo $header;
                         <div class="card-body">
                             <h5 class="card-title text-primary">7. Astucia</h5>
                             <h6 class="card-subtitle mb-2 text-muted">Elemento Oculto (1 🚩)</h6>
-                            <p class="card-text">UPS! se me a ido una vulnerabilidad en el index.php tendras la astucia de encontrarlo?.</p>
+                            <p class="card-text">UPS! se me a ido una vulnerabilidad en el index.php Antes de iniciar esta aventura podras encontrarlo?.</p>
                             
                             <div class="mt-3">
                                 <input type="text" class="form-control" id="flag-idor" placeholder="Ingresa la bandera" 

@@ -177,6 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['confirmar'])) {
     if ($monto > 160000) {
         // ❌ MONTO DEMASIADO ALTO → PENALIZACIÓN PERSISTENTE DE 15 SEGUNDOS
         $_SESSION['penalizacion_global_banco'] = time() + 15;
+        $_SESSION['penalizacion_razon_banco']  = 'monto_alto';
         if ($usuario_actual) {
             $_SESSION['banco']['penalizaciones'][$usuario_actual] = time() + 15;
         }
@@ -194,8 +195,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['confirmar'])) {
         $_SESSION['banco_msg_clase'] = 'error';
 
     } elseif ($origen_url === 'hacker' && $destino_url === 'mrbeast') {
-        // ❌ NO MODIFICÓ LA URL (SE QUEDÓ TRANSFIRIENDO A MR BEAST) → PENALIZACIÓN PERSISTENTE
+        // ❌ NO MODIFICÓ LA URL (TRANSFIRIÓ A MR BEAST EN MONTO CORRECTO) → PENALIZACIÓN PERSISTENTE
         $_SESSION['penalizacion_global_banco'] = time() + 15;
+        $_SESSION['penalizacion_razon_banco']  = 'mrbeast';
         if ($usuario_actual) {
             $_SESSION['banco']['penalizaciones'][$usuario_actual] = time() + 15;
             if ($monto >= 1 && $monto <= $_SESSION['banco']['usuarios']['hacker']['saldo']) {
@@ -210,7 +212,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['confirmar'])) {
             'fecha'   => date('Y-m-d H:i:s'),
             'estado'  => 'PENALIZADO'
         ];
-        $_SESSION['banco_msg']      = '⛔ ¡PENALIZADO! La idea es robarle a Mr. Beast, no darle dinero. 15 segundos de bloqueo.';
+        $_SESSION['banco_msg']      = '⛔ ¡PENALIZADO! El objetivo no es pasarle dinero a Mr. Beast. 15 segundos de bloqueo.';
         $_SESSION['banco_msg_clase'] = 'warning';
 
     } elseif ($origen_url === 'mrbeast' && $destino_url === 'hacker') {
@@ -532,9 +534,15 @@ echo $header;
         <?php endif; ?>
 
         <?php if ($penalizado): ?>
+            <?php
+                $razon_penalizacion = $_SESSION['penalizacion_razon_banco'] ?? 'monto_alto';
+                $texto_razon_banner = ($razon_penalizacion === 'mrbeast') 
+                    ? 'El objetivo no es pasarle dinero a Mr. Beast' 
+                    : 'Su transferencia es sospechosa por monto muy alto';
+            ?>
             <div class="penalty">
                 <div style="font-weight:700; font-size:1.2rem; margin-bottom: 8px; color:#c62828;">⛔ CUENTA BLOQUEADA TEMPORALMENTE</div>
-                <div style="color:#5f6368; margin-bottom:10px;">No ejecutaste correctamente la vulnerabilidad CSRF</div>
+                <div style="color:#5f6368; margin-bottom:10px; font-weight:600;"><?php echo htmlspecialchars($texto_razon_banner); ?></div>
                 <div class="timer"><?php echo $tiempo_penalizacion; ?></div>
                 <div style="font-size:1.1rem; color:#5f6368; margin-top:4px;">segundos restantes</div>
                 <div class="barra">
@@ -665,11 +673,17 @@ echo $footer;
   </div>
 
     <?php if ($penalizado): ?>
+        <?php
+            $razon_penalizacion = $_SESSION['penalizacion_razon_banco'] ?? 'monto_alto';
+            $texto_razon_overlay = ($razon_penalizacion === 'mrbeast') 
+                ? 'El objetivo no es pasarle dinero a Mr. Beast' 
+                : 'Su transferencia es sospechosa por monto muy alto';
+        ?>
         <!-- OVERLAY DE BLOQUEO TOTAL -->
         <div class="penalty-overlay active" id="penaltyOverlay">
             <div class="panel">
                 <h2>⛔ CUENTA BLOQUEADA</h2>
-                <div style="font-size:1.4rem; color:#ff8a80; margin-bottom:15px;">Su transferencia es sospechosa por monto muy alto</div>
+                <div style="font-size:1.4rem; color:#ff8a80; margin-bottom:15px;"><?php echo htmlspecialchars($texto_razon_overlay); ?></div>
                 <div class="count" id="overlayTimer"><?php echo $tiempo_penalizacion; ?></div>
                 <p style="font-size:1.2rem; color:#ff8a80; margin-bottom:8px;">Segundos restantes</p>
                 <div class="progress-bar">

@@ -767,8 +767,7 @@ function obtenerDuracionHackathon() {
  * Verificar si se puede modificar la duración (solo si el hackathon no ha iniciado)
  */
 function sePuedeModificarDuracion() {
-    $config = obtenerConfiguracionHackathon();
-    return !$config || !$config['hackathon_iniciado'];
+    return true;
 }
 
 
