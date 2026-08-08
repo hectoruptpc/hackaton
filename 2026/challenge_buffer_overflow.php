@@ -48,6 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['input_data'])) {
     <title>💀 Buffer Overflow Challenge | Hackathon 💀</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v18">
+    <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
     <script src="conf/ia_avatar.js?v=2026_v18" defer></script>
     <style>
         body {
@@ -115,9 +116,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['input_data'])) {
 <body>
     <div class="container mt-5">
         <div class="row justify-content-center">
-            <div class="col-lg-8">
+            <div class="col-lg-10">
                 <div class="terminal">
-                    <div class="terminal-header">
+                    <div class="terminal-header text-center">
                         💀 vuln.exe - SISTEMA VULNERABLE A BUFFER OVERFLOW 💀
                     </div>
                     
@@ -139,11 +140,24 @@ Solo personal autorizado puede ingresar.
                                       placeholder="Ingresa hasta 64 bytes... o más para desbordar"></textarea>
                             <small class="text-muted">🔍 Buffer size: 64 bytes | Target: flag_secreta()</small>
                         </div>
-                        <button type="submit" class="btn btn-exploit w-100">💀 EJECUTAR PROGRAMA 💀</button>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-exploit w-50">💀 EJECUTAR PROGRAMA 💀</button>
+                        </div>
                     </form>
+                    <br>
                     <?php endif; ?>
 
                     <?php echo $mensaje; ?>
+
+                    <?php if (!empty($mensaje) && strpos($mensaje, 'EXPLOIT EXITOSO') !== false): ?>
+                        <div class="mt-3 p-3 rounded" style="background:rgba(0,255,0,0.1); border:1px solid #0f0; color:#0f0;">
+                            <h6 class="mb-2">🏁 Solución del ejercicio</h6>
+                            <p class="mb-1"><strong>Bandera:</strong></p>
+                            <div class="p-2 rounded" style="background:#000; border:1px solid #0f0; font-family:monospace; word-break:break-all;">
+                                FLAG{BUFFER_OVERFLOW_EXPLOIT}
+                            </div>
+                        </div>
+                    <?php endif; ?>
 
                     <!-- Visualización del stack (con Popovers interactivos opcionales) -->
                     <div class="stack-visual mt-4">

@@ -666,6 +666,13 @@ document.addEventListener('DOMContentLoaded', function() {
 <body>
 <script>window.segundosRestantesGlobal = <?php echo intval($tiempo_restante_global ?? 0); ?>; window.hackathonActivoGlobal = <?php echo json_encode($hackathon_activo ?? false); ?>; window.banderasEquipoActual = <?php echo count($desafiosCompletados ?? []); ?>; window.esPaginaIndex = true;</script>
 <div class="container mt-4">
+
+  <div class="text-center mb-3">
+        <img src="../img/img.png" alt="Logo Hackathon" style="max-width:800px;">
+        <h1>Hackathon CARABOBO 2026 - Primer Evento Estadal</h1>
+    </div>
+
+
     <!-- FLAG{html_comment_easy} -->
     <!-- Header con información del usuario y equipo -->
     <div class="alert alert-success mb-4">
@@ -682,10 +689,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 
-    <div class="text-center mb-3">
-        <img src="../img/img.png" alt="Logo Hackathon" style="max-width:800px;">
-        <h1>Hackathon UPTPC 2026 - Segundo Evento</h1>
-    </div>
+  
 
     <!-- Información del equipo -->
     <div class="row mb-4">
