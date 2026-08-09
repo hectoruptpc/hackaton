@@ -353,9 +353,11 @@ echo $header;
         El formato de la flag es: <strong style="color:#ff44ee;">FLAG{...}</strong>
     </div>
     <footer>
-         <div style="text-align:center; margin-top:10px;">
-            <img src="../img/cyt.png" alt="Logo Unidad de Ciencia y Tecnología" style="width:90px; height:auto; opacity:0.85;">
-        </div>
+        <?php
+require_once __DIR__ . '/conf/footer.php';
+echo $footer;
+?>
+
         ⚡ HACK THE GIBSON ⚡ // NINGÚN SISTEMA ES SEGURO SI PERSISTES // LARGUÍSIMO ENCRYPT CHALL
     </footer>
 </div>
@@ -440,7 +442,3 @@ if(preBlock && preBlock.innerText.length > 3000) {
     preBlock.style.maxHeight = "400px";
 }
 </script>
-<?php
-require_once __DIR__ . '/conf/footer.php';
-echo $footer;
-?>
