@@ -29,6 +29,15 @@ class IAAvatarWidget {
         this.iniciarHablaEspontanea();
         // Actualizar nivel de enojo al inicio
         this.nivelEnojo = this.obtenerNivelEnojoEquipoActual();
+
+        // Si el hackatón aún no ha iniciado, anunciar con voz que no ha iniciado
+        if (!this.estaHackathonActivo()) {
+            setTimeout(() => {
+                if (!this.estaHackathonActivo()) {
+                    this.hablar("El Hackatón aún no ha iniciado. Mis servidores están en espera silenciosa.");
+                }
+            }, 1200);
+        }
     }
 
     // ========== MÉTODOS PARA OBTENER EQUIPO ACTUAL Y SU NIVEL ==========
@@ -170,17 +179,17 @@ class IAAvatarWidget {
     }
 
     estaHackathonActivo() {
-        const desafio = this.obtenerDesafioActual();
-        if (desafio && desafio !== 'index' && desafio !== 'equipos') {
-            return true;
-        }
         if (typeof window.hackathonActivoGlobal !== 'undefined') {
             return window.hackathonActivoGlobal === true;
         }
         if (typeof window.segundosRestantesGlobal !== 'undefined') {
             return window.segundosRestantesGlobal > 0;
         }
-        return true;
+        const desafio = this.obtenerDesafioActual();
+        if (desafio && desafio !== 'index' && desafio !== 'equipos') {
+            return true;
+        }
+        return false;
     }
 
     obtenerDesafioActual() {

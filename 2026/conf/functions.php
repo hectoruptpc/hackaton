@@ -76,8 +76,13 @@ function registrarEquipo($nombre_equipo) {
         $codigo_equipo = generarCodigoEquipo();
     }
 
-    $stmt = $db->prepare("INSERT INTO equipos (nombre_equipo, codigo_equipo) VALUES (?, ?)");
-    if ($stmt->execute([$nombre_equipo, $codigo_equipo])) {
+    $activo = hackathonEstaActivo();
+    $estado = $activo ? 1 : 0;
+    $inicio_tardio = $activo ? 1 : 0;
+    $tiempo_inicio = $activo ? date('Y-m-d H:i:s') : null;
+
+    $stmt = $db->prepare("INSERT INTO equipos (nombre_equipo, codigo_equipo, estado, inicio_tardio, tiempo_inicio) VALUES (?, ?, ?, ?, ?)");
+    if ($stmt->execute([$nombre_equipo, $codigo_equipo, $estado, $inicio_tardio, $tiempo_inicio])) {
         return $db->lastInsertId();
     }
     return false;
@@ -437,7 +442,7 @@ function iniciarTiempoEquipoTardio($equipo_id) {
     }
 
     $tiempo_inicio = date('Y-m-d H:i:s');
-    $stmt = $db->prepare("UPDATE equipos SET tiempo_inicio = ?, inicio_tardio = TRUE WHERE id = ?");
+    $stmt = $db->prepare("UPDATE equipos SET tiempo_inicio = ?, inicio_tardio = TRUE, estado = 1 WHERE id = ?");
     return $stmt->execute([$tiempo_inicio, $equipo_id]);
 }
 
@@ -455,13 +460,13 @@ function forzarInicioTiempoEquipo($equipo_id) {
 
     // Verificar si el equipo ya tiene tiempo iniciado
     $info_equipo = obtenerTiempoInicioEquipo($equipo_id);
-    if ($info_equipo['tiempo_inicio']) {
-        return true; // Ya tiene tiempo iniciado
+    if ($info_equipo['tiempo_inicio'] && ($info_equipo['estado'] ?? 0) == 1) {
+        return true; // Ya tiene tiempo iniciado y estado activo
     }
 
-    // Iniciar tiempo marcando como tardío
+    // Iniciar tiempo marcando como tardío y activando estado
     $tiempo_inicio = date('Y-m-d H:i:s');
-    $stmt = $db->prepare("UPDATE equipos SET tiempo_inicio = ?, inicio_tardio = TRUE WHERE id = ?");
+    $stmt = $db->prepare("UPDATE equipos SET tiempo_inicio = ?, inicio_tardio = TRUE, estado = 1 WHERE id = ?");
     return $stmt->execute([$tiempo_inicio, $equipo_id]);
 }
 

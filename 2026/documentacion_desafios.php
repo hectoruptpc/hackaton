@@ -4,6 +4,7 @@
 // Unidad de Ciencia y Tecnología — UPTPC 2026
 // ============================================================
 session_start();
+require_once __DIR__ . '/conf/functions.php';
 // ── Cabecera modular ─────────────────────────────────────────────────────────
 $page_title = '📖 Documentación Técnica de Desafíos — Hackathon 2026 UPTPC';
 require_once __DIR__ . '/conf/header.php';
