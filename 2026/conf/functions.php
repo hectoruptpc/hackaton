@@ -398,7 +398,17 @@ function normalizarTexto($texto) {
  * Verificar bandera (para los desafíos)
  */
 function verificarBandera($bandera_usuario, $bandera_correcta) {
-    return normalizarTexto($bandera_usuario) === normalizarTexto($bandera_correcta);
+    $norm_user = normalizarTexto($bandera_usuario);
+    $norm_correcta = normalizarTexto($bandera_correcta);
+    if ($norm_user === $norm_correcta) {
+        return true;
+    }
+    // Soporte alternativo para Desafío 7 (Astucia): acepta tanto el enlace clickable como la cabecera HTTP
+    if ($norm_correcta === normalizarTexto('FLAG{LOGIN_CLICKABLE_SECRET}') &&
+        $norm_user === normalizarTexto('FLAG{HTTP_HEADER_SECRET}')) {
+        return true;
+    }
+    return false;
 }
 
 /**
@@ -1011,7 +1021,11 @@ function validateHackathonAnswer($user_answer) {
     $normalized_user = strtolower(preg_replace('/\s+/', '', $user_answer));
     $normalized_correct = strtolower(preg_replace('/\s+/', '', $correct_flag));
 
-    if ($normalized_user === $normalized_correct) {
+    if (preg_match('/^flag\{(.*)\}$/i', $normalized_user, $matches)) {
+        $normalized_user = $matches[1];
+    }
+
+    if ($normalized_user === $normalized_correct || $normalized_user === 'flag{' . $normalized_correct . '}') {
         return [
             'feedback' => '✅ ¡ACCESO CONCEDIDO! Has descifrado el mensaje. FLAG{CRYPTO_MASTER} ✅',
             'class' => 'success'
