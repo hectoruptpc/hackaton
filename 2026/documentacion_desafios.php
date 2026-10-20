@@ -358,14 +358,21 @@ echo $header;
 
         <div class="section-box">
             <div class="section-tag">🛠️ Solución Oficial</div>
-            <p style="font-size:0.92rem; color:#cbd5e1;">Abre la terminal interactiva estilo Kali Linux en <code>desafio4.php</code>. Conéctate al servidor mediante <code>ssh invitado@server-hackaton.uptpc.edu.ve</code>. Explora los directorios confidenciales navegando a <code>/etc/secret_vault</code>, eleva privilegios con <code>sudo su</code> y visualiza <code>cat /etc/secret_vault/flag_confidencial.txt</code> o recupera los sectores para obtener la bandera: <code>FLAG{SERVER_TERMINAL_MASTER_2026}</code>.</p>
+            <p style="font-size:0.92rem; color:#cbd5e1;">Abre la terminal interactiva Kali Linux en <code>desafio4.php</code>. Conéctate al servidor mediante <code>ssh invitado@server-hackaton.uptpc.edu.ve</code> (requiere que el Hackatón esté iniciado). Explora el sistema para recopilar los 4 sectores o la bandera maestra:</p>
+            <ul class="alt-list" style="margin-top:8px;">
+                <li><strong>Sector 1 (<code>K4L1_</code>):</strong> En respaldos web: <code>cat /var/www/backups/backup_system.conf</code>.</li>
+                <li><strong>Sector 2 (<code>SH4D0W_</code>):</strong> En reglas de defensa (archivo oculto): <code>cat /opt/cyberdefense/rules/.sector2_audit.dat</code>.</li>
+                <li><strong>Sector 3 (<code>K3RN3L_</code>):</strong> En servicios clasificados (requiere root): <code>sudo su</code> y <code>cat /srv/classified/sector3_credentials.txt</code>.</li>
+                <li><strong>Sector 4 (<code>V4ULT_2026</code>):</strong> En la bóveda de administración: <code>cat /etc/secret_vault/flag_confidencial.txt</code>.</li>
+            </ul>
+            <p style="font-size:0.92rem; color:#cbd5e1; margin-top:8px;">Código concatenado: <code>K4L1_SH4D0W_K3RN3L_V4ULT_2026</code> o Bandera Maestra: <code>FLAG{SERVER_TERMINAL_MASTER_2026}</code> (también visible en <code>/root/.root_master_vault/flag_master.txt</code>).</p>
         </div>
 
         <div class="section-box">
             <div class="section-tag">🔀 Alternativas que pueden tomar los participantes</div>
             <ul class="alt-list">
-                <li><strong>Método 1 (Exploración de Sectores):</strong> Leer los archivos de los 3 sectores del sistema y enviar la clave en el panel inferior.</li>
-                <li><strong>Método 2 (Elevación Sudo):</strong> Ejecutar <code>sudo su</code> en la sesión SSH y leer directamente el archivo restringido del root.</li>
+                <li><strong>Método 1 (Recolección de los 4 Sectores):</strong> Seguir las pistas de <code>readme.txt</code>, <code>robots.txt</code> y <code>notas.txt</code> para hallar los 4 sectores y concatenarlos en el validador web inferior.</li>
+                <li><strong>Método 2 (Elevación Sudo Directa):</strong> Ejecutar <code>sudo su</code> desde el inicio de la sesión SSH y leer directamente la bóveda central <code>/etc/secret_vault/flag_confidencial.txt</code> o <code>/root/.root_master_vault/flag_master.txt</code>.</li>
             </ul>
         </div>
     </div>

@@ -16,6 +16,8 @@
 session_start();
 require_once __DIR__ . '/conf/functions.php';
 
+$hackathon_activo = hackathonEstaActivo();
+
 if (!function_exists('marcarDesafioCompletado')) {
     function marcarDesafioCompletado($equipo_id, $desafio_id) {
         if (session_status() !== PHP_SESSION_ACTIVE) session_start();
@@ -29,16 +31,36 @@ if (!function_exists('marcarDesafioCompletado')) {
 $mensaje_verificacion = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['flag_input'])) {
-    $flag_ingresada = trim($_POST['flag_input']);
-    $flag_clean = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $flag_ingresada));
-
-    if (in_array($flag_clean, ['IABOSSFINAL', 'FLAGSERVERTERMINALMASTER2026', 'SERVERTERMINALMASTER2026'])) {
-        if (isset($_SESSION['equipo_id'])) {
-            marcarDesafioCompletado($_SESSION['equipo_id'], 4);
-        }
-        $mensaje_verificacion = '<div class="alert alert-success mt-3 text-center">&#127881; &iexcl;C&Oacute;DIGO DE SECTORES CORRECTO! Has obtenido la bandera: <strong style="font-size:1.15rem; color:#4ade80;">FLAG{SERVER_TERMINAL_MASTER_2026}</strong> y completado el Desaf&iacute;o #4.</div>';
+    if (!$hackathon_activo) {
+        $mensaje_verificacion = '<div class="alert alert-warning mt-3 text-center">&#9888;&#65039; <strong>HACKATHON NO INICIADO:</strong> Espera a que el administrador active la competencia para poder enviar banderas.</div>';
     } else {
-        $mensaje_verificacion = '<div class="alert alert-danger mt-3 text-center">&#10060; C&oacute;digo o bandera incorrecta. Explora el servidor para hallar los 3 sectores del c&oacute;digo.</div>';
+        $flag_ingresada = trim($_POST['flag_input']);
+        $flag_clean = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $flag_ingresada));
+
+        $codigos_validos = [
+            'K4L1SH4D0WK3RN3LV4ULT2026',
+            'K4L1SH4D0WK3RN3LV4ULT',
+            'KALISHADOWKERNELVAULT2026',
+            'IABOSSFINAL',
+            'FLAGSERVERTERMINALMASTER2026',
+            'SERVERTERMINALMASTER2026'
+        ];
+
+        if (in_array($flag_clean, $codigos_validos) || in_array(strtoupper($flag_ingresada), ['K4L1_SH4D0W_K3RN3L_V4ULT_2026', 'FLAG{SERVER_TERMINAL_MASTER_2026}'])) {
+            if (isset($_SESSION['equipo_id'])) {
+                marcarDesafioCompletado($_SESSION['equipo_id'], 4);
+                if (!desafioCompletado($_SESSION['equipo_id'], 'command_injection')) {
+                    completarDesafio($_SESSION['equipo_id'], 'command_injection', 1);
+                    $equipo_info = obtenerInfoEquipo($_SESSION['equipo_id']);
+                    if ($equipo_info && isset($equipo_info['puntuacion_total'])) {
+                        $_SESSION['puntuacion_equipo'] = $equipo_info['puntuacion_total'];
+                    }
+                }
+            }
+            $mensaje_verificacion = '<div class="alert alert-success mt-3 text-center">&#127881; &iexcl;C&Oacute;DIGO DE SECTORES CORRECTO! Has obtenido la bandera: <strong style="font-size:1.15rem; color:#4ade80;">FLAG{SERVER_TERMINAL_MASTER_2026}</strong> y completado el Desaf&iacute;o #4.</div>';
+        } else {
+            $mensaje_verificacion = '<div class="alert alert-danger mt-3 text-center">&#10060; C&oacute;digo o bandera incorrecta. Explora el servidor para hallar los 4 sectores del c&oacute;digo.</div>';
+        }
     }
 }
 ?>
@@ -53,6 +75,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['flag_input'])) {
 <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
 <link rel="stylesheet" href="conf/ia_avatar.css">
 <script src="conf/ia_avatar.js" defer></script>
+<script>
+window.hackathonActivoGlobal = <?php echo json_encode($hackathon_activo); ?>;
+</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0a0d14;font-family:'Fira Code',monospace;color:#38bdf8;min-height:100vh;padding:28px 15px}
@@ -92,22 +117,35 @@ body{background:#0a0d14;font-family:'Fira Code',monospace;color:#38bdf8;min-heig
 <body>
 <div class="container-cli">
 
+<?php if (!$hackathon_activo): ?>
+<div class="alert alert-warning d-flex align-items-center justify-content-between p-3 mb-4 rounded-3 shadow-sm border border-warning" role="alert" style="background: rgba(234, 179, 8, 0.12); border-color: #eab308 !important; color: #facc15;">
+  <div class="d-flex align-items-center">
+    <span style="font-size: 1.8rem; margin-right: 14px;">&#9203;</span>
+    <div>
+      <h5 class="alert-heading mb-1 fw-bold text-warning">&#9888;&#65039; HACKATHON EN ESPERA &mdash; ACCESO REMOTO BLOQUEADO</h5>
+      <p class="mb-0 small" style="color: #cbd5e1;">El evento a&uacute;n no ha sido iniciado por el administrador. La terminal local Kali est&aacute; disponible para exploraci&oacute;n local, pero la conexi&oacute;n SSH al servidor objetivo y la validaci&oacute;n de banderas permanecer&aacute;n deshabilitadas hasta el inicio oficial.</p>
+    </div>
+  </div>
+  <span class="badge bg-warning text-dark px-3 py-2 fw-bold">STANDBY</span>
+</div>
+<?php endif; ?>
+
 <div class="challenge-header">
   <h2>&#128187; Desaf&iacute;o #4 &mdash; Terminal Kali Linux &#8594; SSH al Servidor</h2>
-  <p>Abre la terminal Kali Linux, con&eacute;ctate al servidor v&iacute;a SSH y explora el sistema de archivos para hallar la bandera oculta.</p>
+  <p>Abre la terminal Kali Linux, con&eacute;ctate al servidor v&iacute;a SSH y explora el sistema de archivos para hallar los 4 sectores de la bandera.</p>
 </div>
 
 <div class="ssh-instructions">
-  <strong>&#128225; Ruta de Conectividad del Hackathon</strong><span class="badge-kali">&#128009; Kali Linux</span><br>
+  <strong>&#128225; Ruta de Conectividad y Auditor&iacute;a Forense</strong><span class="badge-kali">&#128009; Kali Linux</span><br>
   Desde tu terminal Kali Linux emulada, ejecuta el siguiente comando para conectarte al servidor oficial del evento:<br><br>
   &nbsp;&nbsp;<code>ssh invitado@server-hackaton.uptpc.edu.ve</code><br><br>
-  <strong>Pasos a seguir despu&eacute;s de conectarte:</strong><br>
-  &nbsp;&nbsp;1. Explora el sistema con <code>ls</code> y <code>cd</code><br>
-  &nbsp;&nbsp;2. Busca directorios restringidos<br>
-  &nbsp;&nbsp;3. Eleva privilegios con <code>sudo su</code><br>
-  &nbsp;&nbsp;4. Encuentra 3 codigos y lee la bandera oculta<br><br>
+  <strong>Misi&oacute;n de Ciberseguridad (4 Sectores Fragmentados):</strong><br>
+  &nbsp;&nbsp;1. Explora el sistema de archivos del servidor utilizando comandos como <code>ls -la</code>, <code>cd</code>, <code>find</code> y <code>grep</code>.<br>
+  &nbsp;&nbsp;2. El servidor contiene <strong>4 sectores</strong> ocultos en diferentes servicios, respaldos y zonas de seguridad.<br>
+  &nbsp;&nbsp;3. Deber&aacute;s investigar pistas del sistema, rastrear archivos ocultos y aplicar t&eacute;cnicas de elevaci&oacute;n de privilegios cuando sea necesario.<br>
+  &nbsp;&nbsp;4. Una vez localizados los fragmentos, &uacute;nelos o ingresa la bandera maestra en el formulario inferior para ganar los puntos.<br><br>
   <strong>&#9888;&#65039; Aviso:</strong> Esta terminal est&aacute; <strong>aislada</strong>. Solo puedes conectarte a <code>server-hackaton.uptpc.edu.ve</code>.
-  Los comandos <code>rm</code> y <code>cp</code> est&aacute;n deshabilitados incluso como root (pol&iacute;tica del Hackathon).
+  Los comandos <code>rm</code> y <code>cp</code> est&aacute;n inhabilitados por pol&iacute;tica del Hackathon.
 </div>
 
 <div class="terminal-window">
@@ -133,6 +171,7 @@ body{background:#0a0d14;font-family:'Fira Code',monospace;color:#38bdf8;min-heig
       <div class="terminal-output-line"><span class="c-yellow">   &#128009; Kali GNU/Linux Rolling &mdash; Hackathon &Eacute;tico UPTPC 2026</span></div>
       <div class="terminal-output-line"><span class="c-gray">   Escribe </span><span class="c-kali">screenfetch</span><span class="c-gray"> para info del sistema &nbsp;|&nbsp; </span><span class="c-kali">help</span><span class="c-gray"> para ver comandos</span></div>
       <div class="terminal-output-line"><span class="c-gray">   Para conectarte al servidor: &nbsp;</span><span class="c-green">ssh invitado@server-hackaton.uptpc.edu.ve</span></div>
+      <div class="terminal-output-line"><span class="<?php echo $hackathon_activo ? 'c-green' : 'c-yellow'; ?>">   <?php echo $hackathon_activo ? '&#10004;&#65039; ESTADO: HACKATHON ACTIVO &mdash; Acceso SSH y retos disponibles' : '&#9203; ESTADO: EN ESPERA &mdash; Servidor remoto en modo STANDBY hasta inicio oficial'; ?></span></div>
       <div class="terminal-output-line"><span class="c-gray">   ─────────────────────────────────────────────────────────────────────</span></div>
       <div class="terminal-output-line"></div>
     </div>
@@ -148,8 +187,8 @@ body{background:#0a0d14;font-family:'Fira Code',monospace;color:#38bdf8;min-heig
   <h5 class="text-light fw-bold mb-3">&#127989; Validar Bandera del Desaf&iacute;o #4</h5>
   <form method="POST" action="">
     <div class="input-group">
-      <input type="text" name="flag_input" class="form-control bg-dark text-info border-secondary" placeholder="FLAG{...}" required>
-      <button type="submit" class="btn btn-success fw-bold">&#128640; Validar y Ganar Puntos</button>
+      <input type="text" name="flag_input" class="form-control bg-dark text-info border-secondary" placeholder="<?php echo $hackathon_activo ? 'Ingresa los 4 sectores (K4L1_...) o FLAG{...}' : 'Hackathon no iniciado — Formulario deshabilitado'; ?>" <?php echo !$hackathon_activo ? 'disabled' : ''; ?> required>
+      <button type="submit" class="btn btn-success fw-bold" <?php echo !$hackathon_activo ? 'disabled' : ''; ?>>&#128640; Validar y Ganar Puntos</button>
     </div>
   </form>
   <?php echo $mensaje_verificacion; ?>
@@ -184,72 +223,1034 @@ const estado = {
 
 // ── Sistema de archivos del servidor remoto ──────────────────
 const serverFS = {
-  '/': { type:'dir', owner:'root', children:{ var:'dir', home:'dir', etc:'dir', tmp:'dir', proc:'dir', usr:'dir', root:'dir' } },
-  '/root': { type:'dir', owner:'root', restricted:true, children:{
-    '.bashrc': { type:'file', size:'220B', owner:'root', content:'# .bashrc root\nexport PATH=$PATH:/sbin:/usr/sbin\nalias ll="ls -la"' }
-  }},
-  '/proc': { type:'dir', owner:'root', children:{
-    'version': { type:'file', size:'96B', owner:'root', content:'Linux version 6.1.0-kali9-amd64 (kali@kali-builder) (gcc version 12.2.0)' },
-    'cpuinfo': { type:'file', size:'4.2KB', owner:'root', content:'processor\t: 0\nvendor_id\t: GenuineIntel\nmodel name\t: Intel(R) Xeon(R) CPU E5-2620 @ 2.00GHz\ncpu MHz\t\t: 3000.000\ncache size\t: 15360 KB' },
-    'meminfo': { type:'file', size:'1.2KB', owner:'root', content:'MemTotal:       16384000 kB\nMemFree:         9842000 kB\nMemAvailable:   12048000 kB\nSwapTotal:       4194304 kB\nSwapFree:        4194304 kB' }
-  }},
-  '/usr': { type:'dir', owner:'root', children:{ bin:'dir', share:'dir', lib:'dir' } },
-  '/usr/bin': { type:'dir', owner:'root', children:{} },
-  '/usr/share': { type:'dir', owner:'root', children:{} },
-  '/usr/lib':   { type:'dir', owner:'root', children:{} },
-  '/var': { type:'dir', owner:'root', children:{ www:'dir', log:'dir', run:'dir' } },
-  '/var/log': { type:'dir', owner:'root', children:{
-    'auth.log':  { type:'file', size:'12.4KB', owner:'root',
-      content:'[2026-08-06 07:58:22] sshd[1024]: Accepted password for invitado from 192.168.1.42 port 54322 ssh2\n[2026-08-06 08:01:04] sudo[1105]: invitado : TTY=pts/0 ; PWD=/var/www/html ; USER=root ; COMMAND=/bin/bash\n[2026-08-06 08:03:17] sshd[1024]: Disconnected from user invitado 192.168.1.42 port 54322' },
-    'syslog':    { type:'file', size:'8.1KB', owner:'root', restricted:true,
-      content:'[2026-08-06 08:00:00] kernel: Linux server-hackaton 6.1.0-kali9-amd64 iniciado\n[2026-08-06 08:00:12] systemd[1]: Iniciado Apache2 HTTP Server.\n[2026-08-06 08:00:15] systemd[1]: Iniciado OpenSSH Daemon.\n[2026-08-06 08:00:42] apache2[612]: AH00558: Escuchando en puerto 80' },
-    'apache2':   { type:'dir', owner:'root', children:{ 'access.log': { type:'file', size:'3.8KB', owner:'root', content:'192.168.1.42 - - [06/Aug/2026:08:02:01 +0000] "GET / HTTP/1.1" 200 4821\n192.168.1.42 - - [06/Aug/2026:08:02:45 +0000] "GET /index.php HTTP/1.1" 200 3240' } } }
-  }},
-  '/var/log/apache2': { type:'dir', owner:'root', children:{ 'access.log': { type:'file', size:'3.8KB', owner:'root', content:'192.168.1.42 - - [06/Aug/2026:08:02:01] "GET / HTTP/1.1" 200 4821' } }},
-  '/var/run': { type:'dir', owner:'root', children:{} },
-  '/var/www': { type:'dir', owner:'root', children:{ html:'dir' } },
-  '/var/www/html': { type:'dir', owner:'www-data', children:{
-    'index.php':     { type:'file', size:'2.1KB', owner:'www-data', content:'\u003c\u003fphp\n// Portal web del Hackathon UPTPC 2026\necho "Bienvenido al servidor del Hackathon!";' },
-    'readme.txt':    { type:'file', size:'150B', owner:'www-data', content:'BIENVENIDO AL SERVIDOR UPTPC — server-hackaton.uptpc.edu.ve\n\n[ CODIGO SECTOR 1 ]: IA_' },
-    'public_assets': { type:'dir', owner:'www-data' }
-  }}, 
-  '/var/www/html/public_assets': { type:'dir', owner:'www-data', children:{
-    'logo.png':   { type:'file', size:'28.4KB', owner:'www-data', content:'[Datos binarios PNG - imagen no legible en terminal]' },
-    'styles.css': { type:'file', size:'6.2KB',  owner:'www-data', content:'/* Hoja de estilos del portal UPTPC */' }
-  }},
-  '/home': { type:'dir', owner:'root', children:{ invitado:'dir', admin:'dir' } },
-  '/home/invitado': { type:'dir', owner:'invitado', children:{
-    '.bashrc':   { type:'file', size:'220B', owner:'invitado', content:'# .bashrc — Configuracion de shell Bash\nexport PATH=$PATH:/usr/local/bin\nalias ll="ls -la"\nalias cls="clear"' },
-    '.bash_history': { type:'file', size:'180B', owner:'invitado', content:'ls\ncat /var/www/html/readme.txt\ncat /home/invitado/notas.txt\nsudo su\ncat /etc/secret_vault/flag_confidencial.txt' },
-    'notas.txt': { type:'file', size:'150B', owner:'invitado', content:'NOTAS DE AUDITORIA — invitado\n\n[ CODIGO SECTOR 2 ]: BOSS_' }
-  }},
-  '/home/admin': { type:'dir', owner:'admin', restricted:true, children:{
-    'server_config.conf': { type:'file', size:'88B', owner:'admin', restricted:true, content:'PUERTO=8080\nHOST=127.0.0.1\nSSL=habilitado' },
-    '.ssh': { type:'dir', owner:'admin', restricted:true, children:{} }
-  }},
-  '/home/admin/.ssh': { type:'dir', owner:'admin', restricted:true, children:{
-    'authorized_keys': { type:'file', size:'572B', owner:'admin', restricted:true, content:'[Claves SSH del administrador — Acceso denegado]' }
-  }},
-  '/etc': { type:'dir', owner:'root', children:{
-    'hostname':    { type:'file', size:'30B', owner:'root', content:'server-hackaton.uptpc.edu.ve' },
-    'os-release':  { type:'file', size:'185B', owner:'root', content:'NAME="Debian GNU/Linux"\nVERSION_ID="12"\nID=debian\nPRETTY_NAME="Debian GNU/Linux 12 (bookworm)"\nHOME_URL="https://www.debian.org/"' },
-    'passwd':      { type:'file', size:'1.2KB', owner:'root', content:'root:x:0:0:root:/root:/bin/bash\nwww-data:x:33:33:www-data:/var/www:/usr/sbin/nologin\ninvitado:x:1001:1001:Usuario Invitado,,,:/home/invitado:/bin/bash\nadmin:x:1002:1002:Administrador UPTPC,,,:/home/admin:/bin/bash' },
-    'shadow':      { type:'file', size:'640B', owner:'root', restricted:true, content:'ACCESO DENEGADO — Archivo de contrasenas cifradas.\nSolo accesible con privilegios de superusuario (root).' },
-    'hosts':       { type:'file', size:'120B', owner:'root', content:'127.0.0.1\tlocalhost\n10.10.0.1\tserver-hackaton.uptpc.edu.ve server-hackaton\n10.10.0.2\tgateway.uptpc.edu.ve' },
-    'crontab':     { type:'file', size:'90B',  owner:'root', content:'# Tareas programadas del sistema\n*/5 * * * * root /usr/bin/backup.sh\n0 3 * * * root /usr/sbin/logrotate /etc/logrotate.conf' },
-    'secret_vault': { type:'dir', owner:'root', restricted:true }
-  }},
-  '/etc/secret_vault': { type:'dir', owner:'root', restricted:true, children:{
-    'flag_confidencial.txt': { type:'file', size:'180B', owner:'root', restricted:true,
-      content:'BOVEDA CENTRAL DE PRIVILEGIOS DE ROOT\n\n[ CODIGO SECTOR 3 ]: FINAL' },
-    '.clave_oculta': { type:'file', size:'20B', owner:'root', restricted:true, content:'FINAL' },
-    'instrucciones_admin.txt': { type:'file', size:'130B', owner:'root', restricted:true,
-      content:'INSTRUCCIONES INTERNAS — ADMIN\n\nCodigos de acceso registrados en el servidor. Unir los 3 sectores de clave.' }
-  }},
-  '/tmp': { type:'dir', owner:'root', children:{
-    'system.log':  { type:'file', size:'128B', owner:'root', content:'[2026-08-06 08:00:00] Servidor arrancado correctamente.\n[2026-08-06 08:00:14] Apache2 escuchando en puerto 80/443.\n[2026-08-06 08:00:16] sshd escuchando en puerto 22.' },
-    '.tmp_cache':  { type:'file', size:'12B',  owner:'root', content:'cache temporal interno' }
-  }}
+  '/': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      bin: 'dir',
+      boot: 'dir',
+      dev: 'dir',
+      etc: 'dir',
+      home: 'dir',
+      lib: 'dir',
+      media: 'dir',
+      mnt: 'dir',
+      opt: 'dir',
+      proc: 'dir',
+      root: { type: 'dir', owner: 'root', restricted: true },
+      run: 'dir',
+      sbin: 'dir',
+      srv: 'dir',
+      sys: 'dir',
+      tmp: 'dir',
+      usr: 'dir',
+      var: 'dir'
+    }
+  },
+  '/bin': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      bash: { type: 'file', size: '1.2MB', owner: 'root', content: '[ELF 64-bit LSB executable, x86-64, version 1]' },
+      sh: { type: 'file', size: '124KB', owner: 'root', content: '[ELF 64-bit LSB executable, x86-64, version 1]' },
+      ls: { type: 'file', size: '142KB', owner: 'root', content: '[ELF 64-bit LSB executable, x86-64, version 1]' },
+      cat: { type: 'file', size: '38KB', owner: 'root', content: '[ELF 64-bit LSB executable, x86-64, version 1]' },
+      grep: { type: 'file', size: '210KB', owner: 'root', content: '[ELF 64-bit LSB executable, x86-64, version 1]' },
+      find: { type: 'file', size: '320KB', owner: 'root', content: '[ELF 64-bit LSB executable, x86-64, version 1]' },
+      pwd: { type: 'file', size: '35KB', owner: 'root', content: '[ELF 64-bit LSB executable, x86-64, version 1]' },
+      date: { type: 'file', size: '110KB', owner: 'root', content: '[ELF 64-bit LSB executable, x86-64, version 1]' },
+      echo: { type: 'file', size: '32KB', owner: 'root', content: '[ELF 64-bit LSB executable, x86-64, version 1]' }
+    }
+  },
+  '/sbin': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      iptables: { type: 'file', size: '105KB', owner: 'root', content: '[ELF 64-bit LSB executable]' },
+      ip: { type: 'file', size: '680KB', owner: 'root', content: '[ELF 64-bit LSB executable]' },
+      ifconfig: { type: 'file', size: '82KB', owner: 'root', content: '[ELF 64-bit LSB executable]' },
+      sshd: { type: 'file', size: '890KB', owner: 'root', content: '[ELF 64-bit LSB executable]' },
+      reboot: { type: 'file', size: '45KB', owner: 'root', content: '[ELF 64-bit LSB executable]' }
+    }
+  },
+  '/boot': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      'vmlinuz-6.1.0-kali9-amd64': { type: 'file', size: '8.4MB', owner: 'root', content: '[Linux Kernel x86-64 Boot Executable]' },
+      'initrd.img-6.1.0-kali9-amd64': { type: 'file', size: '38.2MB', owner: 'root', content: '[Initrd cpio archive]' },
+      grub: 'dir'
+    }
+  },
+  '/boot/grub': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      'grub.cfg': { type: 'file', size: '4.8KB', owner: 'root', content: '# GRUB Configuration File\nset default=0\nset timeout=5\nmenuentry "Debian GNU/Linux" --class debian {\n  linux /vmlinuz-6.1.0-kali9-amd64 root=/dev/sda1 ro quiet\n}' }
+    }
+  },
+  '/dev': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      null: { type: 'file', size: '0B', owner: 'root', content: '' },
+      zero: { type: 'file', size: '0B', owner: 'root', content: '' },
+      random: { type: 'file', size: '0B', owner: 'root', content: '[Dispositivo de entropia aleatoria]' },
+      urandom: { type: 'file', size: '0B', owner: 'root', content: '[Dispositivo de pseudo-entropia]' },
+      sda1: { type: 'file', size: '0B', owner: 'root', content: '[Dispositivo de bloque /dev/sda1]' }
+    }
+  },
+  '/proc': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      version: { type: 'file', size: '96B', owner: 'root', content: 'Linux version 6.1.0-kali9-amd64 (kali@kali-builder) (gcc version 12.2.0)' },
+      cpuinfo: { type: 'file', size: '4.2KB', owner: 'root', content: 'processor\t: 0\nvendor_id\t: GenuineIntel\nmodel name\t: Intel(R) Xeon(R) CPU E5-2620 @ 2.00GHz\ncpu MHz\t\t: 3000.000\ncache size\t: 15360 KB' },
+      meminfo: { type: 'file', size: '1.2KB', owner: 'root', content: 'MemTotal:       16384000 kB\nMemFree:         9842000 kB\nMemAvailable:   12048000 kB\nSwapTotal:       4194304 kB\nSwapFree:        4194304 kB' },
+      uptime: { type: 'file', size: '20B', owner: 'root', content: '1048576.22 839210.15' }
+    }
+  },
+  '/sys': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      kernel: 'dir',
+      class: 'dir'
+    }
+  },
+  '/sys/kernel': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      debug: { type: 'file', size: '0B', owner: 'root', content: '' }
+    }
+  },
+  '/sys/class': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      net: 'dir'
+    }
+  },
+  '/sys/class/net': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      eth0: { type: 'file', size: '0B', owner: 'root', content: 'speed: 1000\nduplex: full' }
+    }
+  },
+  '/lib': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      modules: 'dir',
+      systemd: 'dir'
+    }
+  },
+  '/lib/modules': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      '6.1.0-kali9-amd64': { type: 'file', size: '4.0KB', owner: 'root', content: 'modules.dep\nmodules.alias' }
+    }
+  },
+  '/lib/systemd': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      system: 'dir'
+    }
+  },
+  '/lib/systemd/system': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      'apache2.service': { type: 'file', size: '280B', owner: 'root', content: '[Unit]\nDescription=The Apache HTTP Server\nAfter=network.target' },
+      'ssh.service': { type: 'file', size: '320B', owner: 'root', content: '[Unit]\nDescription=OpenBSD Secure Shell server\nAfter=network.target' }
+    }
+  },
+  '/media': { type: 'dir', owner: 'root', children: {} },
+  '/mnt': { type: 'dir', owner: 'root', children: {} },
+  '/usr': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      bin: 'dir',
+      sbin: 'dir',
+      lib: 'dir',
+      local: 'dir',
+      share: 'dir'
+    }
+  },
+  '/usr/bin': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      python3: { type: 'file', size: '4.8MB', owner: 'root', content: '[Python 3.11.2 Binary]' },
+      perl: { type: 'file', size: '2.4MB', owner: 'root', content: '[Perl 5.36 Binary]' },
+      awk: { type: 'file', size: '180KB', owner: 'root', content: '[GNU Awk 5.2.1 Binary]' },
+      sed: { type: 'file', size: '140KB', owner: 'root', content: '[GNU Sed 4.9 Binary]' },
+      curl: { type: 'file', size: '260KB', owner: 'root', content: '[curl 7.88.1 Binary]' },
+      wget: { type: 'file', size: '490KB', owner: 'root', content: '[wget 1.21.3 Binary]' },
+      ssh: { type: 'file', size: '780KB', owner: 'root', content: '[OpenSSH Client Binary]' },
+      openssl: { type: 'file', size: '640KB', owner: 'root', content: '[OpenSSL 3.0.11 Binary]' },
+      sudo: { type: 'file', size: '210KB', owner: 'root', content: '[Sudo Binary setuid root]' },
+      base64: { type: 'file', size: '45KB', owner: 'root', content: '[GNU coreutils base64]' }
+    }
+  },
+  '/usr/sbin': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      apache2: { type: 'file', size: '720KB', owner: 'root', content: '[Apache 2.4.57 Binary]' },
+      logrotate: { type: 'file', size: '85KB', owner: 'root', content: '[logrotate Binary]' },
+      cron: { type: 'file', size: '55KB', owner: 'root', content: '[cron daemon Binary]' }
+    }
+  },
+  '/usr/lib': { type: 'dir', owner: 'root', children: {} },
+  '/usr/share': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      doc: 'dir',
+      man: 'dir'
+    }
+  },
+  '/usr/share/doc': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      'uptpc-hackathon': { type: 'file', size: '1.2KB', owner: 'root', content: 'Guia de Infraestructura del Hackathon UPTPC 2026.\nTodos los servicios de prueba estan confinados en el entorno virtual.' }
+    }
+  },
+  '/usr/share/man': { type: 'dir', owner: 'root', children: {} },
+  '/usr/local': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      bin: 'dir',
+      etc: 'dir'
+    }
+  },
+  '/usr/local/bin': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      uptpc_watchdog: { type: 'file', size: '1.8KB', owner: 'root', content: '#!/bin/bash\n# Servicio watchdog para monitoreo del Hackathon\nlogger "UPTPC Watchdog OK"' },
+      'backup_agent.sh': { type: 'file', size: '850B', owner: 'root', content: '#!/bin/bash\n# Script de respaldo automatizado del sistema\ntar -czf /tmp/backup_cache.tar.gz /var/log/*.log > /dev/null 2>&1' }
+    }
+  },
+  '/usr/local/etc': { type: 'dir', owner: 'root', children: {} },
+  '/var': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      www: 'dir',
+      log: 'dir',
+      backups: 'dir',
+      cache: 'dir',
+      run: 'dir'
+    }
+  },
+  '/var/run': { type: 'dir', owner: 'root', children: {} },
+  '/var/cache': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      apt: 'dir'
+    }
+  },
+  '/var/cache/apt': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      pkgcache: { type: 'file', size: '12MB', owner: 'root', content: '[Cache binario APT]' }
+    }
+  },
+  '/var/backups': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      'apt.extended_states.0': { type: 'file', size: '4.2KB', owner: 'root', content: 'Package: apache2\nArchitecture: amd64\nAuto-Installed: 0' },
+      'dpkg.status.0': { type: 'file', size: '48KB', owner: 'root', content: 'Status: install ok installed' },
+      'shadow.bak': { type: 'file', size: '640B', owner: 'root', restricted: true, content: 'ACCESO DENEGADO — Respaldo de shadow solo accesible por root.' }
+    }
+  },
+  '/var/log': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      apache2: 'dir',
+      audit: 'dir',
+      mysql: 'dir',
+      'auth.log': {
+        type: 'file',
+        size: '14.2KB',
+        owner: 'root',
+        content: '[2026-08-06 07:58:22] sshd[1024]: Accepted password for invitado from 192.168.1.42 port 54322 ssh2\n[2026-08-06 08:01:04] sudo[1105]: invitado : TTY=pts/0 ; PWD=/var/www/html ; USER=root ; COMMAND=/bin/bash\n[2026-08-06 08:03:17] sshd[1024]: Disconnected from user invitado 192.168.1.42 port 54322\n[2026-08-06 08:10:00] audit[1240]: Audit daemon service active and listening'
+      },
+      syslog: {
+        type: 'file',
+        size: '18.4KB',
+        owner: 'root',
+        content: '[2026-08-06 08:00:00] kernel: Linux server-hackaton 6.1.0-kali9-amd64 iniciado\n[2026-08-06 08:00:12] systemd[1]: Iniciado Apache2 HTTP Server.\n[2026-08-06 08:00:15] systemd[1]: Iniciado OpenSSH Daemon.\n[2026-08-06 08:00:42] apache2[612]: Escuchando en puerto 80\n[2026-08-06 08:01:00] cron[700]: (root) CMD (/usr/local/bin/uptpc_watchdog)'
+      },
+      'dmesg.log': {
+        type: 'file',
+        size: '9.2KB',
+        owner: 'root',
+        content: '[    0.000000] Linux version 6.1.0-kali9-amd64 (kali@kali-builder)\n[    0.004000] Console: colour dummy device 80x25\n[    1.204500] eth0: link up, 1000Mbps, full-duplex'
+      },
+      'dpkg.log': {
+        type: 'file',
+        size: '22KB',
+        owner: 'root',
+        content: '2026-08-06 07:45:10 install apache2:amd64 <none> 2.4.57\n2026-08-06 07:45:20 install openssh-server:amd64 <none> 1:9.2p1'
+      }
+    }
+  },
+  '/var/log/apache2': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      'access.log': {
+        type: 'file',
+        size: '5.4KB',
+        owner: 'root',
+        content: '192.168.1.42 - - [06/Aug/2026:08:02:01] "GET / HTTP/1.1" 200 4821\n192.168.1.42 - - [06/Aug/2026:08:02:45] "GET /index.php HTTP/1.1" 200 3240\n192.168.1.42 - - [06/Aug/2026:08:03:10] "GET /robots.txt HTTP/1.1" 200 180\n192.168.1.42 - - [06/Aug/2026:08:04:15] "GET /backups/ HTTP/1.1" 403 274'
+      },
+      'error.log': {
+        type: 'file',
+        size: '2.1KB',
+        owner: 'root',
+        content: '[06/Aug/2026:08:00:12.102] [mpm_event:notice] [pid 612:tid 139] AH00489: Apache/2.4.57 (Debian) configured -- resuming normal operations'
+      },
+      'other_vhosts_access.log': {
+        type: 'file',
+        size: '1.2KB',
+        owner: 'root',
+        content: 'server-hackaton.uptpc.edu.ve:80 192.168.1.42 - - [06/Aug/2026:08:02:01] "GET / HTTP/1.1" 200 4821'
+      }
+    }
+  },
+  '/var/log/audit': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      'audit.log': {
+        type: 'file',
+        size: '7.8KB',
+        owner: 'root',
+        content: 'type=SYSCALL arch=c000003e syscall=59 success=yes exit=0 a0=55c a1=7ffd a2=7ffd a3=8 items=2 ppid=1024 pid=1105 comm="sudo" exe="/usr/bin/sudo"\ntype=USER_AUTH pid=1105 uid=1001 auid=1001 ses=1 res=success'
+      }
+    }
+  },
+  '/var/log/mysql': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      'error.log': {
+        type: 'file',
+        size: '1.6KB',
+        owner: 'root',
+        content: '[Note] /usr/sbin/mysqld: ready for connections. Version: \'10.11.4-MariaDB-1~deb12u1\'  socket: \'/run/mysqld/mysqld.sock\'  port: 3306'
+      }
+    }
+  },
+  '/var/www': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      html: 'dir',
+      backups: 'dir'
+    }
+  },
+  '/var/www/html': {
+    type: 'dir',
+    owner: 'www-data',
+    children: {
+      'index.php': {
+        type: 'file',
+        size: '2.4KB',
+        owner: 'www-data',
+        content: '<?php\n// Portal Central del Hackathon UPTPC 2026\necho "<h1>Bienvenido al Servidor de Infraestructura UPTPC 2026</h1>";\necho "<p>Acceso de participantes y evaluacion tecnica en curso.</p>";'
+      },
+      'robots.txt': {
+        type: 'file',
+        size: '120B',
+        owner: 'www-data',
+        content: 'User-agent: *\nDisallow: /backups/\nDisallow: /admin_portal/\nDisallow: /includes/'
+      },
+      'readme.txt': {
+        type: 'file',
+        size: '480B',
+        owner: 'www-data',
+        content: 'BIENVENIDO AL SERVIDOR DE INFRAESTRUCTURA UPTPC 2026\nHost: server-hackaton.uptpc.edu.ve\n\n=======================================================================\nAVISO DE SEGURIDAD Y AUDITORIA INTERNA:\nServidor confinado para pruebas de penetracion y auditoria del Hackathon.\n- El sistema consta de multiples niveles y servicios confinados.\n- Toda sesion interactiva y ejecucion de comandos queda auditada.\n- Investigue las configuraciones y servicios para encontrar anomalias.\n======================================================================='
+      },
+      public_assets: 'dir',
+      includes: 'dir',
+      admin_portal: 'dir'
+    }
+  },
+  '/var/www/html/public_assets': {
+    type: 'dir',
+    owner: 'www-data',
+    children: {
+      'logo.png': { type: 'file', size: '28.4KB', owner: 'www-data', content: '[Datos binarios PNG - imagen no legible en terminal]' },
+      'styles.css': { type: 'file', size: '6.2KB', owner: 'www-data', content: '/* Hoja de estilos del portal UPTPC */\nbody { background: #0a0d14; color: #38bdf8; }' },
+      'app.js': { type: 'file', size: '4.1KB', owner: 'www-data', content: '// App client script\nconsole.log("UPTPC Hackathon Portal Initialized");' }
+    }
+  },
+  '/var/www/html/includes': {
+    type: 'dir',
+    owner: 'www-data',
+    children: {
+      'db_connect.php': {
+        type: 'file',
+        size: '420B',
+        owner: 'www-data',
+        content: '<?php\n$db_host = "127.0.0.1";\n$db_user = "uptpc_user";\n$db_pass = "UPTPC_Secure_Pass_2026";\n$db_name = "hackathon_portal";'
+      },
+      'functions_portal.php': {
+        type: 'file',
+        size: '1.1KB',
+        owner: 'www-data',
+        content: '<?php\nfunction sanitize($input) {\n    return htmlspecialchars(trim($input), ENT_QUOTES, "UTF-8");\n}'
+      }
+    }
+  },
+  '/var/www/html/admin_portal': {
+    type: 'dir',
+    owner: 'www-data',
+    children: {
+      'login.php': {
+        type: 'file',
+        size: '1.4KB',
+        owner: 'www-data',
+        content: '<?php\n// Panel de autenticacion interna para administradores UPTPC\n// Credenciales de servicio alojadas en el cluster de administracion'
+      },
+      'auth_check.php': {
+        type: 'file',
+        size: '890B',
+        owner: 'www-data',
+        content: '<?php\nsession_start();\n// Verificacion de sesion de administrador'
+      }
+    }
+  },
+  '/var/www/backups': {
+    type: 'dir',
+    owner: 'www-data',
+    children: {
+      'backup_system.conf': {
+        type: 'file',
+        size: '320B',
+        owner: 'www-data',
+        content: '# ==========================================================\n# CONFIGURACION DE RESPALDO UPTPC 2026\n# Modulo: Web Infrastructure Security Audit\n# ==========================================================\nBACKUP_ENABLED=1\nBACKUP_TARGET="/var/www/backups/dump_daily.sql"\nENCRYPTION="AES-256-GCM"\n\n[ CODIGO SECTOR 1 ]: K4L1_\n\n# Sector 1 de 4 verificado.\n# =========================================================='
+      },
+      'database_dump.sql': {
+        type: 'file',
+        size: '8.4KB',
+        owner: 'www-data',
+        content: '-- MariaDB dump 10.19  Distrib 10.11.4-MariaDB\n-- Host: 127.0.0.1    Database: portal_db\nCREATE TABLE `usuarios` (\n  `id` int(11) NOT NULL,\n  `username` varchar(50) NOT NULL,\n  `role` varchar(20) DEFAULT "participante"\n);\nINSERT INTO `usuarios` VALUES (1,"admin","superadmin"),(2,"invitado","user");'
+      },
+      'site_backup_20260401.tar.gz': {
+        type: 'file',
+        size: '45.2MB',
+        owner: 'www-data',
+        content: '[Archivo comprimido gzip - Respaldo de codigo web UPTPC 2026]'
+      }
+    }
+  },
+  '/opt': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      cyberdefense: 'dir',
+      uptpc_monitoring: 'dir'
+    }
+  },
+  '/opt/uptpc_monitoring': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      config: 'dir',
+      scripts: 'dir'
+    }
+  },
+  '/opt/uptpc_monitoring/config': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      'agent.yml': {
+        type: 'file',
+        size: '340B',
+        owner: 'root',
+        content: 'server:\n  host: 127.0.0.1\n  port: 9090\nmetrics:\n  interval: 15s\n  system_load: true\n  disk_usage: true'
+      },
+      'metrics.json': {
+        type: 'file',
+        size: '220B',
+        owner: 'root',
+        content: '{"status": "healthy", "uptime_hours": 312, "active_sessions": 2}'
+      }
+    }
+  },
+  '/opt/uptpc_monitoring/scripts': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      'monitor_daemon.sh': {
+        type: 'file',
+        size: '480B',
+        owner: 'root',
+        content: '#!/bin/bash\n# Agente de sondeo periodico del servidor UPTPC\necho "[$(date)] Monitoreo activo sin alertas."'
+      },
+      'check_disk.py': {
+        type: 'file',
+        size: '620B',
+        owner: 'root',
+        content: 'import shutil\ntotal, used, free = shutil.disk_usage("/")\nprint(f"Espacio libre: {free // (2**30)} GB")'
+      }
+    }
+  },
+  '/opt/cyberdefense': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      rules: 'dir',
+      logs: 'dir'
+    }
+  },
+  '/opt/cyberdefense/logs': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      'ids_alerts.log': {
+        type: 'file',
+        size: '3.6KB',
+        owner: 'root',
+        content: '[2026-08-06 08:00:10] IDS INFO: Reglas Suricata y Snort cargadas correctamente.\n[2026-08-06 08:02:40] IDS NOTICE: Peticion HTTP analizada hacia /index.php - Verificacion limpia.'
+      },
+      'firewall_drops.log': {
+        type: 'file',
+        size: '1.8KB',
+        owner: 'root',
+        content: '[2026-08-06 07:50:00] DROP IN=eth0 OUT= SRC=203.0.113.88 PROTO=TCP SPT=44120 DPT=23 (Telnet bloqueado)'
+      }
+    }
+  },
+  '/opt/cyberdefense/rules': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      '.sector2_audit.dat': {
+        type: 'file',
+        size: '310B',
+        owner: 'root',
+        content: '# ==========================================================\n# MODULO DE AUDITORIA Y CIBERDEFENSA UPTPC 2026\n# Archivo de control y reglas sectoriales\n# ==========================================================\nRULE_STATUS="ACTIVE"\nHASH_TOKEN="8f9b2d8c3e1a"\n\n[ CODIGO SECTOR 2 ]: SH4D0W_\n\n# Sector 2 de 4 verificado.\n# =========================================================='
+      },
+      'suricata.rules': {
+        type: 'file',
+        size: '2.8KB',
+        owner: 'root',
+        content: 'alert tcp any any -> $HOME_NET 80 (msg:"UPTPC - Deteccion Inyeccion SQL"; content:"UNION SELECT"; nocase; sid:1000001; rev:1;)\nalert tcp any any -> $HOME_NET 22 (msg:"UPTPC - Intento SSH Fallido repetido"; flags:S; threshold:type both, track by_src, count 5, seconds 60; sid:1000002; rev:1;)'
+      },
+      'snort.conf': {
+        type: 'file',
+        size: '1.4KB',
+        owner: 'root',
+        content: '# Configuracion de deteccion IDS Snort\nipvar HOME_NET 10.10.0.0/24\nipvar EXTERNAL_NET any\ninclude /opt/cyberdefense/rules/suricata.rules'
+      },
+      'firewall_whitelist.json': {
+        type: 'file',
+        size: '260B',
+        owner: 'root',
+        content: '{\n  "whitelisted_ips": [\n    "192.168.1.42",\n    "10.10.0.1",\n    "10.10.0.2"\n  ],\n  "policy": "ACCEPT_LOCAL_HACKATHON"\n}'
+      }
+    }
+  },
+  '/srv': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      ftp: 'dir',
+      classified: { type: 'dir', owner: 'root', restricted: true }
+    }
+  },
+  '/srv/ftp': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      public: 'dir',
+      uploads: 'dir'
+    }
+  },
+  '/srv/ftp/public': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      'bienvenida.txt': {
+        type: 'file',
+        size: '340B',
+        owner: 'root',
+        content: 'Servidor FTP Publico UPTPC 2026.\nRepositorio de material academico y guias de laboratorio.\nPara auditorias de alto nivel solicite autorizacion al administrador.'
+      },
+      'reglamento_laboratorios.pdf': {
+        type: 'file',
+        size: '420KB',
+        owner: 'root',
+        content: '[Documento PDF - Reglamento General de Laboratorios UPTPC]'
+      }
+    }
+  },
+  '/srv/ftp/uploads': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      'readme_ftp.txt': {
+        type: 'file',
+        size: '180B',
+        owner: 'root',
+        content: 'Directorio de subida temporal FTP. Las transferencias anonimas estan deshabilitadas.'
+      }
+    }
+  },
+  '/srv/classified': {
+    type: 'dir',
+    owner: 'root',
+    restricted: true,
+    children: {
+      'sector3_credentials.txt': {
+        type: 'file',
+        size: '340B',
+        owner: 'root',
+        restricted: true,
+        content: '# ==========================================================\n# UPTPC CLASSIFIED SERVICE CREDENTIALS\n# Acceso Restringido: Superusuario / Root Autorizado\n# ==========================================================\nSERVICE_TIER="TOP_SECRET_CORE"\nSESSION_VALIDATED="TRUE"\n\n[ CODIGO SECTOR 3 ]: K3RN3L_\n\n# Sector 3 de 4 verificado.\n# =========================================================='
+      },
+      'auth_keys.pem': {
+        type: 'file',
+        size: '1.7KB',
+        owner: 'root',
+        restricted: true,
+        content: '-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA3V8z1q5l6r9oZ10A...[CLAVE PRIVADA CLASIFICADA]...nQ2\n-----END RSA PRIVATE KEY-----'
+      },
+      'vpn_keys.conf': {
+        type: 'file',
+        size: '380B',
+        owner: 'root',
+        restricted: true,
+        content: '[Interface]\nPrivateKey = wAk...[WireGuard Root VPN Key]...=\nAddress = 10.200.0.1/24\nListenPort = 51820'
+      }
+    }
+  },
+  '/home': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      invitado: 'dir',
+      operador: 'dir',
+      admin: { type: 'dir', owner: 'admin', restricted: true }
+    }
+  },
+  '/home/invitado': {
+    type: 'dir',
+    owner: 'invitado',
+    children: {
+      '.bashrc': {
+        type: 'file',
+        size: '240B',
+        owner: 'invitado',
+        content: '# .bashrc — Configuracion de shell Bash\nexport PATH=$PATH:/usr/local/bin\nalias ll="ls -la"\nalias cls="clear"'
+      },
+      '.bash_history': {
+        type: 'file',
+        size: '140B',
+        owner: 'invitado',
+        content: 'ls -la\npwd\nwhoami\ncat /etc/os-release\nuname -a\nps aux\ncat /etc/hosts\nsudo -l'
+      },
+      '.profile': {
+        type: 'file',
+        size: '180B',
+        owner: 'invitado',
+        content: '# ~/.profile: ejecutado por shells de inicio de sesion\nexport LANG=es_VE.UTF-8'
+      },
+      'notas.txt': {
+        type: 'file',
+        size: '560B',
+        owner: 'invitado',
+        content: 'NOTAS PERSONALES DE AUDITORIA — usuario: invitado@server-hackaton\n========================================================================\nRecordatorio para el equipo de seguridad:\n- El sistema contiene 4 fragmentos de bandera (Sectores 1, 2, 3 y 4)\n  distribuidos en el servidor.\n- Comandos y tecnicas sugeridas para la auditoria:\n  * Localizar archivos: find / -name <patron> 2>/dev/null\n  * Filtrar contenido sospechoso: grep -rn "SECTOR" / 2>/dev/null\n  * Revisar configuraciones, servicios y archivos ocultos.\n- Algunas areas requieren permisos de superusuario (sudo su).\n- La bandera se compone concatenando los 4 sectores encontrados.\n========================================================================'
+      },
+      Escritorio: 'dir',
+      Documentos: 'dir',
+      Descargas: 'dir'
+    }
+  },
+  '/home/invitado/Escritorio': {
+    type: 'dir',
+    owner: 'invitado',
+    children: {
+      'instrucciones_red.txt': {
+        type: 'file',
+        size: '280B',
+        owner: 'invitado',
+        content: 'CONECTIVIDAD INTERNA DEL HACKATHON:\nServidor Local: 192.168.1.42 (Kali Linux)\nServidor Central: 10.10.0.1 (server-hackaton.uptpc.edu.ve)\nGateway: 10.10.0.2\nRecuerda usar \'sudo su\' si te encuentras con permisos restringidos.'
+      }
+    }
+  },
+  '/home/invitado/Documentos': {
+    type: 'dir',
+    owner: 'invitado',
+    children: {
+      auditoria: 'dir'
+    }
+  },
+  '/home/invitado/Documentos/auditoria': {
+    type: 'dir',
+    owner: 'invitado',
+    children: {
+      'checklist.md': {
+        type: 'file',
+        size: '380B',
+        owner: 'invitado',
+        content: '# Checklist Auditoria Servidor Hackathon 2026\n- [ ] Mapear estructura de directorios y servicios activos\n- [ ] Identificar archivos de configuracion y respaldos\n- [ ] Inspeccionar reglas de seguridad y archivos ocultos\n- [ ] Auditar vectores de elevacion de privilegios\n- [ ] Recuperar credenciales y fragmentos de auditoria'
+      },
+      'ips_permitidas.csv': {
+        type: 'file',
+        size: '140B',
+        owner: 'invitado',
+        content: 'ip,rango,descripcion\n192.168.1.0/24,LAN_KALI,Equipos de competidores\n10.10.0.0/24,CORE_SRV,Servidores oficiales'
+      }
+    }
+  },
+  '/home/invitado/Descargas': {
+    type: 'dir',
+    owner: 'invitado',
+    children: {
+      'auditoria_tools.tar.gz': {
+        type: 'file',
+        size: '1.4MB',
+        owner: 'invitado',
+        content: '[Archivo tar.gz con scripts auxiliares de pentesting]'
+      }
+    }
+  },
+  '/home/operador': {
+    type: 'dir',
+    owner: 'operador',
+    children: {
+      scripts: 'dir'
+    }
+  },
+  '/home/operador/scripts': {
+    type: 'dir',
+    owner: 'operador',
+    children: {
+      'maintenance.py': {
+        type: 'file',
+        size: '460B',
+        owner: 'operador',
+        content: '# Script de mantenimiento periodico de logs\nimport os\nprint("Mantenimiento de servidor completado.")'
+      },
+      'backup_cron.sh': {
+        type: 'file',
+        size: '220B',
+        owner: 'operador',
+        content: '#!/bin/bash\ntar -czf /var/backups/daily_log.tar.gz /var/log/apache2/*.log'
+      }
+    }
+  },
+  '/home/admin': {
+    type: 'dir',
+    owner: 'admin',
+    restricted: true,
+    children: {
+      'server_config.conf': {
+        type: 'file',
+        size: '160B',
+        owner: 'admin',
+        restricted: true,
+        content: 'PUERTO=8080\nHOST=127.0.0.1\nSSL=habilitado\nMODULO_DEFENSA=ACTIVO'
+      },
+      '.ssh': 'dir',
+      proyectos: 'dir'
+    }
+  },
+  '/home/admin/.ssh': {
+    type: 'dir',
+    owner: 'admin',
+    restricted: true,
+    children: {
+      authorized_keys: {
+        type: 'file',
+        size: '572B',
+        owner: 'admin',
+        restricted: true,
+        content: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC...[Clave publica admin UPTPC]...admin@uptpc.edu.ve'
+      },
+      'id_rsa.pub': {
+        type: 'file',
+        size: '398B',
+        owner: 'admin',
+        restricted: true,
+        content: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD...[id_rsa.pub admin]'
+      }
+    }
+  },
+  '/home/admin/proyectos': {
+    type: 'dir',
+    owner: 'admin',
+    restricted: true,
+    children: {
+      'deploy.log': {
+        type: 'file',
+        size: '640B',
+        owner: 'admin',
+        restricted: true,
+        content: '[2026-08-01 10:00:00] Despliegue de infraestructura Hackathon 2026 completado con exito.'
+      }
+    }
+  },
+  '/etc': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      hostname: { type: 'file', size: '30B', owner: 'root', content: 'server-hackaton.uptpc.edu.ve' },
+      'os-release': {
+        type: 'file',
+        size: '185B',
+        owner: 'root',
+        content: 'NAME="Debian GNU/Linux"\nVERSION_ID="12"\nID=debian\nPRETTY_NAME="Debian GNU/Linux 12 (bookworm)"\nHOME_URL="https://www.debian.org/"'
+      },
+      passwd: {
+        type: 'file',
+        size: '1.4KB',
+        owner: 'root',
+        content: 'root:x:0:0:root:/root:/bin/bash\ndaemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin\nbin:x:2:2:bin:/bin:/usr/sbin/nologin\nsys:x:3:3:sys:/dev:/usr/sbin/nologin\nwww-data:x:33:33:www-data:/var/www:/usr/sbin/nologin\ninvitado:x:1001:1001:Usuario Invitado,,,:/home/invitado:/bin/bash\noperador:x:1002:1002:Operador de Sistemas,,,:/home/operador:/bin/bash\nadmin:x:1003:1003:Administrador UPTPC,,,:/home/admin:/bin/bash'
+      },
+      shadow: {
+        type: 'file',
+        size: '640B',
+        owner: 'root',
+        restricted: true,
+        content: 'ACCESO DENEGADO — Archivo de contrasenas cifradas.\nSolo accesible con privilegios de superusuario (root).'
+      },
+      hosts: {
+        type: 'file',
+        size: '120B',
+        owner: 'root',
+        content: '127.0.0.1\tlocalhost\n10.10.0.1\tserver-hackaton.uptpc.edu.ve server-hackaton\n10.10.0.2\tgateway.uptpc.edu.ve'
+      },
+      crontab: {
+        type: 'file',
+        size: '140B',
+        owner: 'root',
+        content: '# Tareas programadas del sistema\n*/5 * * * * root /usr/local/bin/uptpc_watchdog\n0 3 * * * root /usr/sbin/logrotate /etc/logrotate.conf'
+      },
+      'resolv.conf': {
+        type: 'file',
+        size: '60B',
+        owner: 'root',
+        content: 'nameserver 10.10.0.2\nnameserver 8.8.8.8'
+      },
+      sudoers: {
+        type: 'file',
+        size: '420B',
+        owner: 'root',
+        restricted: true,
+        content: 'Defaults env_reset\nroot ALL=(ALL:ALL) ALL\n%sudo ALL=(ALL:ALL) ALL\ninvitado ALL=(ALL:ALL) NOPASSWD: ALL'
+      },
+      apache2: 'dir',
+      ssh: 'dir',
+      'cron.d': 'dir',
+      security: 'dir',
+      secret_vault: { type: 'dir', owner: 'root', restricted: true }
+    }
+  },
+  '/etc/apache2': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      'apache2.conf': {
+        type: 'file',
+        size: '3.2KB',
+        owner: 'root',
+        content: '# Configuracion Principal Apache 2.4\nServerRoot "/etc/apache2"\nDocumentRoot "/var/www/html"\n<Directory /var/www/html>\n    Options -Indexes +FollowSymLinks\n    AllowOverride None\n    Require all granted\n</Directory>'
+      },
+      'ports.conf': {
+        type: 'file',
+        size: '120B',
+        owner: 'root',
+        content: 'Listen 80\n<IfModule ssl_module>\n    Listen 443\n</IfModule>'
+      },
+      'sites-available': 'dir'
+    }
+  },
+  '/etc/apache2/sites-available': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      '000-default.conf': {
+        type: 'file',
+        size: '560B',
+        owner: 'root',
+        content: '<VirtualHost *:80>\n    ServerAdmin admin@uptpc.edu.ve\n    ServerName server-hackaton.uptpc.edu.ve\n    DocumentRoot /var/www/html\n    ErrorLog ${APACHE_LOG_DIR}/error.log\n    CustomLog ${APACHE_LOG_DIR}/access.log combined\n</VirtualHost>'
+      }
+    }
+  },
+  '/etc/ssh': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      sshd_config: {
+        type: 'file',
+        size: '1.2KB',
+        owner: 'root',
+        content: 'Port 22\nPermitRootLogin prohibit-password\nPasswordAuthentication yes\nAllowUsers invitado admin root'
+      },
+      'ssh_host_rsa_key.pub': {
+        type: 'file',
+        size: '570B',
+        owner: 'root',
+        content: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC8...[Host Key server-hackaton]'
+      }
+    }
+  },
+  '/etc/cron.d': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      backup_daily: {
+        type: 'file',
+        size: '180B',
+        owner: 'root',
+        content: '0 2 * * * root /usr/local/bin/backup_agent.sh > /dev/null 2>&1'
+      },
+      sysstat: {
+        type: 'file',
+        size: '110B',
+        owner: 'root',
+        content: '*/10 * * * * root /usr/lib/sysstat/sa1 1 1'
+      }
+    }
+  },
+  '/etc/security': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      'limits.conf': {
+        type: 'file',
+        size: '890B',
+        owner: 'root',
+        content: '# Limites de procesos y descriptores\n* soft nofile 65536\n* hard nofile 65536'
+      }
+    }
+  },
+  '/etc/secret_vault': {
+    type: 'dir',
+    owner: 'root',
+    restricted: true,
+    children: {
+      'flag_confidencial.txt': {
+        type: 'file',
+        size: '580B',
+        owner: 'root',
+        restricted: true,
+        content: '========================================================================\nBOVEDA CENTRAL DE PRIVILEGIOS ROOT — UPTPC HACKATHON 2026\n========================================================================\n[ CODIGO SECTOR 4 ]: V4ULT_2026\n\n¡FELICITACIONES! HAS ACCEDIDO A LA BOVEDA PRINCIPAL.\n\nCODIGO CONCATENADO OFICIAL (4 SECTORES):\nK4L1_SH4D0W_K3RN3L_V4ULT_2026\n\nBANDERA MAESTRA DEL DESAFIO:\nFLAG{SERVER_TERMINAL_MASTER_2026}\n\nIngresa cualquiera de estos dos formatos en el formulario web inferior\npara validar el desafio y otorgarle los puntos a tu equipo.\n========================================================================'
+      },
+      '.clave_oculta': {
+        type: 'file',
+        size: '20B',
+        owner: 'root',
+        restricted: true,
+        content: 'V4ULT_2026'
+      },
+      'instrucciones_admin.txt': {
+        type: 'file',
+        size: '340B',
+        owner: 'root',
+        restricted: true,
+        content: 'INSTRUCCIONES INTERNAS DE AUDITORIA DE ADMINISTRADOR:\nClaves de validacion de sectores 1 a 4 sincronizadas con el dashboard central.\nLos competidores que unan los 4 sectores o ingresen la bandera oficial\nFLAG{SERVER_TERMINAL_MASTER_2026} completaran con exito el Desafio #4.'
+      }
+    }
+  },
+  '/root': {
+    type: 'dir',
+    owner: 'root',
+    restricted: true,
+    children: {
+      '.bashrc': {
+        type: 'file',
+        size: '220B',
+        owner: 'root',
+        content: '# .bashrc root\nexport PATH=$PATH:/sbin:/usr/sbin\nalias ll="ls -la"'
+      },
+      '.bash_history': {
+        type: 'file',
+        size: '120B',
+        owner: 'root',
+        content: 'ls -la\nuptime\niptables -L -n\nsystemctl status apache2\njournalctl -xe'
+      },
+      '.profile': {
+        type: 'file',
+        size: '160B',
+        owner: 'root',
+        content: '# ~/.profile root user'
+      },
+      '.root_master_vault': { type: 'dir', owner: 'root', restricted: true }
+    }
+  },
+  '/root/.root_master_vault': {
+    type: 'dir',
+    owner: 'root',
+    restricted: true,
+    children: {
+      'flag_master.txt': {
+        type: 'file',
+        size: '240B',
+        owner: 'root',
+        restricted: true,
+        content: '===============================================================\nBANDERA MAESTRA DEL SERVIDOR ROOT UPTPC\n===============================================================\nFLAG{SERVER_TERMINAL_MASTER_2026}\n==============================================================='
+      },
+      'master_keys.enc': {
+        type: 'file',
+        size: '1.2KB',
+        owner: 'root',
+        restricted: true,
+        content: '[Datos cifrados AES-256 de llaves maestras del sistema UPTPC]'
+      }
+    }
+  },
+  '/tmp': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      'system.log': {
+        type: 'file',
+        size: '160B',
+        owner: 'root',
+        content: '[2026-08-06 08:00:00] Servidor arrancado correctamente.\n[2026-08-06 08:00:14] Apache2 escuchando en puerto 80.\n[2026-08-06 08:00:16] sshd escuchando en puerto 22.'
+      },
+      '.tmp_cache': {
+        type: 'file',
+        size: '24B',
+        owner: 'root',
+        content: 'cache temporal interno'
+      },
+      '.system_cache': 'dir'
+    }
+  },
+  '/tmp/.system_cache': {
+    type: 'dir',
+    owner: 'root',
+    children: {
+      'session_d28f.tmp': {
+        type: 'file',
+        size: '64B',
+        owner: 'root',
+        content: 'sess_uid=1001;exp=1786000000'
+      }
+    }
+  }
 };
 
 // ── DOM ──────────────────────────────────────────────────────
@@ -311,18 +1312,13 @@ function updatePrompt(){
 function resolveSSH(p){
   if(!p||p==='.'){ return estado.dirSSH; }
   if(p==='~'){ return estado.esRoot?'/root':'/home/invitado'; }
-  let parts;
-  if(p.startsWith('/')){
-    parts=p.split('/').filter(Boolean);
-  } else {
-    parts=estado.dirSSH.split('/').filter(Boolean);
-    for(const seg of p.split('/').filter(Boolean)){
-      if(seg==='..')  { if(parts.length>0) parts.pop(); }
-      else if(seg!=='.') parts.push(seg);
-    }
+  let base = p.startsWith('/') ? [] : estado.dirSSH.split('/').filter(Boolean);
+  for(const seg of p.split('/').filter(Boolean)){
+    if(seg==='..'){ if(base.length>0) base.pop(); }
+    else if(seg!=='.'){ base.push(seg); }
   }
-  const r='/'+parts.join('/');
-  return r=='//'?'/':r;
+  const r = '/' + base.join('/');
+  return r === '' ? '/' : r;
 }
 
 // ── Animacion conexion SSH ────────────────────────────────────
@@ -434,25 +1430,69 @@ function cmdLocal(raw){
       addText('    inet 127.0.0.1  netmask 255.0.0.0','c-white'); break;
     case 'ls': case 'dir': {
       const la=args.some(a=>/^-[a-zA-Z]*a/.test(a));
-      if(la){
-        addText('total 36','c-gray');
-        addText('drwxr-xr-x  3 '+estado.usuario+' '+estado.usuario+' 4096 ago  6 08:00 .','c-white');
-        addText('drwxr-xr-x 12 root root                4096 ago  5 18:00 ..','c-white');
-        addText('-rw-r--r--  1 '+estado.usuario+' '+estado.usuario+'  220 ago  6 08:00 .bash_logout','c-gray');
-        addText('-rw-r--r--  1 '+estado.usuario+' '+estado.usuario+' 3526 ago  6 08:00 .bashrc','c-gray');
-        addText('-rw-r--r--  1 '+estado.usuario+' '+estado.usuario+'  807 ago  6 08:00 .profile','c-gray');
-        addLine('<span class="c-blue" style="font-weight:700;">drwxr-xr-x  2 '+estado.usuario+' '+estado.usuario+' 4096 ago  6 08:00 Escritorio</span>');
+      const targetArg = args.slice(1).filter(a=>!a.startsWith('-'))[0];
+      const currentDir = targetArg ? (targetArg.startsWith('/') ? targetArg : (estado.dirLocal==='~'?'/home/hacker/'+targetArg:estado.dirLocal+'/'+targetArg)).replace(/\/+/g,'/').replace(/\/$/,'') : (estado.dirLocal==='~'?'/home/hacker':estado.dirLocal);
+
+      if (currentDir === '/home/hacker/Escritorio' || targetArg === 'Escritorio') {
+        if (la) {
+          addText('total 16', 'c-gray');
+          addText('drwxr-xr-x 2 '+estado.usuario+' '+estado.usuario+' 4096 ago  6 08:00 .', 'c-white');
+          addText('drwxr-xr-x 5 '+estado.usuario+' '+estado.usuario+' 4096 ago  6 08:00 ..', 'c-white');
+          addLine('-rw-r--r-- 1 '+estado.usuario+' '+estado.usuario+'  740 ago  6 08:00 <span class="c-green">notas_kali.txt</span>');
+        } else {
+          addLine('<span class="c-green">notas_kali.txt</span>');
+        }
       } else {
-        addLine('<span class="c-blue" style="font-weight:700;">Escritorio</span>');
+        if(la){
+          addText('total 44','c-gray');
+          addText('drwxr-xr-x  5 '+estado.usuario+' '+estado.usuario+' 4096 ago  6 08:00 .','c-white');
+          addText('drwxr-xr-x 12 root root                4096 ago  5 18:00 ..','c-white');
+          addText('-rw-r--r--  1 '+estado.usuario+' '+estado.usuario+'  220 ago  6 08:00 .bash_logout','c-gray');
+          addText('-rw-r--r--  1 '+estado.usuario+' '+estado.usuario+' 3526 ago  6 08:00 .bashrc','c-gray');
+          addText('-rw-r--r--  1 '+estado.usuario+' '+estado.usuario+'  807 ago  6 08:00 .profile','c-gray');
+          addLine('<span class="c-blue" style="font-weight:700;">drwxr-xr-x  2 '+estado.usuario+' '+estado.usuario+' 4096 ago  6 08:00 Escritorio</span>');
+          addLine('<span class="c-blue" style="font-weight:700;">drwxr-xr-x  2 '+estado.usuario+' '+estado.usuario+' 4096 ago  6 08:00 Documentos</span>');
+          addLine('<span class="c-blue" style="font-weight:700;">drwxr-xr-x  2 '+estado.usuario+' '+estado.usuario+' 4096 ago  6 08:00 Descargas</span>');
+        } else {
+          addLine('<span class="c-blue" style="font-weight:700;">Escritorio</span>   <span class="c-blue" style="font-weight:700;">Documentos</span>   <span class="c-blue" style="font-weight:700;">Descargas</span>');
+        }
       } break;
     }
     case 'cd': {
       const d=args[1]||'~';
-      estado.dirLocal=(d==='~'||d==='')?'~':(d==='..'?'~':d);
+      if(d==='~'||d===''||d==='/home/hacker'){
+        estado.dirLocal='~';
+      } else if(d==='Escritorio'||d==='~/Escritorio'||d==='/home/hacker/Escritorio'){
+        estado.dirLocal='~/Escritorio';
+      } else if(d==='Documentos'||d==='~/Documentos'||d==='/home/hacker/Documentos'){
+        estado.dirLocal='~/Documentos';
+      } else if(d==='Descargas'||d==='~/Descargas'||d==='/home/hacker/Descargas'){
+        estado.dirLocal='~/Descargas';
+      } else if(d==='..'){
+        estado.dirLocal='~';
+      } else {
+        addText('bash: cd: '+esc(d)+': No existe el archivo o directorio','c-red');
+      }
       updatePrompt(); break;
+    }
+    case 'cat': {
+      const fa = args[1];
+      if(!fa){ addText('uso: cat <nombre_archivo>', 'c-red'); break; }
+      let fp = fa.startsWith('/') ? fa : (estado.dirLocal === '~' ? '/home/hacker/' + fa : estado.dirLocal + '/' + fa);
+      fp = fp.replace(/\/+/g, '/').replace(/\/$/, '');
+      if(fp.endsWith('notas_kali.txt') || localFileContents[fp]){
+        addText(localFileContents[fp] || localFileContents['/home/hacker/Escritorio/notas_kali.txt'], 'c-white');
+      } else {
+        addText('cat: ' + esc(fa) + ': No existe el archivo o directorio', 'c-red');
+      }
+      break;
     }
     case 'clear': case 'cls': outputHistory.innerHTML=''; break;
     case 'ssh': {
+      if(!window.hackathonActivoGlobal){
+        addLine('<div class="restricted-msg" style="border-left-color: #facc15; color: #facc15; background: rgba(250, 204, 21, 0.1);">&#9203; CONEXION SSH RECHAZADA &mdash; HACKATHON EN ESPERA<br>El servidor central <strong>'+SERVIDOR_SSH+'</strong> se encuentra en modo <strong>STANDBY</strong>.<br>El acceso SSH y los retos remotos ser&aacute;n liberados cuando el comit&eacute; organizador inicie oficialmente la competencia.<br>Puedes usar comandos locales como <code>screenfetch</code>, <code>help</code>, <code>ls</code> o revisar <code>cat Escritorio/notas_kali.txt</code> mientras tanto.</div>');
+        break;
+      }
       const dest=args[1]||'';
       if(!dest){ addText('uso: ssh usuario@host','c-red'); break; }
       const hp=dest.includes('@')?dest.split('@')[1]:dest;
@@ -615,10 +1655,8 @@ function cmdSSH(raw){
         updatePrompt();
         addLine('');
         addText('Privilegios elevados a ROOT — Superusuario del servidor.','c-red');
-        addText('  Ahora tienes acceso completo al sistema de archivos.','c-yellow');
+        addText('  Ahora tienes acceso completo a todos los directorios y servicios del sistema.','c-yellow');
         addText('  NOTA: Los comandos rm, cp y mv siguen inhabilitados (politica del Hackathon).','c-orange');
-        addLine('');
-        addText('  Pista: explora /etc/secret_vault/','c-yellow');
       } else {
         addText('uso: sudo su  (para convertirse en root)','c-red');
       } break;
@@ -767,12 +1805,14 @@ function resolveLocal(p){
 const localFS = {
   '/': { type:'dir', children:{ home:'dir', etc:'dir', usr:'dir', var:'dir' } },
   '/home': { type:'dir', children:{ hacker:'dir' } },
-  '/home/hacker': { type:'dir', children:{ Escritorio:'dir', '.bashrc':'file' } },
-  '/home/hacker/Escritorio': { type:'dir', children:{ 'notas_kali.txt':'file' } }
+  '/home/hacker': { type:'dir', children:{ Escritorio:'dir', Documentos:'dir', Descargas:'dir', '.bashrc':'file' } },
+  '/home/hacker/Escritorio': { type:'dir', children:{ 'notas_kali.txt':'file' } },
+  '/home/hacker/Documentos': { type:'dir', children:{} },
+  '/home/hacker/Descargas': { type:'dir', children:{} }
 };
 
 const localFileContents = {
-  '/home/hacker/Escritorio/notas_kali.txt': 'NOTAS DE KALI LINUX — HACKATHON UPTPC 2026\n\nPara buscar archivos en el servidor del Hackathon, primero conéctate vía SSH:\n  ssh invitado@server-hackaton.uptpc.edu.ve'
+  '/home/hacker/Escritorio/notas_kali.txt': 'NOTAS DE KALI LINUX — HACKATHON UPTPC 2026\n=============================================================\nObjetivo: Auditar el servidor central server-hackaton.uptpc.edu.ve\nComando de conexion SSH:\n  ssh invitado@server-hackaton.uptpc.edu.ve\n\nMision y Metodologia:\n  1. Conectarse al servidor con el usuario asignado.\n  2. Inspeccionar el arbol de directorios, servicios y configuraciones.\n  3. Utilizar herramientas como find, grep y ls para localizar los 4 sectores.\n  4. Buscar posibles vectores para elevar privilegios con sudo su.\n  5. Ensamblar los sectores recuperados para validar el desafio.\n============================================================='
 };
 
 function collectFSItems(isSSH, startPath, isRoot, suppressErrors) {
@@ -1328,6 +2368,21 @@ cliInput.addEventListener('keydown', function(e){
 
 document.getElementById('terminalBody').addEventListener('click',()=>cliInput.focus());
 updatePrompt();
+
+// Sondeo automatico si el hackathon aun no ha iniciado
+if(!window.hackathonActivoGlobal){
+  setInterval(()=>{
+    fetch('estado_hackathon.php')
+      .then(res => res.json())
+      .then(data => {
+        if(data && data.hackathon_activo){
+          window.hackathonActivoGlobal = true;
+          window.location.reload();
+        }
+      })
+      .catch(()=>{});
+  }, 10000);
+}
 </script>
 <?php
 require_once __DIR__ . '/conf/footer.php';

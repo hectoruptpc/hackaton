@@ -253,10 +253,8 @@ Solo personal autorizado puede ingresar.
                     <div class="mt-4 p-3" style="background:#001100; border-radius:8px;">
                         <h6>📖 PISTAS:</h6>
                         <ul class="small">
-                            <li>Offset hasta EIP: 64 bytes (buffer) + 4 bytes (EBP) = <strong class="text-warning">68 bytes</strong></li>
-                            <li>Necesitas enviar 68 bytes basura + la dirección de flag_secreta()</li>
-                            <li>Dirección simulada de flag_secreta: <code class="text-success">f1e2d3c4</code> o escribe la palabra mágica <code class="text-success">FLAG_SECRETA</code></li>
-                            <li>Payload ejemplo: <code class="text-info">"A" x 68 + FLAG_SECRETA</code></li>
+                            
+                            <li>Payload ejemplo: <code class="text-info">"A"68FLAG_SECRETA</code></li>
                         </ul>
                     </div>
 
