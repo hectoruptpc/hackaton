@@ -274,7 +274,7 @@ const serverFS = {
       usr: 'dir',
       var: 'dir'
     }
-  },
+  
   '/bin': {
     type: 'dir',
     owner: 'root',
@@ -594,7 +594,7 @@ const serverFS = {
     }
   },
   '/var/www/html': {
-    type: 'dir',
+    type: 'dir', 
     owner: 'www-data',
     children: {
       'index.php': {
@@ -615,9 +615,9 @@ const serverFS = {
         owner: 'www-data',
         content: 'BIENVENIDO AL SERVIDOR DE INFRAESTRUCTURA UPTPC 2026\nHost: server-hackaton.uptpc.edu.ve\n\n=======================================================================\nMAPA DE SERVICIOS Y AUDITORIA TECNICA:\n- Servidor Web Apache2 : /var/www/html (respaldos en /var/www/backups)\n- Reglas de Ciberdefensa: /opt/cyberdefense/rules\n- Modulo Clasificado    : /srv/classified\n- Boveda del Sistema    : /etc/secret_vault\n\nHerramientas recomendadas para la auditoria: find, grep, locate, ls -la.\nPara evaluar permisos de ejecucion, ejecuta: sudo -l\n======================================================================='
       },
-      public_assets: 'dir',
-      includes: 'dir',
-      admin_portal: 'dir'
+      public_assets: { type: 'dir', owner: 'www-data' },
+      includes: { type: 'dir', owner: 'www-data' },
+      admin_portal: { type: 'dir', owner: 'www-data' }
     }
   },
   '/var/www/html/public_assets': {
