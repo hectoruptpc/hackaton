@@ -1211,7 +1211,8 @@ function verificarPatronBiometrico($patron) {
             'exito' => true,
             'bloqueado' => false,
             'mensaje' => '🎉 <strong>¡ACCESO BIOMÉTRICO CONCEDIDO!</strong> 🎉<br><br>' .
-            '<span style="color:#ff0; font-size:1.3rem;">🏆 FLAG{BIOMETRIC_PATTERN_MASTER} 🏆</span>'
+            '<span style="color:#ff0; font-size:1.3rem;">🏆 FLAG{BIOMETRIC_PATTERN_MASTER} 🏆</span><br><br>' .
+            '<p style="color:#cbd5e1; font-size:0.95rem; margin-top:8px;">📋 Copia la bandera <code>FLAG{BIOMETRIC_PATTERN_MASTER}</code> y p&eacute;gala en el panel principal (Dashboard) para acreditar los puntos a tu equipo.</p>'
         ];
     } else {
         $_SESSION['intentos_biometricos']++;

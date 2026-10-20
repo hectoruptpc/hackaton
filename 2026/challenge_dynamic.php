@@ -133,18 +133,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             if ($codigo_ingresado === $codigo_actual) {
                 $_SESSION['dynamic_challenge']['flag_obtenida'] = true;
-                $mensaje = '🎉 ¡CÓDIGO CORRECTO! HAZ DESTRUIDO LA ÚLTIMA DEFENSA.';
+                $mensaje = '🔓 ¡CÓDIGO DE ACCESO CORRECTO! Has desbloqueado el núcleo central.<br>Tu bandera maestra ha sido revelada. Cópiala y pégala para validar el desafío y acreditar tus puntos.';
                 $tipo_mensaje = 'success';
-
-                if (isset($_SESSION['equipo_id'])) {
-                    if (function_exists('completarDesafio') && !desafioCompletado($_SESSION['equipo_id'], 'race_condition')) {
-                        completarDesafio($_SESSION['equipo_id'], 'race_condition', 1);
-                        $equipo_info = obtenerInfoEquipo($_SESSION['equipo_id']);
-                        if ($equipo_info && isset($equipo_info['puntuacion_total'])) {
-                            $_SESSION['puntuacion_equipo'] = $equipo_info['puntuacion_total'];
-                        }
-                    }
-                }
             } else {
                 $_SESSION['dynamic_challenge']['intentos']++;
                 $mensaje = "❌ Código incorrecto. Intentos: " . $_SESSION['dynamic_challenge']['intentos'] . "/3";
@@ -157,6 +147,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $mensaje .= ' 🔄 El sistema ha rotado el token dinámico.';
                     $tipo_mensaje = 'warning';
                 }
+            }
+        }
+        
+        if (isset($_POST['validar_flag'])) {
+            $flag_ingresada = trim($_POST['flag_input'] ?? '');
+            $flag_upper = strtoupper($flag_ingresada);
+            $flag_clean = preg_replace('/[^A-Z0-9]/i', '', $flag_upper);
+
+            $es_flag_valida = ($flag_upper === 'FLAG{DINAMIC_WEB_HACKER_2026}' || 
+                               $flag_clean === 'FLAGDINAMICWEBHACKER2026' || 
+                               $flag_clean === 'DINAMICWEBHACKER2026');
+
+            if ($es_flag_valida) {
+                if (isset($_SESSION['equipo_id'])) {
+                    if (function_exists('completarDesafio') && !desafioCompletado($_SESSION['equipo_id'], 'race_condition')) {
+                        completarDesafio($_SESSION['equipo_id'], 'race_condition', 1);
+                        $equipo_info = obtenerInfoEquipo($_SESSION['equipo_id']);
+                        if ($equipo_info && isset($equipo_info['puntuacion_total'])) {
+                            $_SESSION['puntuacion_equipo'] = $equipo_info['puntuacion_total'];
+                        }
+                    }
+                }
+                $_SESSION['dynamic_challenge']['flag_obtenida'] = true;
+                $mensaje = '🎉 ¡BANDERA VALIDADA CON ÉXITO! Has completado el Desafío #10 con la bandera <strong>FLAG{DINAMIC_WEB_HACKER_2026}</strong>. ¡Puntos acreditados a tu equipo!';
+                $tipo_mensaje = 'success';
+            } else {
+                $mensaje = '❌ Bandera incorrecta. Debes copiar y pegar la bandera oficial exactamente como fue revelada: <code>FLAG{DINAMIC_WEB_HACKER_2026}</code>';
+                $tipo_mensaje = 'error';
             }
         }
         
@@ -178,6 +196,14 @@ if (isset($_GET['reset'])) {
     unset($_SESSION['dynamic_challenge']);
     header('Location: ' . $_SERVER['PHP_SELF']);
     exit;
+}
+
+$desafio_completado = false;
+if (isset($_SESSION['equipo_id']) && function_exists('desafioCompletado')) {
+    $desafio_completado = desafioCompletado($_SESSION['equipo_id'], 'race_condition');
+}
+if ($desafio_completado) {
+    $_SESSION['dynamic_challenge']['flag_obtenida'] = true;
 }
 
 $intentos_actual = $_SESSION['dynamic_challenge']['intentos'];
@@ -560,17 +586,38 @@ echo $header;
         <?php if ($flag_obtenida): ?>
             <div class="victory-modal">
                 <h2 style="font-family:'Orbitron',sans-serif; color:#00ff66; margin-bottom:10px;">
-                    🏆 ¡HAZ DESTRUIDO LA ÚLTIMA DEFENSA! 🏆
+                    🏆 ¡NÚCLEO CENTRAL DESBLOQUEADO! 🏆
                 </h2>
                 <p style="color:#ffffff; font-size:1.1rem; margin-bottom:15px;">
-                    Has completado el Gran Desafío Final del Hackathon 2026.
+                    Has interceptado y decodificado exitosamente el token del sistema.
                 </p>
-                <div class="flag-box">
-                    FLAG{DINAMIC_WEB_HACKER_2026}
+                <div style="display:flex; justify-content:center; align-items:center; gap:12px; flex-wrap:wrap; margin:15px 0;">
+                    <div class="flag-box" id="flagBox" style="margin:0;">
+                        FLAG{DINAMIC_WEB_HACKER_2026}
+                    </div>
+                    <button type="button" class="btn btn-info" id="btnCopiarFlag" onclick="copiarBandera()" style="padding:14px 22px;">
+                        📋 Copiar Bandera
+                    </button>
                 </div>
-                <p style="color:#8b949e; font-size:0.85rem; margin-top:10px;">
-                    📋 Copia esta BANDERA y regístrala en la página principal (<code>index.php</code>) para reclamar tus puntos de victoria.
-                </p>
+
+                <?php if ($desafio_completado): ?>
+                    <div style="margin-top:20px; padding:15px 20px; background:rgba(0,255,102,0.15); border:1.5px solid #00ff66; border-radius:12px; color:#00ff66; font-weight:bold; font-size:1.05rem;">
+                        ✅ ¡DESAFÍO COMPLETADO! Puntos acreditados a tu equipo.
+                    </div>
+                <?php else: ?>
+                    <div style="max-width:620px; margin:20px auto 0 auto; background:rgba(0,0,0,0.55); padding:22px; border-radius:14px; border:1px solid rgba(0,255,102,0.35); text-align:center;">
+                        <p style="color:#facc15; font-size:0.95rem; margin-bottom:15px; font-weight:600;">
+                            ⚠️ El desafío NO se completa automáticamente. Copia la bandera y valídala aquí abajo o en el <a href="index.php" style="color:#00ff66; text-decoration:underline;">Dashboard principal</a>:
+                        </p>
+                        <form method="POST" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+                            <input type="text" name="flag_input" id="flagInputDirect" placeholder="Pega aquí: FLAG{...}" 
+                                   style="flex:1; min-width:240px; padding:12px 18px; background:#05080c; border:1px solid rgba(0,255,102,0.4); border-radius:10px; color:#00ff66; font-family:'Fira Code', monospace; outline:none;" required>
+                            <button type="submit" name="validar_flag" class="btn btn-primary" style="padding:12px 24px;">
+                                🚩 Validar Bandera
+                            </button>
+                        </form>
+                    </div>
+                <?php endif; ?>
             </div>
         <?php endif; ?>
 
@@ -729,6 +776,34 @@ echo $header;
                 .catch(() => {});
         }, 10000);
         <?php endif; ?>
+
+        function copiarBandera() {
+            const flag = 'FLAG{DINAMIC_WEB_HACKER_2026}';
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(flag).then(() => {
+                    const btn = document.getElementById('btnCopiarFlag');
+                    if (btn) {
+                        const originalText = btn.innerHTML;
+                        btn.innerHTML = '✅ ¡Copiada!';
+                        btn.style.borderColor = '#00ff66';
+                        btn.style.color = '#00ff66';
+                        setTimeout(() => {
+                            btn.innerHTML = originalText;
+                            btn.style.borderColor = '';
+                            btn.style.color = '';
+                        }, 2500);
+                    }
+                    const inputDirect = document.getElementById('flagInputDirect');
+                    if (inputDirect && !inputDirect.value) {
+                        inputDirect.value = flag;
+                    }
+                }).catch(() => {
+                    prompt('Copia la bandera manualmente:', flag);
+                });
+            } else {
+                prompt('Copia la bandera manualmente:', flag);
+            }
+        }
     </script>
 <script>
 console.log(

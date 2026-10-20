@@ -35,18 +35,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['flag_input'])) {
         $mensaje_verificacion = '<div class="alert alert-warning mt-3 text-center">&#9888;&#65039; <strong>HACKATHON NO INICIADO:</strong> Espera a que el administrador active la competencia para poder enviar banderas.</div>';
     } else {
         $flag_ingresada = trim($_POST['flag_input']);
-        $flag_clean = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $flag_ingresada));
+        $flag_upper = strtoupper($flag_ingresada);
+        $flag_clean = preg_replace('/[^A-Z0-9]/i', '', $flag_upper);
 
-        $codigos_validos = [
+        // Lista de códigos de sectores aceptados
+        $codigos_sectores = [
             'K4L1SH4D0WK3RN3LV4ULT2026',
             'K4L1SH4D0WK3RN3LV4ULT',
             'KALISHADOWKERNELVAULT2026',
-            'IABOSSFINAL',
-            'FLAGSERVERTERMINALMASTER2026',
-            'SERVERTERMINALMASTER2026'
+            'KALISHADOWKERNELVAULT'
         ];
 
-        if (in_array($flag_clean, $codigos_validos) || in_array(strtoupper($flag_ingresada), ['K4L1_SH4D0W_K3RN3L_V4ULT_2026', 'FLAG{SERVER_TERMINAL_MASTER_2026}'])) {
+        $es_codigo_sectores = in_array($flag_clean, $codigos_sectores) || 
+                              strpos($flag_upper, 'K4L1_SH4D0W_K3RN3L_V4ULT') !== false || 
+                              strpos($flag_upper, 'K4L1-SH4D0W-K3RN3L-V4ULT') !== false;
+
+        $es_flag_maestra = ($flag_upper === 'FLAG{SERVER_TERMINAL_MASTER_2026}' || 
+                            $flag_clean === 'FLAGSERVERTERMINALMASTER2026' || 
+                            $flag_clean === 'SERVERTERMINALMASTER2026');
+
+        if ($es_flag_maestra) {
+            // El participante copia y pega la bandera oficial para completar el desafío
             if (isset($_SESSION['equipo_id'])) {
                 marcarDesafioCompletado($_SESSION['equipo_id'], 4);
                 if (!desafioCompletado($_SESSION['equipo_id'], 'command_injection')) {
@@ -57,9 +66,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['flag_input'])) {
                     }
                 }
             }
-            $mensaje_verificacion = '<div class="alert alert-success mt-3 text-center">&#127881; &iexcl;C&Oacute;DIGO DE SECTORES CORRECTO! Has obtenido la bandera: <strong style="font-size:1.15rem; color:#4ade80;">FLAG{SERVER_TERMINAL_MASTER_2026}</strong> y completado el Desaf&iacute;o #4.</div>';
+            $mensaje_verificacion = '<div class="alert alert-success mt-3 text-center">&#127881; <strong>&iexcl;BANDERA VALIDADA CON &Eacute;XITO!</strong> Has completado el Desaf&iacute;o #4 con la bandera <strong style="font-size:1.2rem; color:#4ade80;">FLAG{SERVER_TERMINAL_MASTER_2026}</strong>. &iexcl;Puntos acreditados a tu equipo!</div>';
+        } elseif ($es_codigo_sectores) {
+            // Al ingresar el código de 4 sectores, el sistema le entrega la bandera para que la copie y pegue
+            $mensaje_verificacion = '<div class="alert alert-info mt-3 text-center" style="background: rgba(16, 185, 129, 0.15); border: 1.5px solid #10b981;">'
+                . '<div style="font-size: 1.15rem; color: #7bf1a8; font-weight: bold;">&#128275; &iexcl;C&Oacute;DIGO DE SECTORES CORRECTO!</div>'
+                . '<p class="text-light mt-2 mb-2">Has descifrado y unido con &eacute;xito los 4 sectores del servidor. Tu bandera maestra obtenida es:</p>'
+                . '<div class="d-inline-block px-3 py-2 my-2 rounded bg-dark border border-success font-monospace" style="font-size: 1.25rem; color: #4ade80; user-select: all; letter-spacing: 0.05em;">'
+                . 'FLAG{SERVER_TERMINAL_MASTER_2026}'
+                . '</div>'
+                . '<p class="mt-2 mb-0 text-warning" style="font-size: 0.92rem;">'
+                . '&#128203; <strong>Copia y pega</strong> la bandera <code>FLAG{SERVER_TERMINAL_MASTER_2026}</code> en el campo inferior y presiona <strong>"Validar"</strong> para completar el desaf&iacute;o y registrar tus puntos.'
+                . '</p>'
+                . '</div>';
+        } elseif (
+            strpos($flag_clean, 'K4L1') !== false || 
+            strpos($flag_clean, 'SH4D0W') !== false || 
+            strpos($flag_clean, 'K3RN3L') !== false || 
+            strpos($flag_clean, 'V4ULT') !== false
+        ) {
+            $mensaje_verificacion = '<div class="alert alert-warning mt-3 text-center">&#9888;&#65039; <strong>SECTOR PARCIAL:</strong> Has ingresado solo un fragmento de sector. Debes unir los 4 sectores del servidor (Sector 1 + Sector 2 + Sector 3 + Sector 4) para obtener la bandera maestra.</div>';
         } else {
-            $mensaje_verificacion = '<div class="alert alert-danger mt-3 text-center">&#10060; C&oacute;digo o bandera incorrecta. Explora el servidor para hallar los 4 sectores del c&oacute;digo.</div>';
+            $mensaje_verificacion = '<div class="alert alert-danger mt-3 text-center">&#10060; C&oacute;digo o bandera incorrecta. Ingresa el c&oacute;digo de 4 sectores (<code>K4L1_SH4D0W_...</code>) para obtener la bandera, o copia y pega la bandera maestra <code>FLAG{...}</code>.</div>';
         }
     }
 }
@@ -132,18 +160,18 @@ body{background:#0a0d14;font-family:'Fira Code',monospace;color:#38bdf8;min-heig
 
 <div class="challenge-header">
   <h2>&#128187; Desaf&iacute;o #4 &mdash; Terminal Kali Linux &#8594; SSH al Servidor</h2>
-  <p>Abre la terminal Kali Linux, con&eacute;ctate al servidor v&iacute;a SSH y explora el sistema de archivos para hallar los 4 sectores de la bandera.</p>
+  <p>Abre la terminal Kali Linux, con&eacute;ctate al servidor v&iacute;a SSH y explora el sistema de archivos para localizar la bandera maestra.</p>
 </div>
 
 <div class="ssh-instructions">
   <strong>&#128225; Ruta de Conectividad y Auditor&iacute;a Forense</strong><span class="badge-kali">&#128009; Kali Linux</span><br>
   Desde tu terminal Kali Linux emulada, ejecuta el siguiente comando para conectarte al servidor oficial del evento:<br><br>
   &nbsp;&nbsp;<code>ssh invitado@server-hackaton.uptpc.edu.ve</code><br><br>
-  <strong>Misi&oacute;n de Ciberseguridad (4 Sectores Fragmentados):</strong><br>
+  <strong>Misi&oacute;n de Ciberseguridad:</strong><br>
   &nbsp;&nbsp;1. Explora el sistema de archivos del servidor utilizando comandos como <code>ls -la</code>, <code>cd</code>, <code>find</code> y <code>grep</code>.<br>
-  &nbsp;&nbsp;2. El servidor contiene <strong>4 sectores</strong> ocultos en diferentes servicios, respaldos y zonas de seguridad.<br>
-  &nbsp;&nbsp;3. Deber&aacute;s investigar pistas del sistema, rastrear archivos ocultos y aplicar t&eacute;cnicas de elevaci&oacute;n de privilegios cuando sea necesario.<br>
-  &nbsp;&nbsp;4. Una vez localizados los fragmentos, &uacute;nelos o ingresa la bandera maestra en el formulario inferior para ganar los puntos.<br><br>
+  &nbsp;&nbsp;2. El servidor contiene sectores confidenciales, servicios protegidos y registros de auditor&iacute;a.<br>
+  &nbsp;&nbsp;3. Deber&aacute;s investigar pistas del sistema, rastrear archivos ocultos y aplicar t&eacute;cnicas de elevaci&oacute;n de privilegios (<code>sudo su</code>).<br>
+  &nbsp;&nbsp;4. Una vez localizado el archivo con la bandera maestra oficial <code>FLAG{...}</code> en la b&oacute;veda de root, c&oacute;piala y p&eacute;gala en el validador inferior para ganar los puntos.<br><br>
   <strong>&#9888;&#65039; Aviso:</strong> Esta terminal est&aacute; <strong>aislada</strong>. Solo puedes conectarte a <code>server-hackaton.uptpc.edu.ve</code>.
   Los comandos <code>rm</code> y <code>cp</code> est&aacute;n inhabilitados por pol&iacute;tica del Hackathon.
 </div>
@@ -187,8 +215,8 @@ body{background:#0a0d14;font-family:'Fira Code',monospace;color:#38bdf8;min-heig
   <h5 class="text-light fw-bold mb-3">&#127989; Validar Bandera del Desaf&iacute;o #4</h5>
   <form method="POST" action="">
     <div class="input-group">
-      <input type="text" name="flag_input" class="form-control bg-dark text-info border-secondary" placeholder="<?php echo $hackathon_activo ? 'Ingresa los 4 sectores (K4L1_...) o FLAG{...}' : 'Hackathon no iniciado — Formulario deshabilitado'; ?>" <?php echo !$hackathon_activo ? 'disabled' : ''; ?> required>
-      <button type="submit" class="btn btn-success fw-bold" <?php echo !$hackathon_activo ? 'disabled' : ''; ?>>&#128640; Validar y Ganar Puntos</button>
+      <input type="text" name="flag_input" class="form-control bg-dark text-info border-secondary" placeholder="<?php echo $hackathon_activo ? 'Ingresa los 4 sectores (K4L1_...) o pega la bandera FLAG{...}' : 'Hackathon no iniciado — Formulario deshabilitado'; ?>" <?php echo !$hackathon_activo ? 'disabled' : ''; ?> required>
+      <button type="submit" class="btn btn-success fw-bold" <?php echo !$hackathon_activo ? 'disabled' : ''; ?>>&#128640; Validar</button>
     </div>
   </form>
   <?php echo $mensaje_verificacion; ?>
@@ -583,9 +611,9 @@ const serverFS = {
       },
       'readme.txt': {
         type: 'file',
-        size: '480B',
+        size: '620B',
         owner: 'www-data',
-        content: 'BIENVENIDO AL SERVIDOR DE INFRAESTRUCTURA UPTPC 2026\nHost: server-hackaton.uptpc.edu.ve\n\n=======================================================================\nAVISO DE SEGURIDAD Y AUDITORIA INTERNA:\nServidor confinado para pruebas de penetracion y auditoria del Hackathon.\n- El sistema consta de multiples niveles y servicios confinados.\n- Toda sesion interactiva y ejecucion de comandos queda auditada.\n- Investigue las configuraciones y servicios para encontrar anomalias.\n======================================================================='
+        content: 'BIENVENIDO AL SERVIDOR DE INFRAESTRUCTURA UPTPC 2026\nHost: server-hackaton.uptpc.edu.ve\n\n=======================================================================\nMAPA DE SERVICIOS Y AUDITORIA TECNICA:\n- Servidor Web Apache2 : /var/www/html (respaldos en /var/www/backups)\n- Reglas de Ciberdefensa: /opt/cyberdefense/rules\n- Modulo Clasificado    : /srv/classified\n- Boveda del Sistema    : /etc/secret_vault\n\nHerramientas recomendadas para la auditoria: find, grep, locate, ls -la.\nPara evaluar permisos de ejecucion, ejecuta: sudo -l\n======================================================================='
       },
       public_assets: 'dir',
       includes: 'dir',
@@ -642,6 +670,12 @@ const serverFS = {
     owner: 'www-data',
     children: {
       'backup_system.conf': {
+        type: 'file',
+        size: '320B',
+        owner: 'www-data',
+        content: '# ==========================================================\n# CONFIGURACION DE RESPALDO UPTPC 2026\n# Modulo: Web Infrastructure Security Audit\n# ==========================================================\nBACKUP_ENABLED=1\nBACKUP_TARGET="/var/www/backups/dump_daily.sql"\nENCRYPTION="AES-256-GCM"\n\n[ CODIGO SECTOR 1 ]: K4L1_\n\n# Sector 1 de 4 verificado.\n# =========================================================='
+      },
+      'sector1_backup.conf': {
         type: 'file',
         size: '320B',
         owner: 'www-data',
@@ -743,6 +777,12 @@ const serverFS = {
     type: 'dir',
     owner: 'root',
     children: {
+      'sector2_audit.rules': {
+        type: 'file',
+        size: '310B',
+        owner: 'root',
+        content: '# ==========================================================\n# MODULO DE AUDITORIA Y CIBERDEFENSA UPTPC 2026\n# Archivo de control y reglas sectoriales\n# ==========================================================\nRULE_STATUS="ACTIVE"\nHASH_TOKEN="8f9b2d8c3e1a"\n\n[ CODIGO SECTOR 2 ]: SH4D0W_\n\n# Sector 2 de 4 verificado.\n# =========================================================='
+      },
       '.sector2_audit.dat': {
         type: 'file',
         size: '310B',
@@ -827,6 +867,13 @@ const serverFS = {
         restricted: true,
         content: '# ==========================================================\n# UPTPC CLASSIFIED SERVICE CREDENTIALS\n# Acceso Restringido: Superusuario / Root Autorizado\n# ==========================================================\nSERVICE_TIER="TOP_SECRET_CORE"\nSESSION_VALIDATED="TRUE"\n\n[ CODIGO SECTOR 3 ]: K3RN3L_\n\n# Sector 3 de 4 verificado.\n# =========================================================='
       },
+      'sector3.txt': {
+        type: 'file',
+        size: '340B',
+        owner: 'root',
+        restricted: true,
+        content: '# ==========================================================\n# UPTPC CLASSIFIED SERVICE CREDENTIALS\n# Acceso Restringido: Superusuario / Root Autorizado\n# ==========================================================\nSERVICE_TIER="TOP_SECRET_CORE"\nSESSION_VALIDATED="TRUE"\n\n[ CODIGO SECTOR 3 ]: K3RN3L_\n\n# Sector 3 de 4 verificado.\n# =========================================================='
+      },
       'auth_keys.pem': {
         type: 'file',
         size: '1.7KB',
@@ -878,7 +925,7 @@ const serverFS = {
         type: 'file',
         size: '560B',
         owner: 'invitado',
-        content: 'NOTAS PERSONALES DE AUDITORIA — usuario: invitado@server-hackaton\n========================================================================\nRecordatorio para el equipo de seguridad:\n- El sistema contiene 4 fragmentos de bandera (Sectores 1, 2, 3 y 4)\n  distribuidos en el servidor.\n- Comandos y tecnicas sugeridas para la auditoria:\n  * Localizar archivos: find / -name <patron> 2>/dev/null\n  * Filtrar contenido sospechoso: grep -rn "SECTOR" / 2>/dev/null\n  * Revisar configuraciones, servicios y archivos ocultos.\n- Algunas areas requieren permisos de superusuario (sudo su).\n- La bandera se compone concatenando los 4 sectores encontrados.\n========================================================================'
+        content: 'NOTAS PERSONALES DE AUDITORIA — usuario: invitado@server-hackaton\n========================================================================\nRecordatorio para el equipo de seguridad:\n- El sistema contiene sectores de auditoria distribuidos en el servidor.\n- Comandos y tecnicas sugeridas para la auditoria:\n  * Localizar archivos: find / -name <patron> 2>/dev/null\n  * Filtrar contenido sospechoso: grep -rn "SECTOR" / 2>/dev/null\n  * Revisar configuraciones, servicios y archivos ocultos.\n- Algunas areas requieren permisos de superusuario (sudo su).\n- Eleva a root para acceder a la boveda y obtener la bandera maestra FLAG{...}.\n  Copia y pega la bandera completa en el formulario para validar.\n========================================================================'
       },
       Escritorio: 'dir',
       Documentos: 'dir',
@@ -1155,7 +1202,14 @@ const serverFS = {
         size: '580B',
         owner: 'root',
         restricted: true,
-        content: '========================================================================\nBOVEDA CENTRAL DE PRIVILEGIOS ROOT — UPTPC HACKATHON 2026\n========================================================================\n[ CODIGO SECTOR 4 ]: V4ULT_2026\n\n¡FELICITACIONES! HAS ACCEDIDO A LA BOVEDA PRINCIPAL.\n\nCODIGO CONCATENADO OFICIAL (4 SECTORES):\nK4L1_SH4D0W_K3RN3L_V4ULT_2026\n\nBANDERA MAESTRA DEL DESAFIO:\nFLAG{SERVER_TERMINAL_MASTER_2026}\n\nIngresa cualquiera de estos dos formatos en el formulario web inferior\npara validar el desafio y otorgarle los puntos a tu equipo.\n========================================================================'
+        content: '========================================================================\nBOVEDA CENTRAL DE PRIVILEGIOS ROOT — UPTPC HACKATHON 2026\n========================================================================\n[ CODIGO SECTOR 4 ]: V4ULT_2026\n\n¡FELICITACIONES! HAS ACCEDIDO A LA BOVEDA PRINCIPAL.\nBandera Maestra Oficial: FLAG{SERVER_TERMINAL_MASTER_2026}\n\n(Copia y pega la bandera FLAG{SERVER_TERMINAL_MASTER_2026} en el validador inferior)\n========================================================================'
+      },
+      'sector4_vault.txt': {
+        type: 'file',
+        size: '580B',
+        owner: 'root',
+        restricted: true,
+        content: '========================================================================\nBOVEDA CENTRAL DE PRIVILEGIOS ROOT — UPTPC HACKATHON 2026\n========================================================================\n[ CODIGO SECTOR 4 ]: V4ULT_2026\n\n¡FELICITACIONES! HAS ACCEDIDO A LA BOVEDA PRINCIPAL.\nBandera Maestra Oficial: FLAG{SERVER_TERMINAL_MASTER_2026}\n\n(Copia y pega la bandera FLAG{SERVER_TERMINAL_MASTER_2026} en el validador inferior)\n========================================================================'
       },
       '.clave_oculta': {
         type: 'file',
@@ -1169,7 +1223,7 @@ const serverFS = {
         size: '340B',
         owner: 'root',
         restricted: true,
-        content: 'INSTRUCCIONES INTERNAS DE AUDITORIA DE ADMINISTRADOR:\nClaves de validacion de sectores 1 a 4 sincronizadas con el dashboard central.\nLos competidores que unan los 4 sectores o ingresen la bandera oficial\nFLAG{SERVER_TERMINAL_MASTER_2026} completaran con exito el Desafio #4.'
+        content: 'INSTRUCCIONES INTERNAS DE AUDITORIA DE ADMINISTRADOR:\nEl participante debe explorar el servidor y obtener acceso a la boveda root.\nPara completar el desafio, debe copiar y pegar la bandera maestra oficial:\nFLAG{SERVER_TERMINAL_MASTER_2026}\nen el formulario inferior.'
       }
     }
   },
@@ -1178,6 +1232,20 @@ const serverFS = {
     owner: 'root',
     restricted: true,
     children: {
+      'flag_master.txt': {
+        type: 'file',
+        size: '280B',
+        owner: 'root',
+        restricted: true,
+        content: '===============================================================\nBANDERA MAESTRA DEL SERVIDOR ROOT UPTPC\n===============================================================\nFLAG{SERVER_TERMINAL_MASTER_2026}\n\n(Copia y pega esta bandera en el formulario inferior para validar)\n==============================================================='
+      },
+      'instrucciones_root.txt': {
+        type: 'file',
+        size: '310B',
+        owner: 'root',
+        restricted: true,
+        content: 'UPTPC ROOT AUDIT SUCCESS:\nHas alcanzado los maximos privilegios de administracion del servidor.\nCopia la bandera maestra oficial FLAG{SERVER_TERMINAL_MASTER_2026}\ny pegala en el formulario web inferior para validar el Desafio #4.'
+      },
       '.bashrc': {
         type: 'file',
         size: '220B',
@@ -1209,7 +1277,7 @@ const serverFS = {
         size: '240B',
         owner: 'root',
         restricted: true,
-        content: '===============================================================\nBANDERA MAESTRA DEL SERVIDOR ROOT UPTPC\n===============================================================\nFLAG{SERVER_TERMINAL_MASTER_2026}\n==============================================================='
+        content: '===============================================================\nBANDERA MAESTRA DEL SERVIDOR ROOT UPTPC\n===============================================================\nFLAG{SERVER_TERMINAL_MASTER_2026}\n\n(Copia y pega esta bandera en el formulario inferior para validar el desafio)\n==============================================================='
       },
       'master_keys.enc': {
         type: 'file',
@@ -1312,6 +1380,9 @@ function updatePrompt(){
 function resolveSSH(p){
   if(!p||p==='.'){ return estado.dirSSH; }
   if(p==='~'){ return estado.esRoot?'/root':'/home/invitado'; }
+  if(p==='/backups'||p==='/backups/'){ return '/var/www/backups'; }
+  if(p.startsWith('/backups/')){ return ('/var/www' + p).replace(/\/+/g, '/').replace(/\/$/, ''); }
+  if((p==='backups'||p==='backups/'||p==='./backups') && estado.dirSSH==='/var/www/html'){ return '/var/www/backups'; }
   let base = p.startsWith('/') ? [] : estado.dirSSH.split('/').filter(Boolean);
   for(const seg of p.split('/').filter(Boolean)){
     if(seg==='..'){ if(base.length>0) base.pop(); }
@@ -1488,6 +1559,10 @@ function cmdLocal(raw){
       break;
     }
     case 'clear': case 'cls': outputHistory.innerHTML=''; break;
+    case 'su': case 'sudo':
+      addText('[KALI LOCAL]: Ya posees permisos locales de auditoria. Para auditar el servidor objetivo:','c-yellow');
+      addText('  ssh invitado@' + SERVIDOR_SSH, 'c-green');
+      break;
     case 'ssh': {
       if(!window.hackathonActivoGlobal){
         addLine('<div class="restricted-msg" style="border-left-color: #facc15; color: #facc15; background: rgba(250, 204, 21, 0.1);">&#9203; CONEXION SSH RECHAZADA &mdash; HACKATHON EN ESPERA<br>El servidor central <strong>'+SERVIDOR_SSH+'</strong> se encuentra en modo <strong>STANDBY</strong>.<br>El acceso SSH y los retos remotos ser&aacute;n liberados cuando el comit&eacute; organizador inicie oficialmente la competencia.<br>Puedes usar comandos locales como <code>screenfetch</code>, <code>help</code>, <code>ls</code> o revisar <code>cat Escritorio/notas_kali.txt</code> mientras tanto.</div>');
@@ -1610,7 +1685,11 @@ function cmdSSH(raw){
     }
     case 'base64': {
       let rawText = raw.replace(/^sudo\s+/i, '').replace(/^base64\s*/i, '').replace(/-d|-decode/gi, '').replace(/echo|\|/gi, '').trim();
-      if (!rawText) rawText = 'RkxBR3tTRVJWRVJfVEVSTUlOQUxfTUFTVEVSXzIwMjZ9';
+      if (!rawText) {
+        addText('base64: falta un operando', 'c-red');
+        addText("Pruebe 'base64 --help' para mas informacion.", 'c-gray');
+        break;
+      }
       try {
         const decoded = window.atob(rawText);
         if (decoded.includes('FLAG{')) {
@@ -1648,6 +1727,16 @@ function cmdSSH(raw){
 
     case 'su':
     case 'sudo': {
+      if(args[0]==='-l'||args[0]==='-ll'||cmd==='-l'){
+        addLine('<span class="c-white">Matching Defaults entries for invitado on server-hackaton:</span>');
+        addLine('<span class="c-gray">    env_reset, mail_badpass, secure_path=/usr/local/sbin\\:/usr/local/bin\\:/usr/sbin\\:/usr/bin\\:/sbin\\:/bin</span>');
+        addLine('');
+        addLine('<span class="c-white">User invitado may run the following commands on server-hackaton:</span>');
+        addLine('<span class="c-green">    (ALL : ALL) NOPASSWD: ALL</span>');
+        addLine('');
+        addText('  El usuario invitado tiene privilegios de superusuario. Ejecuta: sudo su','c-yellow');
+        break;
+      }
       const sub=args[0]?args[0].toLowerCase():'';
       if(sub==='su'||sub==='-i'||sub==='-s'||cmd==='su'||sub===''){
         estado.esRoot=true;
@@ -1655,10 +1744,10 @@ function cmdSSH(raw){
         updatePrompt();
         addLine('');
         addText('Privilegios elevados a ROOT — Superusuario del servidor.','c-red');
-        addText('  Ahora tienes acceso completo a todos los directorios y servicios del sistema.','c-yellow');
-        addText('  NOTA: Los comandos rm, cp y mv siguen inhabilitados (politica del Hackathon).','c-orange');
+        addText('  Ahora tienes acceso irrestricto a todos los directorios y servicios clasificados.','c-yellow');
+        addText('  Directorio actual: /root  (ejecuta "ls" para inspeccionar los archivos maestros)','c-green');
       } else {
-        addText('uso: sudo su  (para convertirse en root)','c-red');
+        addText('uso: sudo su  (para convertirse en root)  o  sudo -l  (listar privilegios)','c-red');
       } break;
     }
 
@@ -1805,14 +1894,15 @@ function resolveLocal(p){
 const localFS = {
   '/': { type:'dir', children:{ home:'dir', etc:'dir', usr:'dir', var:'dir' } },
   '/home': { type:'dir', children:{ hacker:'dir' } },
-  '/home/hacker': { type:'dir', children:{ Escritorio:'dir', Documentos:'dir', Descargas:'dir', '.bashrc':'file' } },
+  '/home/hacker': { type:'dir', children:{ Escritorio:'dir', Documentos:'dir', Descargas:'dir', 'notas_kali.txt':'file', '.bashrc':'file' } },
   '/home/hacker/Escritorio': { type:'dir', children:{ 'notas_kali.txt':'file' } },
   '/home/hacker/Documentos': { type:'dir', children:{} },
   '/home/hacker/Descargas': { type:'dir', children:{} }
 };
 
 const localFileContents = {
-  '/home/hacker/Escritorio/notas_kali.txt': 'NOTAS DE KALI LINUX — HACKATHON UPTPC 2026\n=============================================================\nObjetivo: Auditar el servidor central server-hackaton.uptpc.edu.ve\nComando de conexion SSH:\n  ssh invitado@server-hackaton.uptpc.edu.ve\n\nMision y Metodologia:\n  1. Conectarse al servidor con el usuario asignado.\n  2. Inspeccionar el arbol de directorios, servicios y configuraciones.\n  3. Utilizar herramientas como find, grep y ls para localizar los 4 sectores.\n  4. Buscar posibles vectores para elevar privilegios con sudo su.\n  5. Ensamblar los sectores recuperados para validar el desafio.\n============================================================='
+  '/home/hacker/notas_kali.txt': 'NOTAS DE KALI LINUX — HACKATHON UPTPC 2026\n=============================================================\nObjetivo: Auditar el servidor central server-hackaton.uptpc.edu.ve\nComando de conexion SSH:\n  ssh invitado@server-hackaton.uptpc.edu.ve\n\nMision y Metodologia:\n  1. Conectarse al servidor con el usuario asignado.\n  2. Inspeccionar el arbol de directorios, servicios y configuraciones.\n  3. Utilizar herramientas como find, grep y ls para auditar el sistema.\n  4. Buscar posibles vectores para elevar privilegios con sudo su.\n  5. Localizar la bandera maestra oficial FLAG{...} y copiarla en el validador.\n=============================================================',
+  '/home/hacker/Escritorio/notas_kali.txt': 'NOTAS DE KALI LINUX — HACKATHON UPTPC 2026\n=============================================================\nObjetivo: Auditar el servidor central server-hackaton.uptpc.edu.ve\nComando de conexion SSH:\n  ssh invitado@server-hackaton.uptpc.edu.ve\n\nMision y Metodologia:\n  1. Conectarse al servidor con el usuario asignado.\n  2. Inspeccionar el arbol de directorios, servicios y configuraciones.\n  3. Utilizar herramientas como find, grep y ls para auditar el sistema.\n  4. Buscar posibles vectores para elevar privilegios con sudo su.\n  5. Localizar la bandera maestra oficial FLAG{...} y copiarla en el validador.\n============================================================='
 };
 
 function collectFSItems(isSSH, startPath, isRoot, suppressErrors) {
@@ -1941,6 +2031,10 @@ function execFind(rawArgs, isSSH, isRoot, suppressErrors) {
     }
   }
 
+  if(namePattern && /sector|flag|clave|bandera/i.test(namePattern)) {
+    isCaseInsensitive = true;
+  }
+
   if(paths.length === 0) {
     paths.push(isSSH ? estado.dirSSH : estado.dirLocal);
   }
@@ -1980,8 +2074,8 @@ function execFind(rawArgs, isSSH, isRoot, suppressErrors) {
     });
   });
 
-  if(!isSSH && outputLines.length > 0) {
-    outputLines.push('<span class="c-yellow">Pista: Estás en Kali local. Para explorar el servidor del Hackathon:</span>');
+  if(!isSSH) {
+    outputLines.push('<span class="c-yellow">Pista: Estás en tu máquina Kali local. Para buscar en el servidor objetivo, conéctate con:</span>');
     outputLines.push('<span class="c-green">  ssh invitado@server-hackaton.uptpc.edu.ve</span>');
   }
 
@@ -2032,6 +2126,11 @@ function execGrep(rawArgs, inputLines, isSSH, isRoot, suppressErrors) {
 
   if(!pattern) return ['grep: patron de busqueda requerido'];
 
+  // Si busca terminos clave de CTF, habilitar busqueda insensible a mayusculas
+  if(/^(sector|flag|k4l1|sh4d0w|k3rn3l|v4ult|clave|bandera)/i.test(pattern)) {
+    isCaseInsensitive = true;
+  }
+
   let regex;
   try {
     regex = new RegExp(pattern, isCaseInsensitive ? 'i' : '');
@@ -2049,8 +2148,18 @@ function execGrep(rawArgs, inputLines, isSSH, isRoot, suppressErrors) {
       }
     });
   } else {
-    const startPath = targetFiles[0] || (isSSH ? estado.dirSSH : estado.dirLocal);
-    const { items } = collectFSItems(isSSH, startPath, isRoot, suppressErrors);
+    let startPath = targetFiles[0];
+    if(!startPath || startPath === '.' || startPath === '*') {
+      startPath = isSSH ? (isRecursive ? '/' : estado.dirSSH) : estado.dirLocal;
+    }
+
+    const { items, errors } = collectFSItems(isSSH, startPath, isRoot, suppressErrors);
+
+    if(errors.length > 0 && !suppressErrors) {
+      errors.forEach(err => {
+        outputLines.push(err.replace(/^find:/, 'grep:'));
+      });
+    }
 
     items.forEach(it => {
       if(it.type === 'file' && it.content) {
@@ -2063,6 +2172,11 @@ function execGrep(rawArgs, inputLines, isSSH, isRoot, suppressErrors) {
         });
       }
     });
+  }
+
+  if(!isSSH) {
+    outputLines.push('<span class="c-yellow">Pista: Estás en tu máquina Kali local. Para buscar en el servidor objetivo:</span>');
+    outputLines.push('<span class="c-green">  ssh invitado@server-hackaton.uptpc.edu.ve</span>');
   }
 
   return outputLines;
@@ -2099,6 +2213,15 @@ function executePipeline(rawCmd, isSSH) {
     cleanCmd = cleanCmd.replace(/2>&1/gi, '');
   }
   cleanCmd = cleanCmd.trim();
+
+  const cmdUpperClean = cleanCmd.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (cmdUpperClean.includes('K4L1SH4D0WK3RN3LV4ULT2026') || cmdUpperClean.includes('K4L1SH4D0WK3RN3LV4ULT') || (cmdUpperClean.includes('K4L1') && cmdUpperClean.includes('SH4D0W') && cmdUpperClean.includes('K3RN3L') && cmdUpperClean.includes('V4ULT'))) {
+    addLine('<div class="flag-box">&#128275; <strong>&iexcl;C&Oacute;DIGO DE SECTORES CORRECTO!</strong><br><br>' +
+            'Has descifrado y unido con &eacute;xito los 4 sectores del servidor.<br>' +
+            'Tu bandera maestra obtenida es: <strong style="color:#4ade80; font-size:1.15rem;">FLAG{SERVER_TERMINAL_MASTER_2026}</strong><br><br>' +
+            '<span class="c-yellow">&#128203; Copia y pega la bandera <strong>FLAG{SERVER_TERMINAL_MASTER_2026}</strong> en el formulario inferior y presiona "Validar" para registrar tus puntos.</span></div>');
+    return;
+  }
 
   let isRoot = estado.esRoot;
   if(cleanCmd.toLowerCase().startsWith('sudo ')) {

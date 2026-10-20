@@ -358,21 +358,21 @@ echo $header;
 
         <div class="section-box">
             <div class="section-tag">🛠️ Solución Oficial</div>
-            <p style="font-size:0.92rem; color:#cbd5e1;">Abre la terminal interactiva Kali Linux en <code>desafio4.php</code>. Conéctate al servidor mediante <code>ssh invitado@server-hackaton.uptpc.edu.ve</code> (requiere que el Hackatón esté iniciado). Explora el sistema para recopilar los 4 sectores o la bandera maestra:</p>
+            <p style="font-size:0.92rem; color:#cbd5e1;">Abre la terminal interactiva Kali Linux en <code>desafio4.php</code>. Conéctate al servidor mediante <code>ssh invitado@server-hackaton.uptpc.edu.ve</code> (requiere que el Hackatón esté iniciado). Explora el sistema, audita los servicios y eleva privilegios a root para obtener la bandera maestra:</p>
             <ul class="alt-list" style="margin-top:8px;">
                 <li><strong>Sector 1 (<code>K4L1_</code>):</strong> En respaldos web: <code>cat /var/www/backups/backup_system.conf</code>.</li>
                 <li><strong>Sector 2 (<code>SH4D0W_</code>):</strong> En reglas de defensa (archivo oculto): <code>cat /opt/cyberdefense/rules/.sector2_audit.dat</code>.</li>
                 <li><strong>Sector 3 (<code>K3RN3L_</code>):</strong> En servicios clasificados (requiere root): <code>sudo su</code> y <code>cat /srv/classified/sector3_credentials.txt</code>.</li>
-                <li><strong>Sector 4 (<code>V4ULT_2026</code>):</strong> En la bóveda de administración: <code>cat /etc/secret_vault/flag_confidencial.txt</code>.</li>
+                <li><strong>Sector 4 (<code>V4ULT_2026</code>) y Bandera Maestra:</strong> En la bóveda de administración: <code>cat /etc/secret_vault/flag_confidencial.txt</code> o en <code>/root/flag_master.txt</code>.</li>
             </ul>
-            <p style="font-size:0.92rem; color:#cbd5e1; margin-top:8px;">Código concatenado: <code>K4L1_SH4D0W_K3RN3L_V4ULT_2026</code> o Bandera Maestra: <code>FLAG{SERVER_TERMINAL_MASTER_2026}</code> (también visible en <code>/root/.root_master_vault/flag_master.txt</code>).</p>
+            <p style="font-size:0.92rem; color:#cbd5e1; margin-top:8px;">Bandera Maestra Oficial: <code>FLAG{SERVER_TERMINAL_MASTER_2026}</code> (el participante debe copiarla y pegarla directamente en el validador inferior para completar el desafío).</p>
         </div>
 
         <div class="section-box">
             <div class="section-tag">🔀 Alternativas que pueden tomar los participantes</div>
             <ul class="alt-list">
-                <li><strong>Método 1 (Recolección de los 4 Sectores):</strong> Seguir las pistas de <code>readme.txt</code>, <code>robots.txt</code> y <code>notas.txt</code> para hallar los 4 sectores y concatenarlos en el validador web inferior.</li>
-                <li><strong>Método 2 (Elevación Sudo Directa):</strong> Ejecutar <code>sudo su</code> desde el inicio de la sesión SSH y leer directamente la bóveda central <code>/etc/secret_vault/flag_confidencial.txt</code> o <code>/root/.root_master_vault/flag_master.txt</code>.</li>
+                <li><strong>Método 1 (Auditoría Forense y Bóveda Root):</strong> Seguir las pistas de <code>readme.txt</code>, <code>robots.txt</code> y <code>notas.txt</code> para auditar los servicios, elevar privilegios con <code>sudo su</code> y copiar la bandera maestra <code>FLAG{SERVER_TERMINAL_MASTER_2026}</code> en el validador web.</li>
+                <li><strong>Método 2 (Elevación Sudo Directa):</strong> Ejecutar <code>sudo su</code> desde el inicio de la sesión SSH y leer directamente la bóveda central <code>/etc/secret_vault/flag_confidencial.txt</code> o <code>/root/flag_master.txt</code> para copiar y pegar la bandera maestra.</li>
             </ul>
         </div>
     </div>
@@ -470,28 +470,28 @@ echo $header;
     <!-- DESAFÍO 8 -->
     <div class="challenge-card" id="d8">
         <div class="challenge-header">
-            <div class="challenge-title">Desafío 8: Acceso Biométrico (<code>biometrico/biometrico.php</code>)</div>
+            <div class="challenge-title">Desafío 8: Acceso Biométrico (<code>biometrico.php</code>)</div>
             <span class="challenge-num">Reto #8</span>
         </div>
         
         <div class="section-box">
             <div class="section-tag">🧠 Conocimientos Requeridos</div>
             <ul class="knowledge-list">
-                <li>Lógica combinatoria y reconocimiento de patrones.</li>
-                <li>Análisis de respuestas del servidor frente a intentos fallidos.</li>
+                <li>Lógica combinatoria, reconocimiento de patrones y decodificación de código Morse internacional.</li>
+                <li>Análisis de respuestas del servidor frente a intentos fallidos y control de estados de sesión.</li>
             </ul>
         </div>
 
         <div class="section-box">
             <div class="section-tag">🛠️ Solución Oficial</div>
-            <p style="font-size:0.92rem; color:#cbd5e1;">Analiza las pistas visuales y de código del sistema biométrico para inferir el orden correcto del patrón de puntos o bypass del estado de autenticación.</p>
+            <p style="font-size:0.92rem; color:#cbd5e1;">Analiza la barra de código Morse decorativa central y el fondo del contenedor. La secuencia Morse internacional representa: <code>..... ..--- .---- ....- ..... -.... ----. ---.. .....</code> que se traduce a los dígitos: <code>5-2-1-4-5-6-9-8-5</code>. Al ingresar este patrón en la cuadrícula biométrica de 9 puntos (permitiendo visitas repetidas al nodo central 5), el sistema concede el acceso y revela la bandera: <code>FLAG{BIOMETRIC_PATTERN_MASTER}</code>.</p>
         </div>
 
         <div class="section-box">
             <div class="section-tag">🔀 Alternativas que pueden tomar los participantes</div>
             <ul class="alt-list">
-                <li><strong>Método 1 (Deducción Lógica):** Probar las secuencias basadas en las pistas del registro de intentos.</li>
-                <li><strong>Método 2 (Inspección JS):** Auditar los scripts en el navegador para identificar la lógica del patrón.</li>
+                <li><strong>Método 1 (Decodificación Morse):</strong> Traducir los puntos y rayas de la barra central superior o del fondo CSS <code>.container::before</code>.</li>
+                <li><strong>Método 2 (Auditoría Backend):</strong> Revisar la función de validación <code>verificarPatronBiometrico</code> en <code>conf/functions.php</code>.</li>
             </ul>
         </div>
     </div>
@@ -537,13 +537,13 @@ echo $header;
             <ul class="knowledge-list">
                 <li>Inspección deResponse Headers de red.</li>
                 <li>Manejo de codificación Base64.</li>
-                <li>Navegación por endpoints dinámicos con tiempo de expiración (2 minutos).</li>
+                <li>Navegación por endpoints dinámicos con tiempo de expiración (5 minutos).</li>
             </ul>
         </div>
 
         <div class="section-box">
             <div class="section-tag">🛠️ Solución Oficial</div>
-            <p style="font-size:0.92rem; color:#cbd5e1;">1) Abre DevTools (F12) -> pestaña Network y busca el header <code>X-Final-Challenge-Gateway</code>. 2) Abre la URL resultante en una nueva pestaña (<code>?api_gateway=v2_token_endpoint&auth=UPTPC-2026-FINAL</code>). 3) Copia el campo <code>payload</code> codificado en Base64. 4) Decodifica el Base64 e ingresa el token de 16 caracteres antes de los 120 segundos.</p>
+            <p style="font-size:0.92rem; color:#cbd5e1;">1) Abre DevTools (F12) -> pestaña Network y busca el header <code>X-Final-Challenge-Gateway</code>. 2) Abre la URL resultante en una nueva pestaña (<code>?api_gateway=v2_token_endpoint&auth=UPTPC-2026-FINAL</code>). 3) Copia el campo <code>payload</code> codificado en Base64. 4) Decodifica el Base64 e ingresa el token de 16 caracteres en el campo de desbloqueo. 5) El sistema revelará la bandera maestra <code>FLAG{DINAMIC_WEB_HACKER_2026}</code>; cópiala y pégala en el validador (en <code>challenge_dynamic.php</code> o en <code>index.php</code>) para acreditar los puntos oficiales de tu equipo.</p>
         </div>
 
         <div class="section-box">

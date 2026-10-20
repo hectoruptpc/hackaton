@@ -2,11 +2,17 @@
 session_start();
 require_once __DIR__ . '/conf/functions.php';
 
+$hackathon_activo = hackathonEstaActivo();
 $resultado_html = '';
 $mostrar_resultado = false;
 $estado = obtenerEstadoBiometrico();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['patron'])) {
+    if (!$hackathon_activo) {
+        $_SESSION['biometrico_msg'] = '⚠️ <strong>HACKATHON NO INICIADO:</strong> Espera a que el administrador active la competencia para poder enviar patrones.';
+        header('Location: biometrico.php');
+        exit;
+    }
     $patron = $_POST['patron'];
     $resultado = verificarPatronBiometrico($patron);
     
@@ -30,6 +36,9 @@ if (isset($_SESSION['biometrico_msg'])) {
     <link rel="stylesheet" href="conf/ia_avatar.css?v=2026_v18">
     <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
     <script src="conf/ia_avatar.js?v=2026_v18" defer></script>
+    <script>
+    window.hackathonActivoGlobal = <?php echo json_encode($hackathon_activo); ?>;
+    </script>
     <style>
         * {
             margin: 0;
@@ -69,7 +78,7 @@ if (isset($_SESSION['biometrico_msg'])) {
             right: 0;
             bottom: 0;
             font-family: 'Courier New', monospace;
-            font-size: 18;
+            font-size: 18px;
             color: rgba(251, 255, 0, 0.06);
             letter-spacing: 4px;
             word-spacing: 8px;
@@ -540,6 +549,13 @@ if (isset($_SESSION['biometrico_msg'])) {
 </head>
 <body>
 <div class="container">
+    <?php if (!$hackathon_activo): ?>
+    <div style="background: rgba(234, 179, 8, 0.15); border: 1.5px solid #eab308; color: #facc15; padding: 14px 18px; border-radius: 12px; margin-bottom: 20px; text-align: left; font-size: 0.85rem; line-height: 1.5; position: relative; z-index: 2;">
+        <strong style="color: #fde047; font-size: 0.95rem;">⏳ HACKATHON EN ESPERA — ACCESO BIOMÉTRICO EN MODO STANDBY</strong><br>
+        El evento aún no ha sido iniciado por el administrador. La interfaz está disponible para exploración, pero la verificación del patrón biométrico permanecerá deshabilitada hasta el inicio oficial.
+    </div>
+    <?php endif; ?>
+
     <div class="header">
         <h1>🔐 <span>BIOMÉTRICO</span></h1>
         <p>⚡ Autenticación de patrón de desbloqueo ⚡</p>
@@ -555,23 +571,23 @@ if (isset($_SESSION['biometrico_msg'])) {
         El objetivo habla una lengua distinta, nadie entendía lo que decía y su secreto se mantuvo a salvo hasta hoy.
     </div>
 
-    <!-- Código Morse - visible como elemento decorativo -->
+    <!-- Código Morse - visible como elemento decorativo (5 - 2 - 1 - 4 - 5 - 6 - 9 - 8 - 5) -->
     <div class="morse-decorativo">
         <span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">·</span>
         <span class="morse-space"></span>
         <span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">−</span><span class="morse-char">−</span><span class="morse-char">−</span>
         <span class="morse-space"></span>
-        <span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">−</span><span class="morse-char">−</span><span class="morse-char">−</span>
-        <span class="morse-space"></span>
         <span class="morse-char">·</span><span class="morse-char">−</span><span class="morse-char">−</span><span class="morse-char">−</span><span class="morse-char">−</span>
+        <span class="morse-space"></span>
+        <span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">−</span>
         <span class="morse-space"></span>
         <span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">·</span>
         <span class="morse-space"></span>
         <span class="morse-char">−</span><span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">·</span>
         <span class="morse-space"></span>
-        <span class="morse-char">−</span><span class="morse-char">−</span><span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">·</span>
-        <span class="morse-space"></span>
         <span class="morse-char">−</span><span class="morse-char">−</span><span class="morse-char">−</span><span class="morse-char">−</span><span class="morse-char">·</span>
+        <span class="morse-space"></span>
+        <span class="morse-char">−</span><span class="morse-char">−</span><span class="morse-char">−</span><span class="morse-char">·</span><span class="morse-char">·</span>
         <span class="morse-space"></span>
         <span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">·</span><span class="morse-char">·</span>
     </div>
@@ -613,7 +629,7 @@ if (isset($_SESSION['biometrico_msg'])) {
             <button type="button" class="btn-limpiar" id="btnLimpiar">🗑️ LIMPIAR</button>
             <button type="button" class="btn-limpiar" id="btnDeshacer" style="border-color:#ff8800; color:#ff8800; background:linear-gradient(95deg, #2a1a0a, #4a2a0a);">↩️ DESHACER</button>
         </div>
-        <button type="submit" class="btn-verificar" id="btnVerificar" <?php echo $estado['bloqueado'] ? 'disabled' : ''; ?>>
+        <button type="submit" class="btn-verificar" id="btnVerificar" <?php echo ($estado['bloqueado'] || !$hackathon_activo) ? 'disabled' : ''; ?>>
             🔐 VERIFICAR PATRÓN
         </button>
     </form>
@@ -774,7 +790,7 @@ const intervalo = setInterval(function() {
     
     if (tiempoRestante <= 0) {
         clearInterval(intervalo);
-        location.reload();
+        window.location.href = 'biometrico.php';
     }
 }, 1000);
 <?php endif; ?>
@@ -786,7 +802,10 @@ setInterval(function() {
             if (data.intentos !== undefined && contadorIntentos) {
                 contadorIntentos.textContent = data.intentos;
             }
-            if (data.bloqueado) {
+            if (data.hackathon_activo !== undefined) {
+                window.hackathonActivoGlobal = data.hackathon_activo;
+            }
+            if (data.bloqueado || !window.hackathonActivoGlobal) {
                 if (btnVerificar) btnVerificar.disabled = true;
             } else {
                 if (btnVerificar) btnVerificar.disabled = false;
