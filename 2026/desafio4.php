@@ -589,8 +589,8 @@ const serverFS = {
     type: 'dir',
     owner: 'root',
     children: {
-      html: 'dir',
-      backups: 'dir'
+      html: { type: 'dir', owner: 'www-data' },
+      backups: { type: 'dir', owner: 'www-data' }
     }
   },
   '/var/www/html': {
